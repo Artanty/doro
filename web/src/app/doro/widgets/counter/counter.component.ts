@@ -49,27 +49,8 @@ export interface TimerConfig {
   templateUrl: './counter.component.html',
   styleUrls: ['./counter.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  animations: [
-  //   trigger('animationTriggerName', [
-  //     transition('void => *', [
-  //         style({ opacity: 0 }),
-  //         animate('1.2s', style({ opacity: 1 })),
-  //     ]),
-  //     transition('* => void', [
-  //         animate('1.2s', style({ opacity: 0 })),
-  //     ]),
-  // ])
-  trigger('animationTriggerName', [
-    transition(':enter', [
-      style({ opacity: 0 }),
-              animate('1.2s', style({ opacity: 1 }))
-    ]),
-    transition(':leave', [
-      style({ opacity: 1 }),
-      animate('1.2s', style({ opacity: 0 })),
-    ]),
-  ]),
-  ]
+
+
 })
 export class CounterComponent implements OnInit, AfterContentInit, AfterViewChecked, AfterViewInit {
   @ViewChild('dialGauge', {static: true}) dialGauge!: ElementRef;
@@ -511,12 +492,7 @@ setTimeout(() => {
       })
   }
 
-  test(testCase: number) {
-    this.http.get('http://localhost:3000/test?case=' + testCase)
-      .subscribe((res: any) => {
-        console.log(res)
-      })
-  }
+
 
   getScheduleConfig() {
     this.http.post('http://localhost:3000/getScheduleConfig', null)
@@ -528,9 +504,7 @@ setTimeout(() => {
       })
   }
 
-  rem () {
-    this.Store.setScheduleEvents([1,3,4])
-  }
+
   ngAfterViewInit() {
     console.log('parent ngAfterViewInit()')
   }

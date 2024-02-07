@@ -1,2 +1,12 @@
-<p>doro works!</p>
-<app-counter></app-counter>
+<div class="wrapper">
+  <div class="slide" @animationTriggerName *ngIf="(viewState | async) === 'counter'">
+    <app-counter></app-counter>
+  </div>
+
+  <div class="slide" @animationTriggerName *ngIf="(viewState | async) === 'eventList'">
+    <app-event-list></app-event-list>
+  </div>
+</div>
+
+
+

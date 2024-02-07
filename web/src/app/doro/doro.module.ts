@@ -11,6 +11,8 @@ import { AudioComponent } from '../audio/audio.component';
 import { MyCustomElementComponent } from '../my-custom-element/my-custom-element.component';
 import { CounterService } from '../doro/services/counter.service';
 import { EventListComponent} from '../doro/widgets/event-list/event-list.component'
+import { NavigationComponent } from './components/navigation/navigation.component';
+
 function initAppFactory (bcStore: CounterService) {
   return () => bcStore.scheduleConfigActivator()
 }
@@ -20,7 +22,8 @@ function initAppFactory (bcStore: CounterService) {
     DoroComponent,
     CounterComponent,
     MyCustomElementComponent,
-    EventListComponent
+    EventListComponent,
+    NavigationComponent
   ],
   imports: [
     CommonModule,
@@ -31,7 +34,8 @@ function initAppFactory (bcStore: CounterService) {
     AudioComponent,
   ],
   exports: [
-    DoroComponent
+    DoroComponent,
+    MyCustomElementComponent,
   ],
   providers: [
     { provide: APP_INITIALIZER, useFactory: initAppFactory, deps: [CounterService], multi: true },

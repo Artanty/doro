@@ -13,6 +13,8 @@ export class StoreService {
   private scheduleEvents$: BehaviorSubject<any> = new BehaviorSubject(null)
   // private selectedScheduleEvent$: BehaviorSubject<any> = new BehaviorSubject(null)
   private currentScheduleEvent$: BehaviorSubject<any> = new BehaviorSubject(null)
+  private viewState$: BehaviorSubject<any> = new BehaviorSubject('counter')
+
   constructor() {
     console.log('Store created')
   }
@@ -72,5 +74,14 @@ export class StoreService {
     return this.currentScheduleEvent$.asObservable()
   }
 
+  public setViewState (data: any) {
+    this.viewState$.next(data)
+  }
+  public getViewState ():  any {
+    return this.viewState$.value
+  }
+  public listenViewState (): Observable<any> {
+    return this.viewState$.asObservable()
+  }
 
 }

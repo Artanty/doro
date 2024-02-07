@@ -10,18 +10,21 @@
 
 
 .container {
+  min-width: 250px;
   padding-top: 18px;
   padding-bottom: 18px;
   //font-family: 'Roboto', sans-serif;
   //width: 80%;
   font-family: 'Manrope', sans-serif;
   overflow-x: hidden;
-  max-width: 360px;
-  min-width: 250px;
-  margin: 20px auto;
+  // max-width: 360px;
+  // min-width: 250px;
+  // margin: 20px auto;
   background-color: #222;
   //color: #999;
   color: #c6c6c6;
+
+
 }
 
 .interrupting {
@@ -206,19 +209,14 @@ h1 {
 //}
 
 .timerButtons{
-  padding: 15px 15px 0 15px;
+  padding: 15px 15px 5px 15px;
   display: flex;
   justify-content: center;
   align-items: center;
   //margin-top: 15px;
   & a {
-
-    //border-color: #fff;
-    //color:#fff;
     width: 50px;
     height: 50px;
-    //border-width: 2px;
-    //border-style: solid;
     border-radius: 25px;
     display: flex;
     justify-content: center;
