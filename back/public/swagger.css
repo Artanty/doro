@@ -1,0 +1,107 @@
+body{
+    background-color: #000;
+}
+button, a{
+    outline: none;
+}
+.swagger-ui .model-box-control:focus, .swagger-ui .models-control:focus, .swagger-ui .opblock-summary-control:focus{
+    outline: none;
+}
+.topbar{
+    display: none;
+}
+.information-container.wrapper .info{
+    display: flex;
+    column-gap: 5px;
+    margin: 5px 0;
+    align-items: center;
+}
+
+.information-container.wrapper .info .main{
+    display: flex;
+    column-gap: 15px;
+    align-items: center;
+}
+.swagger-ui select{
+    border: 1px solid #cccccc;
+    box-shadow: none;
+    padding: 2px 40px 2px 10px;
+    font-size: 12px;
+}
+.swagger-ui .btn{
+    border: 1px solid #cccccc;
+    box-shadow: none;
+    font-size: 12px;
+    padding: 2px 23px;
+}
+body{
+    font-size: 12px;
+}
+.d-none{
+    display: none;
+}
+.op-0{
+    opacity: 0;
+}
+
+.swagger-ui .scheme-container {
+    background-color: #000;
+    margin: 0 0 0px;
+    padding: 5px 0;
+}
+.swagger-ui .opblock {
+    margin: 0 0 5px;
+}
+.swagger-ui .opblock-description-wrapper,
+.swagger-ui .opblock-external-docs-wrapper,
+.swagger-ui .opblock-title_normal{
+    margin: 0 0 5px;
+    padding: 0px 20px;
+}
+.swagger-ui .opblock .opblock-summary{
+    padding: 0;
+}
+.swagger-ui .opblock.opblock-post .opblock-summary-method{
+    background: #49cc90;
+}
+.swagger-ui .opblock.opblock-get .opblock-summary-method{
+    background: #61affe;
+}
+.swagger-ui .opblock .opblock-section-header {
+    background-color: #000;
+    min-height: 33px;
+    padding: 5px 20px;
+}
+.swagger-ui .opblock-description-wrapper p, .swagger-ui .opblock-external-docs-wrapper p, .swagger-ui .opblock-title_normal p{
+    font-size: 12px;
+}
+.swagger-ui .info hgroup.main{
+    margin: 0 0 5px;
+}
+.swagger-ui .execute-wrapper {
+    padding: 5px;
+}
+.swagger-ui .responses-inner{
+    padding: 0px 20px;
+}
+.swagger-ui .opblock-tag{
+    padding: 2px 20px 2px 10px;
+}
+.swagger-ui .tab{
+    margin: 3px 0;
+}
+.swagger-ui table tbody tr td{
+    padding: 5px 0;
+}
+.swagger-ui section.models{
+    margin: 5px 0;
+}
+.swagger-ui section.models.is-open{
+    padding: 0 0 5px;
+}
+.swagger-ui section.models h4{
+    padding: 5px 20px 5px 10px;
+}
+.swagger-ui .model-box{
+    padding: 2px;
+}
