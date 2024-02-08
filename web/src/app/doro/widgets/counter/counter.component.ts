@@ -137,7 +137,7 @@ export class CounterComponent implements OnInit, AfterContentInit, AfterViewChec
   }
 
   get counterSuffix() {
-    return this.CounterServ.getActiveScheduleEvent()?.name
+    return this.CounterServ.getActiveScheduleEvent()?.name || null
   }
 
   //mine
@@ -210,7 +210,7 @@ setTimeout(() => {
   }
 
   connect() {
-    this.SseServ.createEventSource().subscribe(
+    this.SseServ.listenTick().subscribe(
       (res: any) => {
         if (res.action === 'tick') {
           this.counter = res.timePassed
@@ -445,7 +445,7 @@ setTimeout(() => {
   pause() {
     if (!this.Store.getScheduleConfig()?.counterIsPaused) {
       const scheduleEvent_id = this.Store.getScheduleConfig()?.scheduleEvent_id
-      this.CounterServ.pauseEvent(scheduleEvent_id)
+      scheduleEvent_id && this.CounterServ.pauseEvent(scheduleEvent_id)
     } else {
       console.error('no good')
     }

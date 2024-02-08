@@ -23,7 +23,7 @@ export class AppComponent {
   }
 
   rem () {
-    this.StoreServ.setScheduleEvents([1,3,4])
+    // this.StoreServ.setScheduleEvents([1,3,4])
   }
 
 }

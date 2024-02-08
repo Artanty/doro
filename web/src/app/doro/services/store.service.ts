@@ -3,29 +3,34 @@ import {
   BehaviorSubject,
   Observable
 } from "rxjs";
+import { ITick } from '../models/tick.model';
+import { Nullable, Undefinable } from '../models/_helper-types';
+import { IScheduleConfig } from '../models/scheduleConfig.model';
+import { IScheduleEvent } from '../models/scheduleEvent.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class StoreService {
-  private scheduleConfig$: BehaviorSubject<any> = new BehaviorSubject(null)
+  private scheduleConfig$: BehaviorSubject<Nullable<IScheduleConfig>> = new BehaviorSubject<Nullable<IScheduleConfig>>(null)
   private schedule$: BehaviorSubject<any> = new BehaviorSubject(null)
-  private scheduleEvents$: BehaviorSubject<any> = new BehaviorSubject(null)
+  private scheduleEvents$: BehaviorSubject<IScheduleEvent[]> = new BehaviorSubject<IScheduleEvent[]>([])
   // private selectedScheduleEvent$: BehaviorSubject<any> = new BehaviorSubject(null)
   private currentScheduleEvent$: BehaviorSubject<any> = new BehaviorSubject(null)
   private viewState$: BehaviorSubject<any> = new BehaviorSubject('counter')
+  private tick$: BehaviorSubject<Nullable<ITick>> = new BehaviorSubject<Nullable<ITick>>(null)
 
   constructor() {
     console.log('Store created')
   }
 
-  public setScheduleConfig (data: any) {
+  public setScheduleConfig (data: Nullable<IScheduleConfig>) {
     this.scheduleConfig$.next(data)
   }
-  public getScheduleConfig ():  any {
+  public getScheduleConfig (): Nullable<IScheduleConfig> {
     return this.scheduleConfig$.value
   }
-  public listenScheduleConfig (): Observable<any> {
+  public listenScheduleConfig (): Observable<Nullable<IScheduleConfig>> {
     return this.scheduleConfig$.asObservable()
   }
 
@@ -39,16 +44,16 @@ export class StoreService {
     return this.schedule$.asObservable()
   }
 
-  public setScheduleEvents (data: any[]) {
+  public setScheduleEvents (data: IScheduleEvent[]) {
     this.scheduleEvents$.next(data)
   }
-  public getScheduleEvents (): any[] {
+  public getScheduleEvents (): IScheduleEvent[] {
     return this.scheduleEvents$.value
   }
-  public getScheduleEventById (id: number): any {
+  public getScheduleEventById (id: number): Undefinable<IScheduleEvent> {
     return this.scheduleEvents$.value?.find((el: any)=>el.id === id)
   }
-  public listenScheduleEvents () {
+  public listenScheduleEvents (): Observable<IScheduleEvent[]> {
     return this.scheduleEvents$.asObservable()
   }
 
@@ -82,6 +87,16 @@ export class StoreService {
   }
   public listenViewState (): Observable<any> {
     return this.viewState$.asObservable()
+  }
+
+  public setTick (data: Nullable<ITick>) {
+    this.tick$.next(data)
+  }
+  public getTick (): Nullable<ITick> {
+    return this.tick$.value
+  }
+  public listenTick (): Observable<Nullable<ITick>> {
+    return this.tick$.asObservable()
   }
 
 }

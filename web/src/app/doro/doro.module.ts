@@ -12,9 +12,14 @@ import { MyCustomElementComponent } from '../my-custom-element/my-custom-element
 import { CounterService } from '../doro/services/counter.service';
 import { EventListComponent} from '../doro/widgets/event-list/event-list.component'
 import { NavigationComponent } from './components/navigation/navigation.component';
+import { SseService } from './services/sse.service';
 
-function initAppFactory (bcStore: CounterService) {
-  return () => bcStore.scheduleConfigActivator()
+function initConfigActivator (counterServ: CounterService) {
+  return () => counterServ.scheduleConfigActivator()
+}
+
+function initEventSource (sseServ: SseService) {
+  return () => sseServ.createEventSource()
 }
 
 @NgModule({
@@ -38,7 +43,19 @@ function initAppFactory (bcStore: CounterService) {
     MyCustomElementComponent,
   ],
   providers: [
-    { provide: APP_INITIALIZER, useFactory: initAppFactory, deps: [CounterService], multi: true },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initConfigActivator,
+      deps: [CounterService],
+      multi: true
+    },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initEventSource,
+      deps: [SseService],
+      multi: true
+
+    },
     provideAnimations(),
   ],
   schemas: [ CUSTOM_ELEMENTS_SCHEMA ],
@@ -49,5 +66,5 @@ export class DoroModule implements DoBootstrap {
     const customElement = createCustomElement(MyCustomElementComponent, { injector: this.injector });
     customElements.define('my-custom-element', customElement);
     appRef.bootstrap(CounterComponent)
-}
+  }
 }

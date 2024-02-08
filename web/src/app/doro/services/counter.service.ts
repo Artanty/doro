@@ -123,6 +123,6 @@ export class CounterService {
 
   getActiveScheduleEvent () {
     const eventId = this.Store.getScheduleConfig()?.scheduleEvent_id
-    return this.Store.getScheduleEventById(eventId)
+    return eventId ? this.Store.getScheduleEventById(eventId) : null
   }
 }

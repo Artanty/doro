@@ -36,11 +36,18 @@
       align-items: center;
       min-width: 96px;
       & .time{
-        display: block;
+        display: flex;
+        flex-direction: column;
+        align-items: end;
         font-size: 13px;
-        & span{
+        &__prefix{
+          font-size: 11px;
+        }
+        &__data{
 
-          margin-left: 4px;
+          & span{
+            margin-left: 4px;
+          }
         }
       }
       & .buttons{
@@ -51,6 +58,9 @@
             cursor:pointer;
             width: 33px;
             height: 33px;
+            & circle{
+              fill: transparent;
+            }
             & g path{
               fill: #f2f2f2
             }
@@ -61,7 +71,27 @@
             }
           }
         }
+        a.isPlaying{
+          & svg {
+            & circle{
+              fill: rgb(104, 13, 13);
+              // animation: redFill 5s infinite
+            }
+          }
+        }
       }
     }
   }
 }
+
+// @keyframes redFill {
+//   0% {
+//     fill: transparent;
+//   }
+//   50% {
+//     fill: rgb(104, 13, 13);
+//   }
+//   100% {
+//     fill: transparent;
+//   }
+// }
