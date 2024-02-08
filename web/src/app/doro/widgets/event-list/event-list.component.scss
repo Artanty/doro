@@ -1,5 +1,4 @@
 .container{
-  // background-color: #1f1b2e;
   color: #fff;
   font-family: "Manrope", sans-serif;
   font-size: 12px;
@@ -36,10 +35,6 @@
       align-items: center;
       min-width: 96px;
       & .time{
-        display: flex;
-        flex-direction: column;
-        align-items: end;
-        font-size: 13px;
         &__prefix{
           font-size: 11px;
         }
@@ -75,7 +70,13 @@
           & svg {
             & circle{
               fill: rgb(104, 13, 13);
-              // animation: redFill 5s infinite
+            }
+          }
+        }
+        a.isPaused{
+          & svg {
+            & circle{
+              fill: rgb(7, 88, 67);
             }
           }
         }
@@ -83,15 +84,3 @@
     }
   }
 }
-
-// @keyframes redFill {
-//   0% {
-//     fill: transparent;
-//   }
-//   50% {
-//     fill: rgb(104, 13, 13);
-//   }
-//   100% {
-//     fill: transparent;
-//   }
-// }

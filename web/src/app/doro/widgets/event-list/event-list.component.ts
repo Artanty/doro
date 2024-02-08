@@ -10,17 +10,13 @@ import {
 
 import {
   combineLatest,
-  Observable,
-  tap
 } from "rxjs";
-import {AsyncPipe} from "@angular/common";
+
 import {
   differenceInMinutes,
   format,
-  addSeconds,
   secondsToMinutes
 } from "date-fns";
-
 
 import {HttpClient} from "@angular/common/http";
 import { CounterService } from '../../services/counter.service';
@@ -31,7 +27,6 @@ import { Nullable } from '../../models/_helper-types';
 import { ITick } from '../../models/tick.model';
 import { IScheduleEvent, IScheduleEventView } from '../../models/scheduleEvent.model';
 
-
 @Component({
   selector: 'app-event-list',
   templateUrl: './event-list.component.html',
@@ -40,62 +35,38 @@ import { IScheduleEvent, IScheduleEventView } from '../../models/scheduleEvent.m
 })
 export class EventListComponent implements OnInit, AfterViewInit, OnChanges{
 
-  loading: boolean = true
-  state: boolean = false
   scheduleEvents: IScheduleEventView[] = []
-  // tick$: Observable<any>
 
-  get isPaused() {
-    return this.state
-  }
   constructor (
     @Inject(StoreService) public StoreServ: StoreService,
     private cdr: ChangeDetectorRef,
     private http: HttpClient,
     @Inject(CounterService) private CounterServ: CounterService,
     @Inject(SseService) private SseServ: SseService
-  ) {
+  ) {}
 
-  }
-
-  play () {
-    this.state = false
-    console.log(this.state)
-    this.cdr.detectChanges()
-  }
-  pause () {
-    this.state = true
-    console.log(this.state)
-    this.cdr.detectChanges()
-  }
-  tracker(index:number, item:any):any{
-    // console.log(item)
+  tracker(_: any, item: any): any{
     return item.id;
   }
 
-  getEventTime(el: any) {
-    console.log(el)
-    return 1
-  }
-
   ngOnInit() {
-    // this.SseServ.listenTick().subscribe({
-    //   next: (res: any) => {
-    //     this.cdr.detectChanges()
-    //   }
-    // })
     combineLatest([this.StoreServ.listenScheduleEvents(), this.StoreServ.listenScheduleConfig(), this.SseServ.listenTick()])
       .subscribe(([scheduleEvents, scheduleConfig, tick]: [IScheduleEvent[], Nullable<IScheduleConfig>, ITick]) => {
         if (scheduleEvents?.length) {
           if (scheduleConfig && scheduleConfig.scheduleEvent_id) {
             this.scheduleEvents = scheduleEvents.map((el: IScheduleEventView) => {
               el.timeLength = this.getDiffInMinutes(el.timeFrom, el.timeTo)
-              el.isPlaying = scheduleConfig.scheduleEvent_id === el.id && !scheduleConfig.counterIsPaused
-              if (el.isPlaying) {
-                const playingEventTickedSeconds = tick.timePassed
-                if (playingEventTickedSeconds) {
-                  el.timeLeft = el.timeLength - secondsToMinutes(playingEventTickedSeconds)
+              el.isActive = scheduleConfig.scheduleEvent_id === el.id
+              if (el.isActive) {
+                el.isPlaying = !scheduleConfig.counterIsPaused
+                if (el.isPlaying) {
+                  const playingEventTickedSeconds = tick.timePassed
+                  if (playingEventTickedSeconds) {
+                    el.timeLeft = el.timeLength - secondsToMinutes(playingEventTickedSeconds)
+                  }
                 }
+              } else {
+                el.isPlaying = false
               }
               return el
             })
@@ -119,18 +90,12 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges{
   }
 
   ngOnChanges(changes: any) {
-
     console.log(changes)
   }
 
   getDiffInMinutes (date1: string, date2: string) {
     return Math.abs(differenceInMinutes(new Date(date1), new Date(date2)))
   }
-
-  getHoursAndMinutes (date: string) {
-    return format(new Date(date), 'HH:mm')
-  }
-
 
   /**
    * resume если
@@ -144,7 +109,7 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges{
    * и
    * сейчас проигрывается ивент
    * */
-  handlePlay(el: any) {
+  handlePlay (el: any) {
     if (el.id === this.StoreServ.getScheduleConfig()?.scheduleEvent_id) {
       this.CounterServ.resumeEvent(el.id)
     } else {
@@ -156,15 +121,15 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges{
     }
   }
 
-  pauseEvent(scheduleEvent_id: number) {
+  handlePause (scheduleEvent_id: number) {
     this.CounterServ.pauseEvent(scheduleEvent_id)
   }
 
-  handleSheduleEventClick(el: any) {
+  handleSheduleEventClick (el: any) {
     this.StoreServ.setCurrentScheduleEvent(el)
   }
 
-  stopPropagation(event: Event){
+  stopPropagation (event: Event){
     event.stopPropagation()
   }
 }

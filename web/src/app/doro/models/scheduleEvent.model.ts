@@ -10,6 +10,7 @@ export interface IScheduleEvent {
 }
 
 export interface IScheduleEventView extends IScheduleEvent {
+  isActive?: boolean
   timeLength?: number
   isPlaying?: boolean
   timeLeft?: number
