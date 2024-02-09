@@ -6,6 +6,10 @@
   <div class="slide" @animationTriggerName *ngIf="(viewState | async) === 'eventList'">
     <app-event-list></app-event-list>
   </div>
+
+  <div class="slide" @animationTriggerName *ngIf="(viewState | async) === 'counterConfig'">
+    <app-counter-config></app-counter-config>
+  </div>
 </div>
 
 

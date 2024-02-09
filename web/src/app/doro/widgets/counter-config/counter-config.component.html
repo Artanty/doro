@@ -1,0 +1,51 @@
+<div class="container back">
+  <form [formGroup]="counterConfigForm">
+    <ng-container formArrayName="counterConfigFa">
+
+      <div class="form"
+           *ngFor="let _ of counterConfigFa.controls; let i = index"
+           [formGroupName]="i">
+        <div class="formControl wide">
+<!--          <div class="formControl__prepend"></div>-->
+          <input class="formControl__control wide" type="text" [formControlName]="'scheduleName'">
+<!--          <div class="formControl__append"></div>-->
+        </div>
+        <div class="formControl">
+          <div class="formControl__prepend">Работа</div>
+          <input class="formControl__control" type="number" [formControlName]="'workLength'">
+          <div class="formControl__append">мин.</div>
+        </div>
+        <div class="formControl">
+          <div class="formControl__prepend">Отдых</div>
+          <input class="formControl__control" type="number" [formControlName]="'restLength'">
+          <div class="formControl__append">мин.</div>
+        </div>
+
+        <div class="formControl">
+          <div class="formControl__prepend">Большой отдых</div>
+          <input class="formControl__control" type="number" [formControlName]="'bigRestLength'">
+          <div class="formControl__append">мин.</div>
+        </div>
+
+        <div class="formControl">
+          <div class="formControl__prepend">каждый</div>
+          <input class="formControl__control" type="number" [formControlName]="'bigRestRate'">
+          <div class="formControl__append">цикл</div>
+        </div>
+
+        <input type="hidden" [formControlName]="'scheduleType'">
+
+
+      </div>
+
+    </ng-container>
+  </form>
+  <div class="buttonRow">
+    <div class="buttonWrapper">
+      <a (click)="handleCreate()">Сохранить</a>
+    </div>
+  </div>
+  <div class="bottomRow">
+    <app-navigation></app-navigation>
+  </div>
+</div>

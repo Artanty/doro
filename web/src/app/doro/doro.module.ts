@@ -9,10 +9,11 @@ import { BrowserAnimationsModule, provideAnimations } from '@angular/platform-br
 import { AudioComponent } from '../audio/audio.component';
 
 import { MyCustomElementComponent } from '../my-custom-element/my-custom-element.component';
-import { CounterService } from '../doro/services/counter.service';
-import { EventListComponent} from '../doro/widgets/event-list/event-list.component'
+import { CounterService } from './services/counter.service';
+import { EventListComponent} from './widgets/event-list/event-list.component'
 import { NavigationComponent } from './components/navigation/navigation.component';
 import { SseService } from './services/sse.service';
+import {CounterConfigComponent} from "./widgets/counter-config/counter-config.component";
 
 function initConfigActivator (counterServ: CounterService) {
   return () => counterServ.scheduleConfigActivator()
@@ -28,7 +29,8 @@ function initEventSource (sseServ: SseService) {
     CounterComponent,
     MyCustomElementComponent,
     EventListComponent,
-    NavigationComponent
+    NavigationComponent,
+    CounterConfigComponent
   ],
   imports: [
     CommonModule,
