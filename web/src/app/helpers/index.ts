@@ -1,3 +1,8 @@
-import { secondsToMinutesAndSeconds } from './secondsToMinutesAndSeconds'
-import { minutesToSeconds } from './minutesToSeconds'
-export { secondsToMinutesAndSeconds, minutesToSeconds }
+import { minutesToSeconds, timeStringToSeconds, hoursToSeconds, secondsToMinutesAndSeconds } from './time'
+export {
+  secondsToMinutesAndSeconds,
+  minutesToSeconds,
+  hoursToSeconds,
+  timeStringToSeconds,
+
+}

@@ -1,3 +1,19 @@
+export function minutesToSeconds (minutes: number): number {
+  return minutes * 60
+}
+
+export function hoursToSeconds (minutes: number): number {
+  return minutes * 60 * 60
+}
+
+export function timeStringToSeconds (timeString: string): number {
+  // Split the time string into minutes and seconds
+  const [minutes, seconds] = timeString.split(':').map(Number);
+
+  // Convert minutes to seconds and add seconds
+  return (minutes * 60) + seconds;
+}
+
 export function secondsToMinutesAndSeconds (seconds: number) {
   // Ensure the input is a non-negative number
   seconds = Math.max(0, seconds);

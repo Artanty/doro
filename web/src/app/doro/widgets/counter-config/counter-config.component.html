@@ -10,6 +10,13 @@
           <input class="formControl__control wide" type="text" [formControlName]="'scheduleName'">
 <!--          <div class="formControl__append"></div>-->
         </div>
+        <div class="formControl double">
+          <div class="formControl__prepend">Период</div>
+          <input class="formControl__control double" type="text" [formControlName]="'periodStart'">
+          <div class="formControl__append">-</div>
+          <input class="formControl__control double" type="text" [formControlName]="'periodEnd'">
+        </div>
+
         <div class="formControl">
           <div class="formControl__prepend">Работа</div>
           <input class="formControl__control" type="number" [formControlName]="'workLength'">

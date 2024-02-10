@@ -43,6 +43,8 @@ export class CounterConfigComponent implements OnInit {
   ngOnInit (): void {
     const data = [{
       scheduleName: 'Расписание по умолчанию',
+      periodStart: '10:00',
+      periodEnd: '18:30',
       workLength: 25,
       restLength: 5,
       bigRestLength: 15,
@@ -52,6 +54,8 @@ export class CounterConfigComponent implements OnInit {
     data.forEach(timerConfig => {
       const timerConfigFg = this.fb.group({
         scheduleName: [timerConfig.scheduleName],
+        periodStart: [timerConfig.periodStart],
+        periodEnd: [timerConfig.periodEnd],
         workLength: [timerConfig.workLength],
         restLength: [timerConfig.restLength],
         bigRestLength: [timerConfig.bigRestLength],
