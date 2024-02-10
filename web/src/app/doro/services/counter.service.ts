@@ -13,6 +13,10 @@ import {
   zip
 } from "rxjs";
 import {HttpClient} from "@angular/common/http";
+import {
+  fetchDataSequentially,
+  TEndpointsWithDepsResponse
+} from "../helpers/fetchDataSequentially";
 
 @Injectable({
   providedIn: 'root'
@@ -124,5 +128,37 @@ export class CounterService {
   getActiveScheduleEvent () {
     const eventId = this.Store.getScheduleConfig()?.scheduleEvent_id
     return eventId ? this.Store.getScheduleEventById(eventId) : null
+  }
+
+  nextActionHandler(nextAction: string | string[]) {
+    console.log('nextActionHandler')
+    if (Array.isArray(nextAction)) {
+      fetchDataSequentially(nextAction).subscribe({
+        next: (res: TEndpointsWithDepsResponse) => {
+          if (res.callback) {
+            this[res.callback as keyof CounterService](res.response)
+          }
+
+        }
+      });
+    } else {
+      switch (nextAction) {
+        case 'getScheduleConfig':
+          this.getScheduleConfig()
+          break;
+        default:
+          console.log('nextActionHandler - no action')
+          break;
+      }
+    }
+  }
+  getScheduleConfig() {
+    this.http.post('http://localhost:3000/getScheduleConfig', null)
+      .subscribe((res: any) => {
+        const savedScheduleConfig = this.Store.getScheduleConfig()
+        if (savedScheduleConfig === null || savedScheduleConfig?.hash !== res.hash) {
+          this.Store.setScheduleConfig(res)
+        }
+      })
   }
 }

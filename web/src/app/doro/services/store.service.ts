@@ -19,6 +19,7 @@ export class StoreService {
   private currentScheduleEvent$: BehaviorSubject<any> = new BehaviorSubject(null)
   private viewState$: BehaviorSubject<any> = new BehaviorSubject('counterConfig')
   private tick$: BehaviorSubject<Nullable<ITick>> = new BehaviorSubject<Nullable<ITick>>(null)
+  private clientId: string | null = null
 
   constructor() {
     console.log('Store created')
@@ -97,6 +98,14 @@ export class StoreService {
   }
   public listenTick (): Observable<Nullable<ITick>> {
     return this.tick$.asObservable()
+  }
+
+  public setClientId (data: string | null) {
+    this.clientId = data
+  }
+
+  public getClientId (): string | null {
+    return this.clientId
   }
 
 }
