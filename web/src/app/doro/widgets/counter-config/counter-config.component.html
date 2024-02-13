@@ -5,11 +5,9 @@
       <div class="form"
            *ngFor="let _ of counterConfigFa.controls; let i = index"
            [formGroupName]="i">
-        <div class="formControl wide">
-<!--          <div class="formControl__prepend"></div>-->
-          <input class="formControl__control wide" type="text" [formControlName]="'scheduleName'">
-<!--          <div class="formControl__append"></div>-->
-        </div>
+<!--        <div class="formControl wide">-->
+<!--          <input class="formControl__control wide" type="text" [formControlName]="'scheduleName'">-->
+<!--        </div>-->
         <div class="formControl double">
           <div class="formControl__prepend">Период</div>
           <input class="formControl__control double" type="text" [formControlName]="'periodStart'">

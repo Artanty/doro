@@ -17,7 +17,7 @@ export class StoreService {
   private scheduleEvents$: BehaviorSubject<IScheduleEvent[]> = new BehaviorSubject<IScheduleEvent[]>([])
   // private selectedScheduleEvent$: BehaviorSubject<any> = new BehaviorSubject(null)
   private currentScheduleEvent$: BehaviorSubject<any> = new BehaviorSubject(null)
-  private viewState$: BehaviorSubject<any> = new BehaviorSubject('counterConfig')
+  private viewState$: BehaviorSubject<any> = new BehaviorSubject('counter') // eventList
   private tick$: BehaviorSubject<Nullable<ITick>> = new BehaviorSubject<Nullable<ITick>>(null)
   private clientId: string | null = null
 

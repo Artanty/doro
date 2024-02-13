@@ -14,6 +14,8 @@ import { EventListComponent} from './widgets/event-list/event-list.component'
 import { NavigationComponent } from './components/navigation/navigation.component';
 import { SseService } from './services/sse.service';
 import {CounterConfigComponent} from "./widgets/counter-config/counter-config.component";
+import {RouterModule} from "@angular/router";
+import {HttpClientModule} from "@angular/common/http";
 
 function initConfigActivator (counterServ: CounterService) {
   return () => counterServ.scheduleConfigActivator()
@@ -34,15 +36,24 @@ function initEventSource (sseServ: SseService) {
   ],
   imports: [
     CommonModule,
-    BrowserModule,
-    BrowserAnimationsModule,
+    // BrowserModule,
+    // BrowserAnimationsModule,
     ReactiveFormsModule,
     FormsModule,
     AudioComponent,
+    RouterModule.forChild([
+      {
+        path: '',
+        component: DoroComponent
+      }
+    ]),
+
+    // HttpClientModule
   ],
   exports: [
     DoroComponent,
     MyCustomElementComponent,
+
   ],
   providers: [
     {
@@ -51,18 +62,18 @@ function initEventSource (sseServ: SseService) {
       deps: [CounterService],
       multi: true
     },
-    {
-      provide: APP_INITIALIZER,
-      useFactory: initEventSource,
-      deps: [SseService],
-      multi: true
-
-    },
-    provideAnimations(),
+    // {
+    //   provide: APP_INITIALIZER,
+    //   useFactory: initEventSource,
+    //   deps: [SseService],
+    //   multi: true
+    // },
+    // provideAnimations(),
   ],
   schemas: [ CUSTOM_ELEMENTS_SCHEMA ],
 })
 export class DoroModule implements DoBootstrap {
+// export class DoroModule  {
   constructor(private injector: Injector) {}
   ngDoBootstrap(appRef: ApplicationRef) {
     const customElement = createCustomElement(MyCustomElementComponent, { injector: this.injector });

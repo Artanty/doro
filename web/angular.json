@@ -68,11 +68,11 @@
 					"builder": "ngx-build-plus:dev-server",
 					"configurations": {
 						"production": {
-							"browserTarget": "counter:build:production",
+							"buildTarget": "counter:build:production",
 							"extraWebpackConfig": "webpack.prod.config.js"
 						},
 						"development": {
-							"browserTarget": "counter:build:development"
+							"buildTarget": "counter:build:development"
 						}
 					},
 					"defaultConfiguration": "development",
@@ -85,7 +85,7 @@
 				"extract-i18n": {
 					"builder": "ngx-build-plus:extract-i18n",
 					"options": {
-						"browserTarget": "counter:build",
+						"buildTarget": "counter:build",
 						"extraWebpackConfig": "webpack.config.js"
 					}
 				},

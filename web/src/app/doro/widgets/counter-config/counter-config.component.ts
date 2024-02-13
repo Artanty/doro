@@ -13,6 +13,7 @@ import {
   debounceTime,
   distinctUntilChanged
 } from "rxjs";
+import {CounterConfigService} from "../../services/counter-config.service";
 
 @Component({
   selector: 'app-counter-config',
@@ -27,6 +28,7 @@ export class CounterConfigComponent implements OnInit {
   constructor(
     @Inject(FormBuilder) private fb: FormBuilder,
     @Inject(ChangeDetectorRef) private cdr: ChangeDetectorRef,
+    @Inject(CounterConfigService) private CounterConfigServ: CounterConfigService
   ){
     this.counterConfigForm = this.fb.group({
       counterConfigFa: this.fb.array([])
@@ -42,7 +44,7 @@ export class CounterConfigComponent implements OnInit {
   }
   ngOnInit (): void {
     const data = [{
-      scheduleName: 'Расписание по умолчанию',
+      // scheduleName: 'Расписание по умолчанию',
       periodStart: '10:00',
       periodEnd: '18:30',
       workLength: 25,
@@ -53,7 +55,7 @@ export class CounterConfigComponent implements OnInit {
     }]
     data.forEach(timerConfig => {
       const timerConfigFg = this.fb.group({
-        scheduleName: [timerConfig.scheduleName],
+        scheduleName: 'default',//[timerConfig.scheduleName],
         periodStart: [timerConfig.periodStart],
         periodEnd: [timerConfig.periodEnd],
         workLength: [timerConfig.workLength],
@@ -69,6 +71,7 @@ export class CounterConfigComponent implements OnInit {
   }
 
   handleCreate() {
-    console.log('save')
+    console.log(this.counterConfigForm.getRawValue())
+    // this.CounterConfigServ.fromCounterConfigToEventList()
   }
 }
