@@ -7,7 +7,8 @@ import { ITick } from '../models/tick.model';
 import { Nullable, Undefinable } from '../models/_helper-types';
 import { IScheduleConfig } from '../models/scheduleConfig.model';
 import { IScheduleEvent } from '../models/scheduleEvent.model';
-import {assureArray} from "../../helpers";
+import {assureArray} from "../helpers";
+
 
 @Injectable({
   providedIn: 'root'

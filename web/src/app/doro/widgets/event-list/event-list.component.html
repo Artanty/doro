@@ -21,7 +21,7 @@
         <!--      <span>{{ getHoursAndMinutes(el.timeFrom) }}</span>-->
         <!--      <span>{{ getHoursAndMinutes(el.timeTo) }}</span>-->
         <div class="buttons">
-          <a class="closeBtn">
+          <a class="closeBtn" (click)="deleteScheduleEvent(el)">
             <svg width="20px" height="20px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <g>
                 <circle cx="12" cy="11" r="9" />

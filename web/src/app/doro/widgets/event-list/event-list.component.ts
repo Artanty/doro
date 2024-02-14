@@ -28,6 +28,7 @@ import { Nullable } from '../../models/_helper-types';
 import { ITick } from '../../models/tick.model';
 import { IScheduleEvent, IScheduleEventView } from '../../models/scheduleEvent.model';
 import {ScheduleEventService} from "../../services/schedule-event.service";
+import {deleteProps} from "../../helpers";
 
 @Component({
   selector: 'app-event-list',
@@ -108,6 +109,15 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges{
     this.ScheduleEventServ.createScheduleEvent(data).subscribe((res: any) => {
       console.log(res)
     })
+  }
+
+  public deleteScheduleEvent (data: IScheduleEventView) {
+    const reqData = deleteProps(data, ['isActive', 'timeLength', 'isPlaying', 'timeLeft']) as IScheduleEvent
+
+    this.ScheduleEventServ.deleteScheduleEvent(reqData)
+      .subscribe((res: any) => {
+        console.log(res)
+      })
   }
 
   getDiffInMinutes (date1: string, date2: string) {

@@ -18,18 +18,22 @@ export class ScheduleEventService {
     @Inject(StoreService) private StoreServ: StoreService
   ) { }
 
-  createScheduleEvent (data: any) {
-    return this.http.post('http://localhost:3000/scheduleEvent/create', data)
+  createScheduleEvent (data: Partial<IScheduleEvent>) {
+    return this.http.post<IScheduleEvent>('http://localhost:3000/scheduleEvent/create', data)
       .pipe(
-        tap((res: any) => {
+        tap((res: IScheduleEvent) => {
           this.StoreServ.addScheduleEvents(res)
         })
       )
-      // .subscribe((res: any) => {
-      //   console.log(res)
-      //   // const event = this.Store.getScheduleEventById(res?.scheduleEvent_id)
-      //   // this.Store.setCurrentScheduleEvent(event)
-      // })
+  }
+
+  deleteScheduleEvent (data: IScheduleEvent) {
+    return this.http.post<any>('http://localhost:3000/scheduleEvent/delete', data)
+      .pipe(
+        tap((res: any) => {
+          // remove from store
+        })
+      )
   }
 
   getLastScheduleEvent (scheduleId?: number) {
