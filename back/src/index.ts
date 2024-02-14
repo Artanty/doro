@@ -32,7 +32,8 @@ import ScheduleEventController from "./controllers/scheduleEvent";
 import ScheduleController from "./controllers/schedule";
 import {activateScheduleConfig} from "./dbActions/activateScheduleConfig";
 import { VariableWatcher } from './utils/variableWather';
-import ClientController from './controllers/ClientController';
+import ClientController from "./controllers/clientController";
+
 // import {rr} from "./dbActions/saveState";
 const app: Application  = express();
 // connection;
@@ -427,6 +428,18 @@ app.post('/scheduleConfig/:action',async (req, res) => {
     if (action === 'changePlayingEvent') {
         response = await controller.changePlayingEvent(req.body.scheduleConfigId, req.body.scheduleEventId, req.body.scheduleId)
     }
+    return res.send(response);
+})
+
+app.post('/scheduleEvent/:action',async (req, res) => {
+    const action = req.params.action;
+    const controller = new ScheduleEventController()
+    let response = null
+
+    if (action === 'create') {
+        response = await controller.createScheduleEvent(req.body)
+    }
+
     return res.send(response);
 })
 
