@@ -27,7 +27,7 @@ export class SseService {
       }
     }).subscribe({
       next: (res: any) => {
-        console.log(res)
+        // console.log(res)
         if (res.nextAction) {
           this.CounterServ.nextActionHandler(res.nextAction)
         }

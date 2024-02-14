@@ -13,6 +13,7 @@ import {
 } from "rxjs";
 
 import {
+  add,
   differenceInMinutes,
   format,
   secondsToMinutes
@@ -26,6 +27,7 @@ import { IScheduleConfig } from '../../models/scheduleConfig.model';
 import { Nullable } from '../../models/_helper-types';
 import { ITick } from '../../models/tick.model';
 import { IScheduleEvent, IScheduleEventView } from '../../models/scheduleEvent.model';
+import {ScheduleEventService} from "../../services/schedule-event.service";
 
 @Component({
   selector: 'app-event-list',
@@ -42,7 +44,8 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges{
     private cdr: ChangeDetectorRef,
     private http: HttpClient,
     @Inject(CounterService) private CounterServ: CounterService,
-    @Inject(SseService) private SseServ: SseService
+    @Inject(SseService) private SseServ: SseService,
+    @Inject(ScheduleEventService) private ScheduleEventServ: ScheduleEventService
   ) {}
 
   tracker(_: any, item: any): any{
@@ -91,6 +94,20 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges{
 
   ngOnChanges(changes: any) {
     console.log(changes)
+  }
+
+  public addNewScheduleEvent () {
+    const lastScheduleEvent = this.ScheduleEventServ.getLastScheduleEvent()
+    const data = {
+      name: 'Новое событие',
+      timeFrom: new Date(lastScheduleEvent.timeTo).toISOString(),
+      timeTo: add(new Date(lastScheduleEvent.timeTo), { minutes: 30 }).toISOString(),
+      eventType: 'default',
+      schedule_id: lastScheduleEvent.schedule_id
+    }
+    this.ScheduleEventServ.createScheduleEvent(data).subscribe((res: any) => {
+      console.log(res)
+    })
   }
 
   getDiffInMinutes (date1: string, date2: string) {

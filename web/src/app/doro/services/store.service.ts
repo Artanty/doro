@@ -7,6 +7,7 @@ import { ITick } from '../models/tick.model';
 import { Nullable, Undefinable } from '../models/_helper-types';
 import { IScheduleConfig } from '../models/scheduleConfig.model';
 import { IScheduleEvent } from '../models/scheduleEvent.model';
+import {assureArray} from "../../helpers";
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +18,7 @@ export class StoreService {
   private scheduleEvents$: BehaviorSubject<IScheduleEvent[]> = new BehaviorSubject<IScheduleEvent[]>([])
   // private selectedScheduleEvent$: BehaviorSubject<any> = new BehaviorSubject(null)
   private currentScheduleEvent$: BehaviorSubject<any> = new BehaviorSubject(null)
-  private viewState$: BehaviorSubject<any> = new BehaviorSubject('counter') // eventList
+  private viewState$: BehaviorSubject<any> = new BehaviorSubject('eventList') // eventList  counter
   private tick$: BehaviorSubject<Nullable<ITick>> = new BehaviorSubject<Nullable<ITick>>(null)
   private clientId: string | null = null
 
@@ -53,6 +54,11 @@ export class StoreService {
   }
   public getScheduleEventById (id: number): Undefinable<IScheduleEvent> {
     return this.scheduleEvents$.value?.find((el: any)=>el.id === id)
+  }
+  public addScheduleEvents (data: IScheduleEvent | IScheduleEvent[]): void {
+    let items = this.getScheduleEvents()
+    items = [...items, ...assureArray(data)]
+    this.setScheduleEvents(items)
   }
   public listenScheduleEvents (): Observable<IScheduleEvent[]> {
     return this.scheduleEvents$.asObservable()
