@@ -67,6 +67,13 @@ export class StoreService {
     items = [...items, ...assureArray(data)]
     this.setScheduleEvents(items)
   }
+  public removeScheduleEvents (data: IScheduleEvent | IScheduleEvent[]): void {
+    let items = JSON.parse(JSON.stringify(this.getScheduleEvents()))
+    items = items.filter((el: IScheduleEvent) => {
+      return !assureArray(data).map((el: IScheduleEvent) => el.id).includes(el.id)
+    })
+    this.setScheduleEvents(items)
+  }
   public listenScheduleEvents (): Observable<IScheduleEvent[]> {
     return this.scheduleEvents$.asObservable()
   }

@@ -31,7 +31,7 @@ export class ScheduleEventService {
     return this.http.post<any>('http://localhost:3000/scheduleEvent/delete', data)
       .pipe(
         tap((res: any) => {
-          // remove from store
+          this.StoreServ.removeScheduleEvents(data)
         })
       )
   }
