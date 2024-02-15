@@ -1,5 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { StoreService } from '../../services/store.service';
+import {TTab} from "../../models/app.model";
 
 @Component({
   selector: 'app-navigation',
@@ -11,7 +12,7 @@ export class NavigationComponent {
     @Inject(StoreService) private StoreServ: StoreService
   ){}
 
-  handleClick (data: any) {
+  handleClick (data: TTab) {
     this.StoreServ.setViewState(data)
   }
 

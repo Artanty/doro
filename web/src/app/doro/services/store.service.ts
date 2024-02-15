@@ -9,6 +9,11 @@ import { IScheduleConfig } from '../models/scheduleConfig.model';
 import { IScheduleEvent } from '../models/scheduleEvent.model';
 import {assureArray} from "../helpers";
 
+import {
+  TConnectionState,
+  TTab
+} from "../models/app.model";
+
 
 @Injectable({
   providedIn: 'root'
@@ -19,9 +24,10 @@ export class StoreService {
   private scheduleEvents$: BehaviorSubject<IScheduleEvent[]> = new BehaviorSubject<IScheduleEvent[]>([])
   // private selectedScheduleEvent$: BehaviorSubject<any> = new BehaviorSubject(null)
   private currentScheduleEvent$: BehaviorSubject<any> = new BehaviorSubject(null)
-  private viewState$: BehaviorSubject<any> = new BehaviorSubject('eventList') // eventList  counter
+  private viewState$: BehaviorSubject<TTab> = new BehaviorSubject<TTab>('EVENT_LIST') // eventList  counter
   private tick$: BehaviorSubject<Nullable<ITick>> = new BehaviorSubject<Nullable<ITick>>(null)
   private clientId: string | null = null
+  private connectionState$ = new BehaviorSubject<TConnectionState>('LOADING')
 
   constructor() {
     console.log('Store created')
@@ -87,13 +93,13 @@ export class StoreService {
     return this.currentScheduleEvent$.asObservable()
   }
 
-  public setViewState (data: any) {
+  public setViewState (data: TTab) {
     this.viewState$.next(data)
   }
-  public getViewState ():  any {
+  public getViewState (): TTab {
     return this.viewState$.value
   }
-  public listenViewState (): Observable<any> {
+  public listenViewState (): Observable<TTab> {
     return this.viewState$.asObservable()
   }
 
@@ -115,4 +121,15 @@ export class StoreService {
     return this.clientId
   }
 
+  public setConnectionState (data: TConnectionState) {
+    if (this.getConnectionState() !== data) {
+      this.connectionState$.next(data)
+    }
+  }
+  public getConnectionState (): TConnectionState {
+    return this.connectionState$.value
+  }
+  public listenConnectionState (): Observable<TConnectionState> {
+    return this.connectionState$.asObservable()
+  }
 }

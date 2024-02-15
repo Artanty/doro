@@ -16,6 +16,8 @@ import { SseService } from './services/sse.service';
 import {CounterConfigComponent} from "./widgets/counter-config/counter-config.component";
 import {RouterModule} from "@angular/router";
 import {HttpClientModule} from "@angular/common/http";
+import {NoiseComponent} from "./components/noise/noise.component";
+import {LoadingComponent} from "./components/loading/loading.component";
 
 function initConfigActivator (counterServ: CounterService) {
   return () => counterServ.scheduleConfigActivator()
@@ -32,7 +34,9 @@ function initEventSource (sseServ: SseService) {
     MyCustomElementComponent,
     EventListComponent,
     NavigationComponent,
-    CounterConfigComponent
+    CounterConfigComponent,
+    NoiseComponent,
+    LoadingComponent
   ],
   imports: [
     CommonModule,

@@ -1,0 +1,101 @@
+html,
+body,
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.loading {
+  height: 100%;
+  width: 100%;
+  background-color: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.pacman {
+  height: 100px;
+  width: 280px;
+  /* background-color: #fff; */
+  position: relative;
+}
+
+.pacman::before,
+.pacman::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-width: 50px;
+  border-style: solid;
+  border-radius: 999px;
+  animation-duration: 0.2s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+.pacman::before {
+  animation-name: pacman-down;
+  border-color: yellow transparent yellow yellow;
+}
+
+.pacman::after {
+  animation-name: pacman-up;
+  border-color: transparent transparent yellow yellow;
+}
+
+.pacman>div {
+  position: absolute;
+  top: 40px;
+  right: 0;
+  width: 20px;
+  height: 20px;
+  background-color: yellow;
+  border-radius: 999px;
+  animation-name: slide;
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+
+.pacman>div:nth-of-type(2) {
+  animation-delay: 0.33s;
+}
+
+.pacman>div:nth-of-type(3) {
+  animation-delay: 0.66s;
+}
+
+
+@keyframes pacman-down {
+  0% {
+    transform: rotate(0);
+  }
+
+  100% {
+    transform: rotate(45deg);
+  }
+}
+
+@keyframes pacman-up {
+  0% {
+    transform: rotate(0);
+  }
+
+  100% {
+    transform: rotate(-45deg);
+  }
+}
+
+@keyframes slide {
+  0% {
+    opacity: 0.5;
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-180px);
+  }
+}

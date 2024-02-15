@@ -1,16 +1,31 @@
-<div class="wrapper">
-  <div class="slide" @animationTriggerName *ngIf="(viewState | async) === 'counter'">
-    <app-counter></app-counter>
-  </div>
+<ng-container *ngIf="connectionState$ | async">
+  <div class="wrapper" [ngSwitch]="connectionState">
+    <div class="slide" *ngSwitchCase="'DISCONNECTED'">
+      <app-noise (reconnectAway)="reconnect()"></app-noise>
+    </div>
+    <div class="slide" *ngSwitchCase="'LOADING'">
+      <app-loading></app-loading>
+    </div>
+    <div class="slide"
+         @animationTriggerName
+         *ngIf="(viewState$ | async) === 'COUNTER'">
+      <app-counter></app-counter>
+    </div>
 
-  <div class="slide" @animationTriggerName *ngIf="(viewState | async) === 'eventList'">
-    <app-event-list></app-event-list>
-  </div>
+    <div class="slide"
+         @animationTriggerName
+         *ngIf="(viewState$ | async) === 'EVENT_LIST'">
+      <app-event-list></app-event-list>
+    </div>
 
-  <div class="slide" @animationTriggerName *ngIf="(viewState | async) === 'counterConfig'">
-    <app-counter-config></app-counter-config>
+    <div class="slide"
+         @animationTriggerName
+         *ngIf="(viewState$ | async) === 'COUNTER_CONFIG'">
+      <app-counter-config></app-counter-config>
+    </div>
+
   </div>
-</div>
+</ng-container>
 
 
 
