@@ -18,6 +18,7 @@ import {RouterModule} from "@angular/router";
 import {HttpClientModule} from "@angular/common/http";
 import {NoiseComponent} from "./components/noise/noise.component";
 import {LoadingComponent} from "./components/loading/loading.component";
+import {ScrollDirective} from "./directives/scroll.directive";
 
 function initConfigActivator (counterServ: CounterService) {
   return () => counterServ.scheduleConfigActivator()
@@ -38,22 +39,23 @@ function initEventSource (sseServ: SseService) {
     NoiseComponent,
     LoadingComponent
   ],
-  imports: [
-    CommonModule,
-    // BrowserModule,
-    // BrowserAnimationsModule,
-    ReactiveFormsModule,
-    FormsModule,
-    AudioComponent,
-    RouterModule.forChild([
-      {
-        path: '',
-        component: DoroComponent
-      }
-    ]),
+    imports: [
+        CommonModule,
+        // BrowserModule,
+        // BrowserAnimationsModule,
+        ReactiveFormsModule,
+        FormsModule,
+        AudioComponent,
+        RouterModule.forChild([
+            {
+                path: '',
+                component: DoroComponent
+            }
+        ]),
+        ScrollDirective,
 
-    // HttpClientModule
-  ],
+        // HttpClientModule
+    ],
   exports: [
     DoroComponent,
     MyCustomElementComponent,

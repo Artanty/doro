@@ -6,7 +6,10 @@ import {HttpClient} from "@angular/common/http";
 import {StoreService} from "./store.service";
 import {IScheduleEvent} from "../models/scheduleEvent.model";
 import {differenceInSeconds} from "date-fns";
-import {tap} from "rxjs";
+import {
+  map,
+  tap
+} from "rxjs";
 
 @Injectable({
   providedIn: 'root'
@@ -29,11 +32,6 @@ export class ScheduleEventService {
 
   deleteScheduleEvent (data: IScheduleEvent) {
     return this.http.post<any>('http://localhost:3000/scheduleEvent/delete', data)
-      .pipe(
-        tap((res: any) => {
-          this.StoreServ.removeScheduleEvents(data)
-        })
-      )
   }
 
   getLastScheduleEvent (scheduleId?: number) {
@@ -41,7 +39,7 @@ export class ScheduleEventService {
     eventListClone.sort((a, b) => {
       return differenceInSeconds(new Date(a.timeTo), new Date(b.timeTo))
     })
-    return eventListClone[0]
+    return eventListClone[eventListClone.length - 1]
   }
 
 }

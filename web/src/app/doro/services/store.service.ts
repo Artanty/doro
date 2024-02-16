@@ -30,7 +30,7 @@ export class StoreService {
   private connectionState$ = new BehaviorSubject<TConnectionState>('LOADING')
 
   constructor() {
-    console.log('Store created')
+    // console.log('Store created')
   }
 
   public setScheduleConfig (data: Nullable<IScheduleConfig>) {

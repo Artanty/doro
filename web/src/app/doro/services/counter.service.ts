@@ -55,17 +55,17 @@ export class CounterService {
 
   onReceiveScheduleConfig (data: any) {
     this.Store.setScheduleConfig(data)
-    console.log(this.Store.getScheduleConfig())
+    // console.log(this.Store.getScheduleConfig())
   }
 
   onReceiveSchedule (data: any) {
     this.Store.setSchedule(data)
-    console.log(this.Store.getSchedule())
+    // console.log(this.Store.getSchedule())
   }
 
   onReceiveScheduleEvents (data: any) {
     this.Store.setScheduleEvents(data)
-    console.log(this.Store.getScheduleEvents())
+    // console.log(this.Store.getScheduleEvents())
   }
 
   startEvent (eventId: number) {
@@ -119,7 +119,7 @@ export class CounterService {
       scheduleId: this.Store.getSchedule()?.id
     })
       .subscribe((res: any) => {
-        console.log(res)
+        // console.log(res)
         const event = this.Store.getScheduleEventById(res?.scheduleEvent_id)
         this.Store.setCurrentScheduleEvent(event)
       })
@@ -131,7 +131,7 @@ export class CounterService {
   }
 
   nextActionHandler(nextAction: string | string[]) {
-    console.log('nextActionHandler')
+    // console.log('nextActionHandler')
     if (Array.isArray(nextAction)) {
       fetchDataSequentially(nextAction).subscribe({
         next: (res: TEndpointsWithDepsResponse) => {

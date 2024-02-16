@@ -5,11 +5,20 @@ import {
   Component,
   Inject,
   OnChanges,
-  OnInit
+  OnInit,
+  QueryList,
+  ViewChildren
 } from '@angular/core';
 
 import {
   combineLatest,
+  concatMap,
+  delay,
+  from,
+  map,
+  switchMap,
+  tap,
+  timer,
 } from "rxjs";
 
 import {
@@ -37,7 +46,7 @@ import {deleteProps} from "../../helpers";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EventListComponent implements OnInit, AfterViewInit, OnChanges{
-
+  @ViewChildren('myElement') elements: QueryList<any> | undefined;
   scheduleEvents: IScheduleEventView[] = []
 
   constructor (
@@ -80,6 +89,7 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges{
         }
         this.setCurrentSheduleEvent(this.scheduleEvents)
         this.cdr.detectChanges()
+        this.sequentialFadeIn()
       })
   }
 
@@ -90,11 +100,12 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges{
 
   ngAfterViewInit() {
     // this.cdr.detectChanges()
-    console.log('child ngAfterViewInit()')
+    // console.log('child ngAfterViewInit()')
+
   }
 
   ngOnChanges(changes: any) {
-    console.log(changes)
+    // console.log(changes)
   }
 
   public addNewScheduleEvent () {
@@ -108,16 +119,27 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges{
     }
     this.ScheduleEventServ.createScheduleEvent(data).subscribe((res: any) => {
       console.log(res)
+      const lastElementIndex = this.StoreServ.getScheduleEvents()?.length - 1
+      this.scrollToElement(lastElementIndex)
     })
   }
 
-  public deleteScheduleEvent (data: IScheduleEventView) {
+  public deleteScheduleEvent (data: IScheduleEventView, index: number) {
     const reqData = deleteProps(data, ['isActive', 'timeLength', 'isPlaying', 'timeLeft']) as IScheduleEvent
 
     this.ScheduleEventServ.deleteScheduleEvent(reqData)
-      .subscribe((res: any) => {
-        console.log(res)
-      })
+      .pipe(
+        tap(() => {
+          const element = this.elements?.toArray()[index].nativeElement;
+          if (element) {
+            element.classList.add('fade-out');
+          }
+        }),
+        delay(1000),
+        concatMap(async () => this.StoreServ.removeScheduleEvents(reqData))
+      )
+      .subscribe()
+
   }
 
   getDiffInMinutes (date1: string, date2: string) {
@@ -158,5 +180,35 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges{
 
   stopPropagation (event: Event){
     event.stopPropagation()
+  }
+
+  private scrollToElement(index: number): void {
+    const element = this.elements?.toArray()[index].nativeElement;
+    element.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  private sequentialFadeIn () {
+    if (this.elements?.toArray()?.length) {
+      const elements$ = from(this.elements?.toArray())
+      // Map each element to an observable that emits after a delay
+      const fadeIn$ = elements$.pipe(
+        concatMap((el: any) =>
+          // Emit a value after a delay
+          timer(50).pipe(
+            // Map to the element
+            // the context of the RxJS concatMap operator, the map(() => el) part is used to transform each emitted value from the inner observable (in this case, the timer) into a new value.
+            // When timer(index * 1000) emits a value (after the specified delay), it emits a numerical value (usually 0 since we're not specifying any value).
+            // We then use the map(() => el) operator to transform this emitted value into the original element el itself. This means that instead of emitting the numerical value from the timer, we emit the el, which is the element we want to add the fade-in class to.
+            // So essentially, map(() => el) is a way of converting the emitted value from the inner observable (the timer) into the element itself, allowing us to work directly with the element in the subsequent steps of the observable chain.
+            map(() => el)
+          )
+        )
+      );
+      // Subscribe to apply the fade-in effect
+      fadeIn$.subscribe((el: any) => {
+        el.nativeElement.classList.add('fade-in');
+      });
+    }
+
   }
 }

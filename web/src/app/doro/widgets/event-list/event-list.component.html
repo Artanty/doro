@@ -1,34 +1,8 @@
 <div class="container back">
-  <ul class="eventList">
-    <li *ngFor="let el of scheduleEvents; trackBy: tracker" (click)="handleSheduleEventClick(el)">
-      <div class="name" (click)="stopPropagation($event)">{{ el.name }}</div>
-      <div class="details" (click)="stopPropagation($event)">
-        <div class="time">
-          <ng-container *ngIf="!el.isPlaying">
-            <div class="time__data">
-              <span class="time__data__value">{{ el.timeLength }}</span>
-              <span class="time__data_suffix">мин</span>
-            </div>
-          </ng-container>
-          <ng-container *ngIf="el.isPlaying">
-            <div class="time__prefix">осталось</div>
-            <div class="time__data">
-              <span class="time__data__value">{{ el.timeLeft }}</span>
-              <span class="time__data_suffix">мин</span>
-            </div>
-          </ng-container>
-        </div>
-        <!--      <span>{{ getHoursAndMinutes(el.timeFrom) }}</span>-->
-        <!--      <span>{{ getHoursAndMinutes(el.timeTo) }}</span>-->
+  <ul class="eventList" appScroll>
+    <li *ngFor="let el of scheduleEvents; let i = index; trackBy: tracker" (click)="handleSheduleEventClick(el)" #myElement>
+      <div class="listItemInner">
         <div class="buttons">
-          <a class="closeBtn" (click)="deleteScheduleEvent(el)">
-            <svg width="20px" height="20px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <g>
-                <circle cx="12" cy="11" r="9" />
-                <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-9.414l2.828-2.829 1.415 1.415L13.414 12l2.829 2.828-1.415 1.415L12 13.414l-2.828 2.829-1.415-1.415L10.586 12 7.757 9.172l1.415-1.415L12 10.586z"/>
-              </g>
-            </svg>
-          </a>
           <a *ngIf="!el.isPlaying" (click)="handlePlay(el)" [class.isPaused]="el.isActive">
             <svg width="20px" height="20px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <circle cx="12" cy="11" r="9" />
@@ -46,12 +20,48 @@
             </svg>
           </a>
         </div>
-      </div>
-<!--      <button (click)="startEvent(el.id)">Начать</button>-->
-<!--      <button (click)="pauseEvent(el.id)">Пауза</button>-->
-<!--      <button (click)="resumeEvent(el.id)">Возобновить</button>-->
-<!--      <button (click)="stopEvent(el.id)">Сбросить</button>-->
+        <div class="nameWrapper">
+          <div class="name" (click)="stopPropagation($event)">{{ el.name }}</div>
+        </div>
+        <div class="details" (click)="stopPropagation($event)">
+          <div class="timeFromAndTo">
+            <div class="timeFrom">{{ el.timeFrom | date: ' HH:mm' }}</div>
+            <div class="timeTo">{{ el.timeTo | date: ' HH:mm' }}</div>
+          </div>
+          <div class="timeLengthAndCount">
+            <ng-container *ngIf="!el.isPlaying">
+              <div class="time__data">
+                <span class="time__data__value">{{ el.timeLength }}</span>
+                <span class="time__data_suffix"> '</span>
+              </div>
+            </ng-container>
+            <ng-container *ngIf="el.isPlaying">
+              <div class="time__data">
+<!--                <span class="time__prefix">- </span>-->
+                <span class="time__data__value">{{ el.timeLeft }}</span>
+                <span class="time__data__suffix"> '</span>
+              </div>
+            </ng-container>
+          </div>
+          <!--      -->
+          <!--      <span>{{ getHoursAndMinutes(el.timeTo) }}</span>-->
+          <div class="buttons">
+            <a class="closeBtn" (click)="deleteScheduleEvent(el, i)">
+              <svg width="20px" height="20px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <g>
+                  <circle cx="12" cy="11" r="9" />
+                  <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-9.414l2.828-2.829 1.415 1.415L13.414 12l2.829 2.828-1.415 1.415L12 13.414l-2.828 2.829-1.415-1.415L10.586 12 7.757 9.172l1.415-1.415L12 10.586z"/>
+                </g>
+              </svg>
+            </a>
 
+          </div>
+        </div>
+        <!--      <button (click)="startEvent(el.id)">Начать</button>-->
+        <!--      <button (click)="pauseEvent(el.id)">Пауза</button>-->
+        <!--      <button (click)="resumeEvent(el.id)">Возобновить</button>-->
+        <!--      <button (click)="stopEvent(el.id)">Сбросить</button>-->
+      </div>
     </li>
   </ul>
   <div class="controlsRow">
