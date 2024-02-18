@@ -81,12 +81,10 @@ export class CounterComponent implements OnInit {
 
   ngOnInit() {
     this.Store.listenCurrentScheduleEvent().subscribe((res: any)=>{
-      console.log(res)
       this.cdr.detectChanges()
     })
     setTimeout(() => {
       this.isVisible = false
-      console.log(this.isVisible)
       this.cdr.detectChanges()
     },2000)
     this.SseServ.listenTick().subscribe(

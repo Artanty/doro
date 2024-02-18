@@ -37,7 +37,10 @@ import {
   template: `
 <!--    <button (click)="trigger()">trigger</button>-->
 <!--[style.height]="height+'px'"-->
-    <div class="svg-item" [style.width]="width+'px'"  [style.font-size]="fontSize">
+    <div class="svg-item" [class.issetSuffix] = "issetSuffix"
+         [style.width]="width+'px'"
+         [style.height]="height+'px'"
+         [style.font-size]="fontSize">
 <!--      <input value="0"  wheelOn="integer" step="any" wheelDownNumber="1" wheelUpNumber="1">-->
 
       <svg width="100%" height="100%" viewBox="0 0 40 40" class="donut">
@@ -52,14 +55,15 @@ import {
         </g>
       </svg>
       <div class="inputContainer" #svg>
-        <div class="inputRow" attr.data-suffix="{{suffix}}">
+<!--        attr.data-suffix="{{suffix}}"-->
+        <div class="inputRow" >
           <input disabled *ngIf="!customValueView"
               [value]="_value"
                #visibleInput
                size="2"
                (input)="onInput($event)"
                draggable="false"
-               class="donutInput noselect"
+               class="donutInput noselect" [class.large]="!issetSuffix"
                id="donutInput"
 
           />
@@ -98,6 +102,7 @@ export class MyCustomElementComponent implements OnInit, AfterViewInit, OnDestro
   @Input() title: string = ''
   @Input() readonly: boolean = false
   @Input() customValueView: string = ''
+  @Input() issetSuffix: boolean = false
   constructor(
       @Inject(ElementRef) private eRef: ElementRef,
       @Inject(ChangeDetectorRef) private cdr: ChangeDetectorRef
@@ -112,7 +117,12 @@ export class MyCustomElementComponent implements OnInit, AfterViewInit, OnDestro
     value = Number(value)
     this.width = value
     this.height = value
-    this.fontSize = Math.round(value / 5) + 'px'
+    if (this.issetSuffix) {
+
+    } else {
+      this.fontSize = Math.round(value / 3) + 'px'
+    }
+
   }
 
   //get accessor

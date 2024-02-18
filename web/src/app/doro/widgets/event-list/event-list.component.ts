@@ -49,6 +49,8 @@ import {ScheduleEventService} from "../../services/schedule-event.service";
 export class EventListComponent implements OnInit, AfterViewInit, OnChanges{
   @ViewChildren('myElement') elements: QueryList<any> | undefined;
   scheduleEvents: IScheduleEventView[] = []
+  isControlsExpanded: boolean = false
+  eventTemplates: any[] = []
 
   constructor (
     @Inject(StoreService) public StoreServ: StoreService,
@@ -109,13 +111,13 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges{
     // console.log(changes)
   }
 
-  public addNewScheduleEvent () {
+  public addNewScheduleEvent (template: any) {
     const lastScheduleEvent = this.ScheduleEventServ.getLastScheduleEvent()
     const data = {
-      name: 'Новое событие',
+      name: template.eventName,
       timeFrom: new Date(lastScheduleEvent?.timeTo ?? new Date).toISOString(),
-      timeTo: add(new Date(lastScheduleEvent?.timeTo ?? new Date), { minutes: 30 }).toISOString(),
-      eventType: 'default',
+      timeTo: add(new Date(lastScheduleEvent?.timeTo ?? new Date), { minutes: template.eventLength }).toISOString(),
+      eventType: template.eventType,
       schedule_id: lastScheduleEvent?.schedule_id ?? this.StoreServ.getSchedule()?.id
     }
     this.ScheduleEventServ.createScheduleEvent(data).subscribe((res: any) => {
@@ -182,6 +184,11 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges{
     event.stopPropagation()
   }
 
+  toggleControlsRow () {
+    this.isControlsExpanded = !this.isControlsExpanded
+    this.cdr.detectChanges()
+  }
+
   private scrollToElement(index: number): void {
     const element = this.elements?.toArray()[index].nativeElement;
     element.scrollIntoView({ behavior: 'smooth' });
@@ -209,6 +216,10 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges{
         el.nativeElement.classList.add('fade-in');
       });
     }
+  }
 
+  updateEventTemplates (data: any) {
+    this.eventTemplates = data
+    this.cdr.detectChanges()
   }
 }

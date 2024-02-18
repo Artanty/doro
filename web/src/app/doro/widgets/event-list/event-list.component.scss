@@ -28,14 +28,14 @@
     height: 33px;
     border-radius: 35px;
     display: block;
-    opacity: 0; /* Initially make the element transparent */
+    opacity: 0;
     transition: opacity 0.4s ease, height 0.7s ease, transform 0.5s ease, margin-bottom 0.5s ease;;/* Apply transition effect */
 
     &.fade-in {
-      opacity: 1; /* Change opacity to fully visible when the 'fade-in' class is added */
+      opacity: 1;
     }
     &.fade-out {
-      opacity: 0; /* Change opacity to fully visible when the 'fade-in' class is added */
+      opacity: 0;
       transform: translateX(-300px);
       height: 0;
       margin-bottom: 0;
@@ -130,12 +130,48 @@
 }
 
 .controlsRow{
-  & a{
+  border-radius: 35px;
+  transition: min-height 0.5s linear;
+  display: flex;
+  justify-content: space-between;
+  & .expandableRow {
+    overflow: hidden;
+    height: 0;
+    transition: height 0.2s linear, transform 0.2s linear;
+    transform: translateY(30px);
+  }
+  &.expanded .expandableRow{
+    //height: 140px;
+    height: 100%;
+    transform: translateY(0px);
+  }
+  & .toggle__wrapper{
+    padding: 0 3px;
+    & a {
+      & svg g path {
+        fill: grey;
+      }
+      transition: transform 0.2s linear;
+      transform: rotate(0deg);
+    }
+  }
+  &.expanded .toggle__wrapper a {
+    transform: rotate(-180deg);
+  }
+  & .controlsInner{
+    padding: 3px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  & a {
     display: block;
+    width: 22px;
+    height: 22px;
     & svg  {
       cursor: pointer;
-      width: 33px;
-      height: 33px;
+      width: 22px;
+      height: 22px;
       & circle{
         fill: transparent;
       }
@@ -145,11 +181,33 @@
     }
   }
 }
-@keyframes fadeIn {
-  from {
-    opacity: 0; /* Start with transparency */
+
+.eventTemplate{
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  column-gap: 2px;
+  background: rgb(0 0 0 / 38%);
+  border-radius: 12px;
+  padding: 0px 4px 0px 0px;
+    & svg {
+
+      width: 22px;
+      height: 22px;
+
+      & circle {
+        fill: transparent;
+      }
+
+      & g path {
+        fill: #fff
+      }
+
   }
-  to {
-    opacity: 1; /* Fade to fully visible */
-  }
+}
+
+.visibleRow{
+  display: flex;
+  /* align-items: center; */
+  column-gap: 3px;
 }

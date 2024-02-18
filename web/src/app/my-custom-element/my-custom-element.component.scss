@@ -47,17 +47,9 @@ body {
 
 }
 .inputRow{
-  position: relative;
-  top: -0.65em;
   &:after{
-    //position: absolute;
-    //content: attr(data-suffix);
-    //left: 2em;
-    //top: 0;
-    //font-size: 0.9em;
     position: absolute;
     content: attr(data-suffix);
-    /* left: 2em; */
     bottom: -1em;
     font-size: 0.5em;
     width: 100%;
@@ -67,15 +59,6 @@ body {
     text-transform: lowercase;
     line-height: 1px;
   }
-  //&:before{
-  //  position: absolute;
-  //  //background: red;
-  //  content: '';
-  //  top: 0;
-  //  left:0;
-  //  width:100%;
-  //  height:100%;
-  //}
 }
 
 .donutInput {
@@ -85,10 +68,13 @@ body {
   text-align: center;
   display: block;
   font-size: 1em;
-  height: 1em;
+  //height: 1em;
   width: 3em;
   outline: none;
   font-family: 'Manrope', sans-serif;
+  &.large{
+    font-size: 1.6em;
+  }
 }
 
 .donut-ring {

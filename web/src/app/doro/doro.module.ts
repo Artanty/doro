@@ -19,6 +19,7 @@ import {HttpClientModule} from "@angular/common/http";
 import {NoiseComponent} from "./components/noise/noise.component";
 import {LoadingComponent} from "./components/loading/loading.component";
 import {ScrollDirective} from "./directives/scroll.directive";
+import {FormArrayComponent} from "./components/form-array/form-array.component";
 
 function initConfigActivator (counterServ: CounterService) {
   return () => counterServ.scheduleConfigActivator()
@@ -37,7 +38,8 @@ function initEventSource (sseServ: SseService) {
     NavigationComponent,
     CounterConfigComponent,
     NoiseComponent,
-    LoadingComponent
+    LoadingComponent,
+    FormArrayComponent
   ],
     imports: [
         CommonModule,
