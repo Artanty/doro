@@ -1,0 +1,16 @@
+.row{
+  display: flex;
+  column-gap: 7px;
+  align-items: center;
+}
+.control {
+  background: transparent;
+  border: 1px solid grey;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 11px;
+  height: 22px;
+}
+option {
+  color: #000;
+}
