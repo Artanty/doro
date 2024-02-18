@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, Inject } from '@angular/core';
 import { StoreService } from './doro/services/store.service';
+import {SERVER_URL} from "../../env";
 
 @Component({
   selector: 'app-root',
@@ -16,7 +17,7 @@ export class AppComponent {
   ){}
 
   test(testCase: number) {
-    this.http.get('http://localhost:3000/test?case=' + testCase)
+    this.http.get(`${SERVER_URL}/test?case=` + testCase)
       .subscribe((res: any) => {
         console.log(res)
       })

@@ -36,8 +36,9 @@ import { IScheduleConfig } from '../../models/scheduleConfig.model';
 import { Nullable } from '../../models/_helper-types';
 import { ITick } from '../../models/tick.model';
 import { IScheduleEvent, IScheduleEventView } from '../../models/scheduleEvent.model';
-import {ScheduleEventService} from "../../services/schedule-event.service";
+
 import {deleteProps} from "../../helpers";
+import {ScheduleEventService} from "../../services/schedule-event.service";
 
 @Component({
   selector: 'app-event-list',
@@ -112,13 +113,12 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges{
     const lastScheduleEvent = this.ScheduleEventServ.getLastScheduleEvent()
     const data = {
       name: 'Новое событие',
-      timeFrom: new Date(lastScheduleEvent.timeTo).toISOString(),
-      timeTo: add(new Date(lastScheduleEvent.timeTo), { minutes: 30 }).toISOString(),
+      timeFrom: new Date(lastScheduleEvent?.timeTo ?? new Date).toISOString(),
+      timeTo: add(new Date(lastScheduleEvent?.timeTo ?? new Date), { minutes: 30 }).toISOString(),
       eventType: 'default',
-      schedule_id: lastScheduleEvent.schedule_id
+      schedule_id: lastScheduleEvent?.schedule_id ?? this.StoreServ.getSchedule()?.id
     }
     this.ScheduleEventServ.createScheduleEvent(data).subscribe((res: any) => {
-      console.log(res)
       const lastElementIndex = this.StoreServ.getScheduleEvents()?.length - 1
       this.scrollToElement(lastElementIndex)
     })

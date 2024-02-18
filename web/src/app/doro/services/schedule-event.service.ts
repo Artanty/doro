@@ -10,6 +10,7 @@ import {
   map,
   tap
 } from "rxjs";
+import {SERVER_URL} from "../../../../env";
 
 @Injectable({
   providedIn: 'root'
@@ -22,7 +23,7 @@ export class ScheduleEventService {
   ) { }
 
   createScheduleEvent (data: Partial<IScheduleEvent>) {
-    return this.http.post<IScheduleEvent>('http://localhost:3000/scheduleEvent/create', data)
+    return this.http.post<IScheduleEvent>(`${SERVER_URL}/scheduleEvent/create`, data)
       .pipe(
         tap((res: IScheduleEvent) => {
           this.StoreServ.addScheduleEvents(res)
@@ -31,15 +32,15 @@ export class ScheduleEventService {
   }
 
   deleteScheduleEvent (data: IScheduleEvent) {
-    return this.http.post<any>('http://localhost:3000/scheduleEvent/delete', data)
+    return this.http.post<any>(`${SERVER_URL}/scheduleEvent/delete`, data)
   }
 
-  getLastScheduleEvent (scheduleId?: number) {
+  getLastScheduleEvent (scheduleId?: number): IScheduleEvent | undefined {
     const eventListClone: IScheduleEvent[] = JSON.parse(JSON.stringify(this.StoreServ.getScheduleEvents()))
     eventListClone.sort((a, b) => {
       return differenceInSeconds(new Date(a.timeTo), new Date(b.timeTo))
     })
+
     return eventListClone[eventListClone.length - 1]
   }
-
 }

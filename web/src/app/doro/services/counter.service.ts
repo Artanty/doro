@@ -17,6 +17,7 @@ import {
   fetchDataSequentially,
   TEndpointsWithDepsResponse
 } from "../helpers/fetchDataSequentially";
+import {SERVER_URL} from "../../../../env";
 
 @Injectable({
   providedIn: 'root'
@@ -40,7 +41,7 @@ export class CounterService {
         map(res => res?.[0]),
         switchMap((scheduleConfig: any) => {
           if (scheduleConfig.configIsActive === false) {
-            return this.http.post('http://localhost:3000/scheduleConfig/activate', { scheduleConfigId: scheduleConfig.id })
+            return this.http.post(`${SERVER_URL}/scheduleConfig/activate`, { scheduleConfigId: scheduleConfig.id })
           } else {
             return EMPTY
           }
@@ -69,7 +70,7 @@ export class CounterService {
   }
 
   startEvent (eventId: number) {
-    this.http.post('http://localhost:3000/scheduleConfig/playEvent', {
+    this.http.post(`${SERVER_URL}/scheduleConfig/playEvent`, {
       scheduleEventId: eventId,
       scheduleConfigId: this.Store.getScheduleConfig()?.id,
       scheduleId: this.Store.getSchedule()?.id
@@ -82,7 +83,7 @@ export class CounterService {
   }
 
   stopEvent (eventId: number) {
-    this.http.post('http://localhost:3000/scheduleConfig/stopEvent', {
+    this.http.post(`${SERVER_URL}/scheduleConfig/stopEvent`, {
       scheduleEventId: eventId,
       scheduleConfigId: this.Store.getScheduleConfig()?.id,
       scheduleId: this.Store.getSchedule()?.id
@@ -92,7 +93,7 @@ export class CounterService {
       })
   }
   pauseEvent (eventId: number) {
-    this.http.post('http://localhost:3000/scheduleConfig/pauseEvent', {
+    this.http.post(`${SERVER_URL}/scheduleConfig/pauseEvent`, {
       scheduleEventId: eventId,
       scheduleConfigId: this.Store.getScheduleConfig()?.id,
       scheduleId: this.Store.getSchedule()?.id
@@ -103,7 +104,7 @@ export class CounterService {
       })
   }
   resumeEvent (eventId: number) {
-    this.http.post('http://localhost:3000/scheduleConfig/resumeEvent', {
+    this.http.post(`${SERVER_URL}/scheduleConfig/resumeEvent`, {
       scheduleEventId: eventId,
       scheduleConfigId: this.Store.getScheduleConfig()?.id,
       scheduleId: this.Store.getSchedule()?.id
@@ -113,7 +114,7 @@ export class CounterService {
       })
   }
   changePlayingEvent (eventId: number) {
-    this.http.post('http://localhost:3000/scheduleConfig/changePlayingEvent', {
+    this.http.post(`${SERVER_URL}/scheduleConfig/changePlayingEvent`, {
       scheduleEventId: eventId,
       scheduleConfigId: this.Store.getScheduleConfig()?.id,
       scheduleId: this.Store.getSchedule()?.id
@@ -153,7 +154,7 @@ export class CounterService {
     }
   }
   getScheduleConfig() {
-    this.http.post('http://localhost:3000/getScheduleConfig', null)
+    this.http.post(`${SERVER_URL}/getScheduleConfig`, null)
       .subscribe((res: any) => {
         const savedScheduleConfig = this.Store.getScheduleConfig()
         if (savedScheduleConfig === null || savedScheduleConfig?.hash !== res.hash) {
