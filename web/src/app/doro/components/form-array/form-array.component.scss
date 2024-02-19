@@ -6,7 +6,7 @@
 .control {
   background: transparent;
   border: 1px solid grey;
-  border-radius: 4px;
+  border-radius: 25px;
   color: #fff;
   font-size: 11px;
   height: 22px;
@@ -27,3 +27,18 @@ option {
     //}
   }
 }
+input{
+  padding-left: 6px;
+}
+.saveNewItemButton{
+  & svg g path{
+    fill: grey;
+  }
+  &.valid{
+    & svg g path{
+      fill: #fff;
+    }
+  }
+}
+
+

@@ -15,7 +15,13 @@ import {
   FormGroup,
   ReactiveFormsModule
 } from "@angular/forms";
-import {debounceTime} from "rxjs";
+import {
+  debounceTime,
+  filter,
+  map,
+  of,
+  switchMap
+} from "rxjs";
 
 @Component({
   selector: 'app-form-array',
@@ -38,9 +44,13 @@ export class FormArrayComponent implements OnInit{
       timersConfigFa: this.fb.array([])
     });
     this.timersConfigForm.valueChanges
-      .pipe(debounceTime(300))
+      .pipe(
+        map((res: any) => {
+          return res.timersConfigFa.filter((el: any) => el.id)
+        })
+      )
       .subscribe(res => {
-        this.arrayAway.emit(res.timersConfigFa)
+        this.arrayAway.emit(res)
         // console.log(res.timersConfigFa)
     })
   }
@@ -52,23 +62,30 @@ export class FormArrayComponent implements OnInit{
   setForm () {
     const data = [
       {
-        eventConfigId: 1,
+        id: 1,
         eventName: 'Работа',
         eventType: 'work',
         eventLength: 25,
-        visibility: true
+        visibility: true,
       },
       {
-        eventConfigId: 2,
+        id: 2,
         eventName: 'Отдых',
         eventType: 'rest',
         eventLength: 5,
-        visibility: true
+        visibility: true,
+      },
+      {
+        id: null,
+        eventName: '',
+        eventType: 'default',
+        eventLength: 25,
+        visibility: true,
       }
     ]
     data.forEach(timerConfig => {
       const timerConfigFg = this.fb.group({
-        eventConfigId: [timerConfig.eventConfigId],
+        id: [timerConfig.id],
         eventName: [timerConfig.eventName],
         eventType: [timerConfig.eventType],
         eventLength: [timerConfig.eventLength],
@@ -87,5 +104,15 @@ export class FormArrayComponent implements OnInit{
 
   public removeItem(index: number): void {
     this.timersConfigFa.removeAt(index);
+  }
+  public saveNewItem (index: number) {
+    // this.timersConfigFa.at(index)?.patchValue({ id: newVal })
+    const nextId =this.timersConfigFa.value
+      ?.filter((el: any) => el.id)
+      ?.map((el:any) => el.id)
+      ?.sort((a:any, b:any) => b - a)?.[0] + 1
+      || 1
+    this.timersConfigFa.at(index)?.patchValue({ id: nextId })
+    // console.log(nextId)
   }
 }

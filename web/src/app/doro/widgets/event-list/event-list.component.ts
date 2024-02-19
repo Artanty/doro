@@ -132,7 +132,7 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges{
     this.ScheduleEventServ.deleteScheduleEvent(reqData)
       .pipe(
         tap(() => {
-          const element = this.elements?.toArray()[index].nativeElement;
+          const element = this.elements?.toArray()[index]?.nativeElement;
           if (element) {
             element.classList.add('fade-out');
           }
@@ -219,7 +219,12 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges{
   }
 
   updateEventTemplates (data: any) {
+    console.log(data)
+    // debounceTime(300)
     this.eventTemplates = data
     this.cdr.detectChanges()
+  }
+  public addEventTemplate () {
+
   }
 }
