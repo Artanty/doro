@@ -14,3 +14,16 @@
 option {
   color: #000;
 }
+.delete{
+  cursor: pointer;
+  fill: grey;
+  & circle{
+    fill: transparent;
+  }
+  &:hover{
+    fill: #fff;
+    //& circle{
+    //  fill: red;
+    //}
+  }
+}

@@ -63,7 +63,7 @@ export class FormArrayComponent implements OnInit{
         eventName: 'Отдых',
         eventType: 'rest',
         eventLength: 5,
-        visibility: false
+        visibility: true
       }
     ]
     data.forEach(timerConfig => {
@@ -81,8 +81,11 @@ export class FormArrayComponent implements OnInit{
   }
 
   public setRowVisibility (index: number, newVal: boolean) {
-    const form = this.timersConfigFa
-    form.at(index)?.patchValue({visibility: newVal })
+    this.timersConfigFa.at(index)?.patchValue({visibility: newVal })
     this.cdr.detectChanges()
+  }
+
+  public removeItem(index: number): void {
+    this.timersConfigFa.removeAt(index);
   }
 }
