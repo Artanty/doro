@@ -20,6 +20,8 @@ import {
 import {ScheduleConfig} from "../models/ScheduleConfig";
 import {ScheduleEvent} from "../models/ScheduleEvent";
 import {differenceInSeconds} from "date-fns";
+import ScheduleEventController from "./scheduleEvent";
+import ScheduleConfigController from "./scheduleConfigController";
 
 
 export default class CounterActionController {
@@ -40,7 +42,8 @@ export default class CounterActionController {
             const timerId = setInterval(() => {
                 let counter = getCounter()
                 if (this.getCounterLength(scheduleEvent) < counter) {
-                    console.log('interruptToRest()')
+                    console.log('tick interruptToRest()')
+                    this.endCurrentEvent()
                 } else {
                     const data = {
                         timePassed: counter,
@@ -85,7 +88,8 @@ export default class CounterActionController {
             const timerId = setInterval(() => {
                 let counter = getCounter()
                 if (this.getCounterLength(scheduleEvent) < counter) {
-                    console.log('interruptToRest()')
+                    console.log('changePlayingEvent interruptToRest()')
+                    this.endCurrentEvent()
                 } else {
                     const data = {
                         timePassed: counter,
@@ -121,4 +125,27 @@ export default class CounterActionController {
         setTimerId(timerId)
         setCounter(0)
     }
+
+    static async endCurrentEvent () {
+        this.resetTimerIdAndCounter()
+        const {
+            endedEvent,
+            nextEvent,
+            schedule_id,
+            updatedConfig
+        } = await ScheduleConfigController.stopEventAndGetNext() as any
+        const data = {
+            endedEvent,
+            nextEvent,
+            schedule_id,
+            action: 'eventEnd',
+            scheduleConfigHash: updatedConfig?.hash
+        }
+        const clients = getClients()
+        clients.forEach(client => {
+            client.response.write(`id: ${getNextEventId.next().value}\n\n`)
+            client.response.write(`data: ${JSON.stringify(data)}\n\n`)
+        })
+    }
 }
+

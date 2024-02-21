@@ -12,10 +12,11 @@ import {resumeScheduleEvent} from "../dbActions/resumeScheduleEvent";
 import {stopScheduleEvent} from "../dbActions/stopScheduleEvent";
 import {changePayingScheduleEvent} from "../dbActions/changePlayingEvent";
 import { getActiveScheduleConfig } from "../dbActions/getActiveScheduleConfig";
+import {getNextScheduleEventAfter} from "../dbActions/getNextScheduleEventAfter";
 
 export default class ScheduleConfigController {
 
-    public async getScheduleConfig(): Promise<any> {
+    public static async getScheduleConfig(): Promise<any> {
         try {
             return getLatestScheduleConfig().then((latestConfig: ScheduleConfig | null) => {
                 if (latestConfig) {
@@ -29,7 +30,7 @@ export default class ScheduleConfigController {
         }
     }
 
-    public async activateScheduleConfig(id: number): Promise<any> {
+    public static async activateScheduleConfig(id: number): Promise<any> {
         try {
             await activateScheduleConfig(id)
             return true
@@ -38,7 +39,7 @@ export default class ScheduleConfigController {
         }
     }
 
-    public async playScheduleEvent(scheduleConfigId: number, scheduleEventId: number, scheduleId: number): Promise<any> {
+    public static async playScheduleEvent(scheduleConfigId: number, scheduleEventId: number, scheduleId: number): Promise<any> {
         try {
             const scheduleConfig = await playScheduleEvent(scheduleConfigId, scheduleEventId, scheduleId) as ScheduleConfig
             const scheduleEvent = await getScheduleEventById(scheduleEventId) as ScheduleEvent
@@ -53,7 +54,7 @@ export default class ScheduleConfigController {
         }
     }
 
-    public async pauseScheduleEvent(scheduleConfigId: number, scheduleEventId: number, scheduleId: number): Promise<any> {
+    public static async pauseScheduleEvent(scheduleConfigId: number, scheduleEventId: number, scheduleId: number): Promise<any> {
         try {
             const scheduleConfig = await pauseScheduleEvent(scheduleConfigId, scheduleEventId, scheduleId) as ScheduleConfig
             const scheduleEvent = await getScheduleEventById(scheduleEventId) as ScheduleEvent
@@ -68,7 +69,7 @@ export default class ScheduleConfigController {
         }
     }
 
-    public async resumeScheduleEvent(scheduleConfigId: number, scheduleEventId: number, scheduleId: number): Promise<any> {
+    public static async resumeScheduleEvent(scheduleConfigId: number, scheduleEventId: number, scheduleId: number): Promise<any> {
         try {
             const scheduleConfig = await resumeScheduleEvent(scheduleConfigId, scheduleEventId, scheduleId) as ScheduleConfig
             const scheduleEvent = await getScheduleEventById(scheduleEventId) as ScheduleEvent
@@ -83,7 +84,7 @@ export default class ScheduleConfigController {
         }
     }
 
-    public async stopScheduleEvent(scheduleConfigId: number, scheduleEventId: number, scheduleId: number): Promise<any> {
+    public static async stopScheduleEvent(scheduleConfigId: number, scheduleEventId: number, scheduleId: number): Promise<any> {
         try {
             const scheduleConfig = await stopScheduleEvent(scheduleConfigId, scheduleEventId, scheduleId) as ScheduleConfig
             const scheduleEvent = await getScheduleEventById(scheduleEventId) as ScheduleEvent
@@ -97,7 +98,7 @@ export default class ScheduleConfigController {
         }
     }
 
-    public async changePlayingEvent(scheduleConfigId: number, scheduleEventId: number, scheduleId: number): Promise<any> {
+    public static async changePlayingEvent(scheduleConfigId: number, scheduleEventId: number, scheduleId: number): Promise<any> {
         try {
             const scheduleConfig = await changePayingScheduleEvent(scheduleConfigId, scheduleEventId, scheduleId) as ScheduleConfig
             const scheduleEvent = await getScheduleEventById(scheduleEventId) as ScheduleEvent
@@ -126,7 +127,24 @@ export default class ScheduleConfigController {
     }
     
 
-
-
-
+    public static async stopEventAndGetNext () {
+        try {
+            return await getActiveScheduleConfig().then((scheduleConfig: ScheduleConfig) => {
+                return stopScheduleEvent(scheduleConfig.id, scheduleConfig.scheduleEvent_id, scheduleConfig.schedule_id).then((updatedConfig: any) => {
+                    return getScheduleEventById(scheduleConfig.scheduleEvent_id).then((endedEvent: any) => {
+                        return getNextScheduleEventAfter(endedEvent).then((nextEvent: any) => {
+                            return {
+                                endedEvent: endedEvent?.id,
+                                nextEvent: nextEvent?.id,
+                                schedule_id: scheduleConfig.schedule_id,
+                                updatedConfig: updatedConfig
+                            }
+                        })
+                    })
+                })
+            })
+        } catch (err) {
+            return { status: err }
+        }
+    }
 }

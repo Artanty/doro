@@ -342,8 +342,8 @@ function shareTimersConfig (request: Request, response: Response) {
 app.post('/getTimersConfig', () => {});
 
 app.post("/getScheduleConfig", async (_req, res) => {
-    const controller = new ScheduleConfigController()
-    const response = await controller.getScheduleConfig();
+
+    const response = await ScheduleConfigController.getScheduleConfig();
     return res.send(response);
 });
 app.post("/getSchedule", async (_req, res) => {
@@ -352,8 +352,7 @@ app.post("/getSchedule", async (_req, res) => {
     return res.send(response);
 });
 app.post("/getScheduleEvents", async (_req, res) => {
-    const controller = new ScheduleEventController()
-    const response = await controller.getScheduleEventByScheduleId(_req.body.id);
+    const response = await ScheduleEventController.getScheduleEventsByScheduleId(_req.body.id);
     return res.send(response);
 });
 
@@ -407,40 +406,38 @@ app.get("/test", async (_req, res) => {
 
 app.post('/scheduleConfig/:action',async (req, res) => {
     const action = req.params.action;
-    const controller = new ScheduleConfigController()
     let response = null
 
     if (action === 'activate') {
-        response = await controller.activateScheduleConfig(req.body.scheduleConfigId)
+        response = await ScheduleConfigController.activateScheduleConfig(req.body.scheduleConfigId)
     }
     if (action === 'playEvent') {
-        response = await controller.playScheduleEvent(req.body.scheduleConfigId, req.body.scheduleEventId, req.body.scheduleId)
+        response = await ScheduleConfigController.playScheduleEvent(req.body.scheduleConfigId, req.body.scheduleEventId, req.body.scheduleId)
     }
     if (action === 'pauseEvent') {
-        response = await controller.pauseScheduleEvent(req.body.scheduleConfigId, req.body.scheduleEventId, req.body.scheduleId)
+        response = await ScheduleConfigController.pauseScheduleEvent(req.body.scheduleConfigId, req.body.scheduleEventId, req.body.scheduleId)
     }
     if (action === 'resumeEvent') {
-        response = await controller.resumeScheduleEvent(req.body.scheduleConfigId, req.body.scheduleEventId, req.body.scheduleId)
+        response = await ScheduleConfigController.resumeScheduleEvent(req.body.scheduleConfigId, req.body.scheduleEventId, req.body.scheduleId)
     }
     if (action === 'stopEvent') {
-        response = await controller.stopScheduleEvent(req.body.scheduleConfigId, req.body.scheduleEventId, req.body.scheduleId)
+        response = await ScheduleConfigController.stopScheduleEvent(req.body.scheduleConfigId, req.body.scheduleEventId, req.body.scheduleId)
     }
     if (action === 'changePlayingEvent') {
-        response = await controller.changePlayingEvent(req.body.scheduleConfigId, req.body.scheduleEventId, req.body.scheduleId)
+        response = await ScheduleConfigController.changePlayingEvent(req.body.scheduleConfigId, req.body.scheduleEventId, req.body.scheduleId)
     }
     return res.send(response);
 })
 
 app.post('/scheduleEvent/:action',async (req, res) => {
     const action = req.params.action;
-    const controller = new ScheduleEventController()
     let response = null
 
     if (action === 'create') {
-        response = await controller.createScheduleEvent(req.body)
+        response = await ScheduleEventController.createScheduleEvent(req.body)
     }
     if (action === 'delete') {
-        response = await controller.deleteScheduleEvent(req.body)
+        response = await ScheduleEventController.deleteScheduleEvent(req.body)
     }
 
     return res.send(response);

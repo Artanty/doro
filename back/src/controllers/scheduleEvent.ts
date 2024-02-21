@@ -2,28 +2,34 @@ import {getLatestScheduleConfig} from "../dbActions/getLatestScheduleConfig";
 import {ScheduleConfig} from "../models/ScheduleConfig";
 import {saveDefaultScheduleConfig} from "../dbActions/saveDefaultScheduleConfig";
 import {getScheduleById} from "../dbActions/getSchedule";
-import {getScheduleEventByScheduleId} from "../dbActions/getScheduleEventByScheduleId";
+import {getScheduleEventsByScheduleId} from "../dbActions/getScheduleEventsByScheduleId";
 import {createScheduleEvent} from "../dbActions/createScheduleEvent";
 import {deleteScheduleEvent} from "../dbActions/deleteScheduleEvent";
+import ScheduleConfigController from "./scheduleConfigController";
+import {
+    getNextScheduleEventAfter
+} from "../dbActions/getNextScheduleEventAfter"
+import {getScheduleEventById} from "../dbActions/getScheduleEventById";
+import {ScheduleEvent} from "../models/ScheduleEvent";
 
 export default class ScheduleEventController {
-    public async getScheduleEventByScheduleId(id: number): Promise<any> {
+    public static async getScheduleEventsByScheduleId(id: number): Promise<any> {
         try {
-            return getScheduleEventByScheduleId(id)
+            return await getScheduleEventsByScheduleId(id)
         } catch (err) {
             return { status: 'err' }
         }
     }
-    public async createScheduleEvent(data: any): Promise<any> {
+    public static async createScheduleEvent(data: any): Promise<any> {
         try {
-            return createScheduleEvent(data)
+            return await createScheduleEvent(data)
         } catch (err) {
             return { status: 'err' }
         }
     }
 
     //  todo: add checks
-    public async deleteScheduleEvent(data: any): Promise<any> {
+    public static async deleteScheduleEvent(data: any): Promise<any> {
         try {
             const res = await deleteScheduleEvent(data)
             return { status: res }
