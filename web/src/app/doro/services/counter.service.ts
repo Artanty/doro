@@ -18,6 +18,10 @@ import {
   TEndpointsWithDepsResponse
 } from "../helpers/fetchDataSequentially";
 import {SERVER_URL} from "../../../../env";
+import {
+  IEndEventSseResponse,
+  ISuggestNextEventSseResponse
+} from "../../../../../contracts/endEventSseResponse";
 
 @Injectable({
   providedIn: 'root'
@@ -25,12 +29,12 @@ import {SERVER_URL} from "../../../../env";
 export class CounterService {
 
   constructor(
-    @Inject(StoreService) private Store: StoreService,
+    @Inject(StoreService) private StoreServ: StoreService,
     @Inject(HttpClient) private http: HttpClient
   ) { }
 
   scheduleConfigActivator () {
-    zip(this.Store.listenScheduleConfig(), this.Store.listenSchedule(), this.Store.listenScheduleEvents())
+    zip(this.StoreServ.listenScheduleConfig(), this.StoreServ.listenSchedule(), this.StoreServ.listenScheduleEvents())
       .pipe(
         filter(([scheduleConfig, value2, value3]) =>
           scheduleConfig && scheduleConfig.id !== undefined &&
@@ -55,38 +59,38 @@ export class CounterService {
   }
 
   onReceiveScheduleConfig (data: any) {
-    this.Store.setScheduleConfig(data)
-    // console.log(this.Store.getScheduleConfig())
+    this.StoreServ.setScheduleConfig(data)
+    // console.log(this.StoreServ.getScheduleConfig())
   }
 
   onReceiveSchedule (data: any) {
-    this.Store.setSchedule(data)
-    // console.log(this.Store.getSchedule())
+    this.StoreServ.setSchedule(data)
+    // console.log(this.StoreServ.getSchedule())
   }
 
   onReceiveScheduleEvents (data: any) {
-    this.Store.setScheduleEvents(data)
-    // console.log(this.Store.getScheduleEvents())
+    this.StoreServ.setScheduleEvents(data)
+    // console.log(this.StoreServ.getScheduleEvents())
   }
 
   startEvent (eventId: number) {
     this.http.post(`${SERVER_URL}/scheduleConfig/playEvent`, {
       scheduleEventId: eventId,
-      scheduleConfigId: this.Store.getScheduleConfig()?.id,
-      scheduleId: this.Store.getSchedule()?.id
+      scheduleConfigId: this.StoreServ.getScheduleConfig()?.id,
+      scheduleId: this.StoreServ.getSchedule()?.id
     })
       .subscribe((res: any) => {
         console.log(res)
-        const event = this.Store.getScheduleEventById(res?.scheduleEvent_id)
-        this.Store.setCurrentScheduleEvent(event)
+        const event = this.StoreServ.getScheduleEventById(res?.scheduleEvent_id)
+        this.StoreServ.setCurrentScheduleEvent(event)
       })
   }
 
   stopEvent (eventId: number) {
     this.http.post(`${SERVER_URL}/scheduleConfig/stopEvent`, {
       scheduleEventId: eventId,
-      scheduleConfigId: this.Store.getScheduleConfig()?.id,
-      scheduleId: this.Store.getSchedule()?.id
+      scheduleConfigId: this.StoreServ.getScheduleConfig()?.id,
+      scheduleId: this.StoreServ.getSchedule()?.id
     })
       .subscribe((res: any) => {
         console.log(res)
@@ -95,8 +99,8 @@ export class CounterService {
   pauseEvent (eventId: number) {
     this.http.post(`${SERVER_URL}/scheduleConfig/pauseEvent`, {
       scheduleEventId: eventId,
-      scheduleConfigId: this.Store.getScheduleConfig()?.id,
-      scheduleId: this.Store.getSchedule()?.id
+      scheduleConfigId: this.StoreServ.getScheduleConfig()?.id,
+      scheduleId: this.StoreServ.getSchedule()?.id
     })
       .subscribe((res: any) => {
         console.log(res)
@@ -106,8 +110,8 @@ export class CounterService {
   resumeEvent (eventId: number) {
     this.http.post(`${SERVER_URL}/scheduleConfig/resumeEvent`, {
       scheduleEventId: eventId,
-      scheduleConfigId: this.Store.getScheduleConfig()?.id,
-      scheduleId: this.Store.getSchedule()?.id
+      scheduleConfigId: this.StoreServ.getScheduleConfig()?.id,
+      scheduleId: this.StoreServ.getSchedule()?.id
     })
       .subscribe((res: any) => {
         console.log(res)
@@ -116,22 +120,22 @@ export class CounterService {
   changePlayingEvent (eventId: number) {
     this.http.post(`${SERVER_URL}/scheduleConfig/changePlayingEvent`, {
       scheduleEventId: eventId,
-      scheduleConfigId: this.Store.getScheduleConfig()?.id,
-      scheduleId: this.Store.getSchedule()?.id
+      scheduleConfigId: this.StoreServ.getScheduleConfig()?.id,
+      scheduleId: this.StoreServ.getSchedule()?.id
     })
       .subscribe((res: any) => {
         // console.log(res)
-        const event = this.Store.getScheduleEventById(res?.scheduleEvent_id)
-        this.Store.setCurrentScheduleEvent(event)
+        const event = this.StoreServ.getScheduleEventById(res?.scheduleEvent_id)
+        this.StoreServ.setCurrentScheduleEvent(event)
       })
   }
 
   getActiveScheduleEvent () {
-    const eventId = this.Store.getScheduleConfig()?.scheduleEvent_id
-    return eventId ? this.Store.getScheduleEventById(eventId) : null
+    const eventId = this.StoreServ.getScheduleConfig()?.scheduleEvent_id
+    return eventId ? this.StoreServ.getScheduleEventById(eventId) : null
   }
 
-  nextActionHandler(nextAction: string | string[]) {
+  nextActionHandler(nextAction: string | string[], response?: any) {
     // console.log('nextActionHandler')
     if (Array.isArray(nextAction)) {
       fetchDataSequentially(nextAction).subscribe({
@@ -147,19 +151,36 @@ export class CounterService {
         case 'getScheduleConfig':
           this.getScheduleConfig()
           break;
+        case 'suggestNext':
+          this.suggestNext(response)
+          break;
         default:
           console.log('nextActionHandler - no action')
           break;
       }
     }
   }
+
   getScheduleConfig() {
     this.http.post(`${SERVER_URL}/getScheduleConfig`, null)
       .subscribe((res: any) => {
-        const savedScheduleConfig = this.Store.getScheduleConfig()
+        const savedScheduleConfig = this.StoreServ.getScheduleConfig()
         if (savedScheduleConfig === null || savedScheduleConfig?.hash !== res.hash) {
-          this.Store.setScheduleConfig(res)
+          this.StoreServ.setScheduleConfig(res)
         }
       })
+  }
+
+
+  // public endEventHandler (res: IEndEventSseResponse) {
+  //     this.showEndEventScreen()
+  // }
+  //
+  // public showEndEventScreen() {
+  //     this.StoreServ.setViewState('EVENT_END')
+  // }
+
+  public suggestNext (data: ISuggestNextEventSseResponse) {
+    this.StoreServ.setSuggestNext([data.endedEvent, data.nextEvent])
   }
 }

@@ -46,6 +46,13 @@
       align-items: center;
       padding-right: 8px;
       column-gap:4px;
+      border-radius: 35px;
+      &.ended{
+        background: rgb(235 235 235 / 21%);
+      }
+      &.suggestedNext{
+        background: rgb(7 88 67);
+      }
     }
     &  .nameWrapper{
       flex-grow: 1;

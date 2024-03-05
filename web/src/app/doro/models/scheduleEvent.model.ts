@@ -14,4 +14,6 @@ export interface IScheduleEventView extends IScheduleEvent {
   timeLength?: number
   isPlaying?: boolean
   timeLeft?: number
+  isEnded?: boolean
+  isSuggestedNext?: boolean
 }

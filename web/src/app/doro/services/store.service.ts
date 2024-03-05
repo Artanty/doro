@@ -14,6 +14,7 @@ import {
   TTab
 } from "../models/app.model";
 
+export type TSuggestNext = [number, number]
 
 @Injectable({
   providedIn: 'root'
@@ -28,6 +29,7 @@ export class StoreService {
   private tick$: BehaviorSubject<Nullable<ITick>> = new BehaviorSubject<Nullable<ITick>>(null)
   private clientId: string | null = null
   private connectionState$ = new BehaviorSubject<TConnectionState>('LOADING')
+  private suggestNext$ = new BehaviorSubject<Nullable<TSuggestNext>>(null)
 
   constructor() {
     // console.log('Store created')
@@ -139,4 +141,15 @@ export class StoreService {
   public listenConnectionState (): Observable<TConnectionState> {
     return this.connectionState$.asObservable()
   }
+  public setSuggestNext (data: Nullable<TSuggestNext>) {
+    this.suggestNext$.next(data)
+  }
+  public getSuggestNext (): Nullable<TSuggestNext> {
+    return this.suggestNext$.value
+  }
+  public listenSuggestNext (): Observable<Nullable<TSuggestNext>> {
+    return this.suggestNext$.asObservable()
+  }
+
+
 }

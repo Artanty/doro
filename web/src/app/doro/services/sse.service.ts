@@ -42,12 +42,25 @@ export class SseService {
         observer.next(messageData);
       }
     }).subscribe({
+      // next: (res: any) => {
+      //   this.StoreServ.setConnectionState('READY')
+      //   if (res.nextAction) {
+      //     this.CounterServ.nextActionHandler(res.nextAction)
+      //   }
+      //
+      //   if (res.scheduleConfigHash !== this.StoreServ.getScheduleConfig()?.hash) {
+      //     this.CounterServ.getScheduleConfig()
+      //   }
+      //   this.StoreServ.setTick(res)
+      // }
       next: (res: any) => {
         this.StoreServ.setConnectionState('READY')
         if (res.nextAction) {
-          this.CounterServ.nextActionHandler(res.nextAction)
+          this.CounterServ.nextActionHandler(res.nextAction, res)
         }
-
+        // if (res.action === 'endEvent') {
+        //   this.CounterServ.endEventHandler(res)
+        // }
         if (res.scheduleConfigHash !== this.StoreServ.getScheduleConfig()?.hash) {
           this.CounterServ.getScheduleConfig()
         }
@@ -55,6 +68,7 @@ export class SseService {
       }
     })
   }
+
 
   public listenTick (): Observable<ITick> {
     return this.StoreServ.listenTick().pipe(filter(Boolean))

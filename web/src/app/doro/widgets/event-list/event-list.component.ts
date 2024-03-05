@@ -30,7 +30,10 @@ import {
 
 import {HttpClient} from "@angular/common/http";
 import { CounterService } from '../../services/counter.service';
-import { StoreService } from '../../services/store.service';
+import {
+  StoreService,
+  TSuggestNext
+} from '../../services/store.service';
 import { SseService } from '../../services/sse.service';
 import { IScheduleConfig } from '../../models/scheduleConfig.model';
 import { Nullable } from '../../models/_helper-types';
@@ -39,6 +42,7 @@ import { IScheduleEvent, IScheduleEventView } from '../../models/scheduleEvent.m
 
 import {deleteProps} from "../../helpers";
 import {ScheduleEventService} from "../../services/schedule-event.service";
+import {ISuggestNextEventSseResponse} from "../../../../../../contracts/endEventSseResponse";
 
 @Component({
   selector: 'app-event-list',
@@ -66,13 +70,19 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges{
   }
 
   ngOnInit() {
-    combineLatest([this.StoreServ.listenScheduleEvents(), this.StoreServ.listenScheduleConfig(), this.SseServ.listenTick()])
-      .subscribe(([scheduleEvents, scheduleConfig, tick]: [IScheduleEvent[], Nullable<IScheduleConfig>, ITick]) => {
+    combineLatest([
+      this.StoreServ.listenScheduleEvents(),
+      this.StoreServ.listenScheduleConfig(),
+      this.SseServ.listenTick(),
+      this.StoreServ.listenSuggestNext()
+    ])
+      .subscribe(([scheduleEvents, scheduleConfig, tick, suggestNext]: [IScheduleEvent[], Nullable<IScheduleConfig>, ITick, Nullable<TSuggestNext>]) => {
+        console.log(suggestNext)
         if (scheduleEvents?.length) {
           if (scheduleConfig && scheduleConfig.scheduleEvent_id) {
             this.scheduleEvents = scheduleEvents.map((el: IScheduleEventView) => {
               el.timeLength = this.getDiffInMinutes(el.timeFrom, el.timeTo)
-              el.isActive = scheduleConfig.scheduleEvent_id === el.id
+              el.isActive = scheduleConfig.scheduleEvent_id === el.id && !suggestNext
               if (el.isActive) {
                 el.isPlaying = !scheduleConfig.counterIsPaused
                 if (el.isPlaying) {
@@ -83,6 +93,18 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges{
                 }
               } else {
                 el.isPlaying = false
+              }
+              // set ended event & suggested next event
+              if (suggestNext && Array.isArray(suggestNext)) {
+
+                if (suggestNext[0] === el.id) {
+                  el.isEnded = true
+                }
+                if (suggestNext[1] === el.id) {
+                  el.isSuggestedNext = true
+                }
+              } else {
+                el.isSuggestedNext = false
               }
               return el
             })
@@ -170,6 +192,7 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges{
         this.CounterServ.changePlayingEvent(el.id)
       }
     }
+    this.StoreServ.setSuggestNext(null) // hide suggested and allow playing event highlight
   }
 
   handlePause (scheduleEvent_id: number) {
@@ -219,7 +242,7 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges{
   }
 
   updateEventTemplates (data: any) {
-    console.log(data)
+    // console.log(data)
     // debounceTime(300)
     this.eventTemplates = data
     this.cdr.detectChanges()

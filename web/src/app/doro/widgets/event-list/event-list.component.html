@@ -1,7 +1,11 @@
 <div class="container back">
   <ul class="eventList" appScroll>
-    <li *ngFor="let el of scheduleEvents; let i = index; trackBy: tracker" (click)="handleSheduleEventClick(el)" #myElement>
-      <div class="listItemInner">
+    <li *ngFor="let el of scheduleEvents; let i = index; trackBy: tracker"
+        (click)="handleSheduleEventClick(el)" #myElement>
+      <div class="listItemInner"
+           [class.ended]="el.isEnded"
+           [class.suggestedNext]="el.isSuggestedNext"
+      >
         <div class="buttons">
           <a *ngIf="!el.isPlaying" (click)="handlePlay(el)" [class.isPaused]="el.isActive">
             <svg width="20px" height="20px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

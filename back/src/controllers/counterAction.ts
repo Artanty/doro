@@ -22,6 +22,7 @@ import {ScheduleEvent} from "../models/ScheduleEvent";
 import {differenceInSeconds} from "date-fns";
 import ScheduleEventController from "./scheduleEvent";
 import ScheduleConfigController from "./scheduleConfigController";
+// import {IEndEventSseResponse} from "../../../contracts/endEventSseResponse";
 
 
 export default class CounterActionController {
@@ -134,11 +135,12 @@ export default class CounterActionController {
             schedule_id,
             updatedConfig
         } = await ScheduleConfigController.stopEventAndGetNext() as any
-        const data = {
+        const data: any = {
             endedEvent,
             nextEvent,
             schedule_id,
             action: 'eventEnd',
+            nextAction: 'suggestNext',
             scheduleConfigHash: updatedConfig?.hash
         }
         const clients = getClients()
