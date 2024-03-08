@@ -31,7 +31,7 @@ export class ScheduleEventService {
       )
   }
 
-  deleteScheduleEvent (data: IScheduleEvent) {
+  deleteScheduleEvent (data: { scheduleEvent: IScheduleEvent, scheduleConfigId: number }) {
     return this.http.post<any>(`${SERVER_URL}/scheduleEvent/delete`, data)
   }
 

@@ -149,7 +149,10 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges{
   }
 
   public deleteScheduleEvent (data: IScheduleEventView, index: number) {
-    const reqData = deleteProps(data, ['isActive', 'timeLength', 'isPlaying', 'timeLeft']) as IScheduleEvent
+    const reqData = {
+      scheduleEvent: deleteProps(data, ['isActive', 'timeLength', 'isPlaying', 'timeLeft']) as IScheduleEvent,
+      scheduleConfigId: (this.StoreServ.getScheduleConfig()?.id) as number
+    }
 
     this.ScheduleEventServ.deleteScheduleEvent(reqData)
       .pipe(
@@ -160,7 +163,7 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges{
           }
         }),
         delay(1000),
-        concatMap(async () => this.StoreServ.removeScheduleEvents(reqData))
+        concatMap(async () => this.StoreServ.removeScheduleEvents(reqData.scheduleEvent))
       )
       .subscribe()
 
