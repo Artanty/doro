@@ -34,7 +34,12 @@ export default class CounterActionController {
      *
      * - объекты всех подключенных пользователей
      * */
-    public static async handleCounterAction(scheduleConfig: ScheduleConfig, scheduleEvent: ScheduleEvent, counterAction: string) {
+
+    public static async handleCounterAction(
+            scheduleConfig: ScheduleConfig, 
+            scheduleEvent: ScheduleEvent, 
+            counterAction: string
+        ) {
         const clients = getClients()
 
         if (counterAction === 'tick') {
