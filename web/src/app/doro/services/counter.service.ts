@@ -70,6 +70,9 @@ export class CounterService {
 
   onReceiveScheduleEvents (data: any) {
     this.StoreServ.setScheduleEvents(data)
+    if (data.length) {
+      this.StoreServ.setCurrentScheduleEvent(this.getActiveScheduleEvent())
+    }
     // console.log(this.StoreServ.getScheduleEvents())
   }
 
@@ -82,7 +85,7 @@ export class CounterService {
       .subscribe((res: any) => {
         console.log(res)
         const event = this.StoreServ.getScheduleEventById(res?.scheduleEvent_id)
-        this.StoreServ.setCurrentScheduleEvent(event)
+        this.StoreServ.setCurrentScheduleEvent(event || null)
       })
   }
 
@@ -117,6 +120,7 @@ export class CounterService {
         console.log(res)
       })
   }
+
   changePlayingEvent (eventId: number) {
     this.http.post(`${SERVER_URL}/scheduleConfig/changePlayingEvent`, {
       scheduleEventId: eventId,
@@ -126,13 +130,15 @@ export class CounterService {
       .subscribe((res: any) => {
         // console.log(res)
         const event = this.StoreServ.getScheduleEventById(res?.scheduleEvent_id)
-        this.StoreServ.setCurrentScheduleEvent(event)
+        if (this.StoreServ.getCurrentScheduleEvent() === null) {
+          this.StoreServ.setCurrentScheduleEvent(event || null)
+        }
       })
   }
 
   getActiveScheduleEvent () {
     const eventId = this.StoreServ.getScheduleConfig()?.scheduleEvent_id
-    return eventId ? this.StoreServ.getScheduleEventById(eventId) : null
+    return eventId ? (this.StoreServ.getScheduleEventById(eventId) || null) : null
   }
 
   nextActionHandler(nextAction: string | string[], response?: any) {

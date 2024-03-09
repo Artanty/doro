@@ -24,8 +24,8 @@ export class StoreService {
   private schedule$: BehaviorSubject<any> = new BehaviorSubject(null)
   private scheduleEvents$: BehaviorSubject<IScheduleEvent[]> = new BehaviorSubject<IScheduleEvent[]>([])
   // private selectedScheduleEvent$: BehaviorSubject<any> = new BehaviorSubject(null)
-  private currentScheduleEvent$: BehaviorSubject<any> = new BehaviorSubject(null)
-  private viewState$: BehaviorSubject<TTab> = new BehaviorSubject<TTab>('EVENT_LIST') // eventList  counter
+  private currentScheduleEvent$ = new BehaviorSubject<Nullable<IScheduleEvent>>(null)
+  private viewState$: BehaviorSubject<TTab> = new BehaviorSubject<TTab>('COUNTER') // eventList  counter
   private tick$: BehaviorSubject<Nullable<ITick>> = new BehaviorSubject<Nullable<ITick>>(null)
   private clientId: string | null = null
   private connectionState$ = new BehaviorSubject<TConnectionState>('LOADING')
@@ -90,15 +90,17 @@ export class StoreService {
   //   return this.selectedScheduleEvent$.asObservable()
   // }
 
-  public setCurrentScheduleEvent (data: any) {
+  public setCurrentScheduleEvent (data: Nullable<IScheduleEvent>) {
+    console.log('setCurrentScheduleEvent: ')
+    console.log(data)
     if (JSON.stringify(this.getCurrentScheduleEvent()) !== JSON.stringify(data)) {
       this.currentScheduleEvent$.next(data)
     }
   }
-  public getCurrentScheduleEvent (): any {
+  public getCurrentScheduleEvent (): Nullable<IScheduleEvent> {
     return this.currentScheduleEvent$.value
   }
-  public listenCurrentScheduleEvent () {
+  public listenCurrentScheduleEvent (): Observable<Nullable<IScheduleEvent>> {
     return this.currentScheduleEvent$.asObservable()
   }
 

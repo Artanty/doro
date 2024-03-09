@@ -16,11 +16,19 @@ export class AppComponent {
     @Inject(StoreService) private StoreServ: StoreService
   ){}
 
-  test(testCase: number) {
+  test(testCase: number, event: MouseEvent) {
     this.http.get(`${SERVER_URL}/test?case=` + testCase)
       .subscribe((res: any) => {
-        console.log(res)
+        const clickedButton = event.target as HTMLButtonElement;
+        const innerHTML = clickedButton.innerHTML;
+        let result = res
+        if (res.currentConfig) {
+          result = res.currentConfig.scheduleEvent_id
+        }
+        console.log("TEST CASE:", innerHTML, "->");
+        console.log(result)
       })
+
   }
 
   rem () {

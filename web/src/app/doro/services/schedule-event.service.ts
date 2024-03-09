@@ -43,4 +43,26 @@ export class ScheduleEventService {
 
     return eventListClone[eventListClone.length - 1]
   }
+
+  createEventsAndPlay (data: { scheduleId?: number, scheduleConfigId?: number }) {
+    if (!data.scheduleId || !data.scheduleConfigId) { console.error('FIX IT!') }
+    return this.http.post<IScheduleEvent>(`${SERVER_URL}/scheduleEvent/createAndPlay`, data)
+      .pipe(
+        // tap((res: IScheduleEvent) => {
+        //   // this.StoreServ.addScheduleEvents(res)
+        //   console.log(res)
+        // })
+      )
+  }
+  // createDefaultScheduleEvents
+
+  // getNextScheduleEvent () {
+  //   combineLatest([
+  //     this.StoreServ.listenScheduleEvents(),
+  //     this.StoreServ.listenScheduleConfig(),
+  //     this.SseServ.listenTick(),
+  //     this.StoreServ.listenSuggestNext()
+  //   ])
+
+  // }
 }

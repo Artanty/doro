@@ -5,12 +5,14 @@ import {
   Component,
   Inject,
   OnChanges,
+  OnDestroy,
   OnInit,
   QueryList,
   ViewChildren
 } from '@angular/core';
 
 import {
+  Subscription,
   combineLatest,
   concatMap,
   delay,
@@ -50,11 +52,12 @@ import {ISuggestNextEventSseResponse} from "../../../../../../contracts/endEvent
   styleUrl: './event-list.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class EventListComponent implements OnInit, AfterViewInit, OnChanges{
+export class EventListComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy{
   @ViewChildren('myElement') elements: QueryList<any> | undefined;
   scheduleEvents: IScheduleEventView[] = []
   isControlsExpanded: boolean = false
   eventTemplates: any[] = []
+  subs!: Subscription
 
   constructor (
     @Inject(StoreService) public StoreServ: StoreService,
@@ -76,51 +79,45 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges{
       this.SseServ.listenTick(),
       this.StoreServ.listenSuggestNext()
     ])
-      .subscribe(([scheduleEvents, scheduleConfig, tick, suggestNext]: [IScheduleEvent[], Nullable<IScheduleConfig>, ITick, Nullable<TSuggestNext>]) => {
-        console.log(suggestNext)
-        if (scheduleEvents?.length) {
-          if (scheduleConfig && scheduleConfig.scheduleEvent_id) {
-            this.scheduleEvents = scheduleEvents.map((el: IScheduleEventView) => {
-              el.timeLength = this.getDiffInMinutes(el.timeFrom, el.timeTo)
-              el.isActive = scheduleConfig.scheduleEvent_id === el.id && !suggestNext
-              if (el.isActive) {
-                el.isPlaying = !scheduleConfig.counterIsPaused
-                if (el.isPlaying) {
-                  const playingEventTickedSeconds = tick.timePassed
-                  if (playingEventTickedSeconds) {
-                    el.timeLeft = el.timeLength - secondsToMinutes(playingEventTickedSeconds)
-                  }
+    .subscribe(([scheduleEvents, scheduleConfig, tick, suggestNext]: [IScheduleEvent[], Nullable<IScheduleConfig>, ITick, Nullable<TSuggestNext>]) => {
+      if (scheduleEvents?.length) {
+        if (scheduleConfig && scheduleConfig.scheduleEvent_id) {
+          this.scheduleEvents = scheduleEvents.map((el: IScheduleEventView) => {
+            el.timeLength = this.getDiffInMinutes(el.timeFrom, el.timeTo)
+            el.isActive = scheduleConfig.scheduleEvent_id === el.id && !suggestNext
+            if (el.isActive) {
+              el.isPlaying = !scheduleConfig.counterIsPaused
+              if (el.isPlaying) {
+                const playingEventTickedSeconds = tick.timePassed
+                if (playingEventTickedSeconds) {
+                  el.timeLeft = el.timeLength - secondsToMinutes(playingEventTickedSeconds)
                 }
-              } else {
-                el.isPlaying = false
               }
-              // set ended event & suggested next event
-              if (suggestNext && Array.isArray(suggestNext)) {
+            } else {
+              el.isPlaying = false
+            }
+            // set ended event & suggested next event
+            if (suggestNext && Array.isArray(suggestNext)) {
 
-                if (suggestNext[0] === el.id) {
-                  el.isEnded = true
-                }
-                if (suggestNext[1] === el.id) {
-                  el.isSuggestedNext = true
-                }
-              } else {
-                el.isSuggestedNext = false
+              if (suggestNext[0] === el.id) {
+                el.isEnded = true
               }
-              return el
-            })
-          } else {
-            this.scheduleEvents = scheduleEvents
-          }
+              if (suggestNext[1] === el.id) {
+                el.isSuggestedNext = true
+              }
+            } else {
+              el.isSuggestedNext = false
+            }
+            return el
+          })
+        } else {
+          this.scheduleEvents = scheduleEvents
         }
-        this.setCurrentSheduleEvent(this.scheduleEvents)
-        this.cdr.detectChanges()
-        this.sequentialFadeIn()
-      })
-  }
+      }
+      this.cdr.detectChanges()
+      this.sequentialFadeIn()
+    })
 
-  //todo mb remove?
-  setCurrentSheduleEvent(scheduleEvents: any[]) {
-    this.StoreServ.setCurrentScheduleEvent(scheduleEvents?.[0])
   }
 
   ngAfterViewInit() {
@@ -131,6 +128,9 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges{
 
   ngOnChanges(changes: any) {
     // console.log(changes)
+  }
+
+  ngOnDestroy () {
   }
 
   public addNewScheduleEvent (template: any) {
@@ -155,18 +155,17 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges{
     }
 
     this.ScheduleEventServ.deleteScheduleEvent(reqData)
-      .pipe(
-        tap(() => {
-          const element = this.elements?.toArray()[index]?.nativeElement;
-          if (element) {
-            element.classList.add('fade-out');
-          }
-        }),
-        delay(1000),
-        concatMap(async () => this.StoreServ.removeScheduleEvents(reqData.scheduleEvent))
-      )
-      .subscribe()
-
+    .pipe(
+      tap(() => {
+        const element = this.elements?.toArray()[index]?.nativeElement;
+        if (element) {
+          element.classList.add('fade-out');
+        }
+      }),
+      delay(1000),
+      concatMap(async () => this.StoreServ.removeScheduleEvents(reqData.scheduleEvent))
+    )
+    .subscribe()
   }
 
   getDiffInMinutes (date1: string, date2: string) {
@@ -200,10 +199,12 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges{
 
   handlePause (scheduleEvent_id: number) {
     this.CounterServ.pauseEvent(scheduleEvent_id)
+
   }
 
   handleSheduleEventClick (el: any) {
-    this.StoreServ.setCurrentScheduleEvent(el)
+    // this.StoreServ.setCurrentScheduleEvent(el)
+    // todo delete or make activeEvent
   }
 
   stopPropagation (event: Event){

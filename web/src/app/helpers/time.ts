@@ -27,3 +27,26 @@ export function secondsToMinutesAndSeconds (seconds: number) {
 
   return formattedTime;
 }
+
+export function getFormattedTime (milliseconds: number, format?: any): string {
+  const totalSeconds = Math.floor(milliseconds / 1000);
+
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  let result = ''
+  if (hours) { result = result.concat(hours.toString().padStart(2, '0') + ':') }
+  if (minutes) {
+    result = result.concat(minutes.toString().padStart(2, '0') + ':')
+  } else {
+    result = result.concat('00:')
+  }
+  if (seconds) {
+    result = result.concat(seconds.toString().padStart(2, '0'))
+  } else {
+    result = result.concat('00')
+  }
+
+  return result
+}
