@@ -439,6 +439,9 @@ app.post('/scheduleEvent/:action',async (req, res) => {
     if (action === 'delete') {
         response = await ScheduleEventController.deleteScheduleEvent(req.body)
     }
+    if (action === 'createAndPlay') {
+        response = await ScheduleEventController.createDefaultEventsAndPlay(req.body)
+    }
 
     return res.send(response);
 })

@@ -20,7 +20,9 @@ export default class TestController {
 
     @Get("/")
     public async handle(): Promise<any> {
-        if (this.testCase === '5') {
+        if (this.testCase === '1') {
+            return { currentConfig: await ScheduleConfigController.getScheduleConfig()}
+        } else if (this.testCase === '5') {
             return {getCounter: getCounter()}
         } else if (this.testCase === '2') {
             const res = await ScheduleConfigController.stopEventAndGetNext()
