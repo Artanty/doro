@@ -21,6 +21,8 @@ import {
   combineLatest,
   debounceTime,
   distinctUntilChanged,
+  EMPTY,
+  empty,
   map,
   Observable,
   Subscription,
@@ -70,6 +72,7 @@ export class CounterComponent implements OnInit, OnDestroy {
   subs!: Subscription
   nextScheduleEvent: any
   suggestNext: any
+  customTimerValueView: string = ''
 
   constructor(
     @Inject(SseService) private SseServ: SseService,
@@ -114,6 +117,7 @@ export class CounterComponent implements OnInit, OnDestroy {
           const currentEvent = scheduleEvents.find(se => scheduleConfig.scheduleEvent_id === se.id) ?? scheduleEvents[0]
           if (currentEvent) {
             this.nextScheduleEvent = getNextItemAfterId(scheduleEvents, currentEvent.id)
+            this.customTimerValueView = this.setCustomTimerValueView(currentEvent)
           }
           this.currentEvent = currentEvent ?? null
           this.suggestNext = suggestNext
@@ -137,22 +141,8 @@ export class CounterComponent implements OnInit, OnDestroy {
   }
 
   message: string = ''
-  /**
-   * get event length - tick
-   */
-  get customTimerValueView() {
-    // save for counter without backend:
-    // const timersConfig = this.timersConfigFa.getRawValue()
-    // if (Array.isArray(timersConfig)) {
-    //   const timerConfig = timersConfig.find(el => el.sessionId === this.sessionId)
-    //   if (timerConfig) {
-    //     const timerLength = this.counterType === 'rest'
-    //       ? timerConfig.sessionRestLength
-    //       : timerConfig.sessionLength
-    //     return secondsToMinutesAndSeconds(minutesToSeconds(timerLength) - this.counter)
-    //   }
-    // }
-    const event = this.StoreServ.getCurrentScheduleEvent()
+
+  setCustomTimerValueView(event: any) {
     try {
       const eventLength = differenceInMilliseconds(new Date(event?.timeTo || ''), new Date(event?.timeFrom || ''))
       const eventLengthLeft = eventLength - this.counter * 1000
@@ -198,9 +188,9 @@ export class CounterComponent implements OnInit, OnDestroy {
       scheduleId: this.StoreServ.getScheduleConfig()?.schedule_id,
       scheduleConfigId: this.StoreServ.getScheduleConfig()?.id
     }
-    const sub = this.ScheduleEventServ.createEventsAndPlay(data).subscribe((res => {
-      // console.log(res)
+    this.ScheduleEventServ.createEventsAndPlay(data).subscribe((res => {
+      this.StoreServ.setScheduleEvents(res)
+      this.CounterServ.startEvent(res[0].id) // todo use current event
     }))
-    this.subs.add(sub)
   }
 }

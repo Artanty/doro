@@ -46,7 +46,7 @@ export class ScheduleEventService {
 
   createEventsAndPlay (data: { scheduleId?: number, scheduleConfigId?: number }) {
     if (!data.scheduleId || !data.scheduleConfigId) { console.error('FIX IT!') }
-    return this.http.post<IScheduleEvent>(`${SERVER_URL}/scheduleEvent/createAndPlay`, data)
+    return this.http.post<IScheduleEvent[]>(`${SERVER_URL}/scheduleEvent/createAndPlay`, data)
       .pipe(
         // tap((res: IScheduleEvent) => {
         //   // this.StoreServ.addScheduleEvents(res)
