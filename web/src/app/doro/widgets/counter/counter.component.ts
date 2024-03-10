@@ -116,17 +116,15 @@ export class CounterComponent implements OnInit, OnDestroy {
             this.nextScheduleEvent = getNextItemAfterId(scheduleEvents, currentEvent.id)
           }
           this.currentEvent = currentEvent ?? null
-          if (suggestNext) {
-            this.suggestNext = suggestNext
-          }
+          this.suggestNext = suggestNext
+
           if (tick.action === 'tick') {
             this.counter = tick.timePassed || 0
             this.isPlaying = true
-            // this.cdr.detectChanges()
           }
           if (tick.action === 'pause') {
             this.isPlaying = false
-            // this.cdr.detectChanges()
+            this.counter = tick.timePassed || 0
           }
         }
       }

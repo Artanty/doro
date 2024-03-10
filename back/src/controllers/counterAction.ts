@@ -70,6 +70,7 @@ export default class CounterActionController {
         if (counterAction === 'pause') {
             this.resetTimerIdAndCounter()
             const data = {
+                timePassed: scheduleConfig.counterTimePassed,
                 action: counterAction,
                 scheduleConfigHash: scheduleConfig.hash
             }
