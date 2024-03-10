@@ -62,9 +62,9 @@
 
   <div class="timerButtons">
     <div class="currentEventName">
-      {{ currentEventName$ | async }}
+      {{ currentEvent ? currentEvent.name : 'Начать работу (25 мин)' }}
     </div>
-    <ng-container *ngIf="!(currentEvent$ | async)">
+    <ng-container *ngIf="!currentEvent">
       <a (click)="handleCreateEventsAndPlay()">
         <svg width="800px" height="800px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <g>
@@ -73,7 +73,7 @@
         </svg>
       </a>
     </ng-container>
-    <ng-container *ngIf="(currentEvent$ | async)">
+    <ng-container *ngIf="currentEvent">
       <a *ngIf="!isPlaying" (click)="handlePlay()">
         <svg width="800px" height="800px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <g>

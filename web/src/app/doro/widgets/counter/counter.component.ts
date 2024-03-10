@@ -66,8 +66,7 @@ export class CounterComponent implements OnInit, OnDestroy {
   interrupting: boolean = false
   sessionId: any = null
   isVisible: boolean = true
-  currentEventName$: Observable<string | null>
-  currentEvent$: Observable<any>
+  currentEvent: Nullable<IScheduleEvent> = null
   subs!: Subscription
   nextScheduleEvent: any
   suggestNext: any
@@ -87,12 +86,6 @@ export class CounterComponent implements OnInit, OnDestroy {
     this.timersConfigForm = this.fb.group({
       timersConfigFa: this.fb.array([])
     });
-    this.currentEventName$ = this.StoreServ.listenCurrentScheduleEvent()
-    .pipe(
-      // tap((el => console.log(el))),
-      map(el => el?.name || 'Начать работу (25 мин)')
-      )
-      this.currentEvent$ = this.StoreServ.listenCurrentScheduleEvent()
   }
 
   get timersConfigFa(): FormArray {
@@ -118,11 +111,11 @@ export class CounterComponent implements OnInit, OnDestroy {
     .subscribe(([scheduleEvents, scheduleConfig, tick, suggestNext]: [IScheduleEvent[], Nullable<IScheduleConfig>, ITick, Nullable<TSuggestNext>]) => {
       if (scheduleEvents?.length) {
         if (scheduleConfig && scheduleConfig.scheduleEvent_id) {
-          const activeEvent = scheduleEvents.find(se => scheduleConfig.scheduleEvent_id === se.id) ?? scheduleEvents[0]
-          console.log(scheduleConfig.scheduleEvent_id)
-          if (activeEvent) {
-            this.nextScheduleEvent = getNextItemAfterId(scheduleEvents, activeEvent.id)
+          const currentEvent = scheduleEvents.find(se => scheduleConfig.scheduleEvent_id === se.id) ?? scheduleEvents[0]
+          if (currentEvent) {
+            this.nextScheduleEvent = getNextItemAfterId(scheduleEvents, currentEvent.id)
           }
+          this.currentEvent = currentEvent ?? null
           if (suggestNext) {
             this.suggestNext = suggestNext
           }
