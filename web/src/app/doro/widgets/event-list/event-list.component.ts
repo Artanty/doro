@@ -73,6 +73,7 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges, OnD
   }
 
   ngOnInit() {
+    this.loadEventTemplates()
     combineLatest([
       this.StoreServ.listenScheduleEvents(),
       this.StoreServ.listenScheduleConfig(),
@@ -138,7 +139,7 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges, OnD
     const data = {
       name: template.eventName,
       timeFrom: new Date(lastScheduleEvent?.timeTo ?? new Date).toISOString(),
-      timeTo: add(new Date(lastScheduleEvent?.timeTo ?? new Date), { minutes: template.eventLength }).toISOString(),
+      timeTo: add(new Date(lastScheduleEvent?.timeTo ?? new Date), { minutes: template.eventLength, seconds: 5 }).toISOString(),
       eventType: template.eventType,
       schedule_id: lastScheduleEvent?.schedule_id ?? this.StoreServ.getSchedule()?.id
     }
@@ -246,11 +247,16 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges, OnD
   }
 
   updateEventTemplates (data: any) {
-    // console.log(data)
-    // debounceTime(300)
+    localStorage.setItem('eventTemplates', JSON.stringify(data))
     this.eventTemplates = data
     this.cdr.detectChanges()
   }
+  formData: any[] = []
+  loadEventTemplates () {
+    const data = localStorage.getItem('eventTemplates') ?? ''
+    this.formData  = JSON.parse(data)
+  }
+
   public addEventTemplate () {
 
   }
