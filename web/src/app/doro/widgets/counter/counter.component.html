@@ -1,112 +1,102 @@
-<!-- [class.interrupting]="interrupting"
-[class.interruptToRest]="isInterruptToRest"
-[class.interruptToWork]="isInterruptToWork"
-[class.working]="isWorking"
-[class.resting]="isResting" -->
-<div class="container back"
+<div class="container back">
+  <ng-container *ngIf="!eventEndScreen">
+    <form [formGroup]="timersConfigForm">
+      <ng-container formArrayName="timersConfigFa">
+          <div class="row" class="settingsRow"
+              *ngFor="let _ of timersConfigFa.controls; let i = index"
+              [formGroupName]="i">
+  <!--          [color]="'#686bf2'"-->
+            <my-custom-element [formControlName]="'sessionLength'"
+                              [suffix]="'Работа'"
+                              [step]="5"
+                              [size]="90"
+                              [color]="'#ddd'"
+            ></my-custom-element>
+            <app-audio></app-audio>
+  <!--          [color]="'#20e6b7'"-->
+            <my-custom-element [formControlName]="'sessionRestLength'"
+                              [suffix]="'Отдых'"
+                              [step]="1"
+                              [size]="90"
+                              [color]="'#ddd'"
+            ></my-custom-element>
+          </div>
 
->
-  <form [formGroup]="timersConfigForm">
-    <ng-container formArrayName="timersConfigFa">
-
-        <div class="row" class="settingsRow"
-             *ngFor="let _ of timersConfigFa.controls; let i = index"
-             [formGroupName]="i">
-<!--          [color]="'#686bf2'"-->
-          <my-custom-element [formControlName]="'sessionLength'"
-                             [suffix]="'Работа'"
-                             [step]="5"
-                             [size]="90"
-                             [color]="'#ddd'"
-          ></my-custom-element>
-          <app-audio></app-audio>
-<!--          [color]="'#20e6b7'"-->
-          <my-custom-element [formControlName]="'sessionRestLength'"
-                             [suffix]="'Отдых'"
-                             [step]="1"
-                             [size]="90"
-                             [color]="'#ddd'"
-          ></my-custom-element>
-        </div>
-
-    </ng-container>
-  </form>
-  <div class="counterRow" #counterRow>
-<!--    [color]="counterType === 'work' ? '#686bf2' : '#20e6b7'"-->
-    <my-custom-element [(ngModel)]="counter"
-                       [suffix]="counterSuffix"
-                       [step]="5"
-                       [size]="190"
-                       [readonly]="true"
-                       [color]="'#ddd'"
-                       [customValueView]="customTimerValueView"
-                       [customValueViewFontSize]="'40px'"
-    ></my-custom-element>
-    <div class="counterRowMessage" [class.fullWidth]="message">
-      {{message}}
-    </div>
-  </div>
-
-<!--  <div class="buttons" *ngIf="!interrupting">-->
-<!--    <a  id="cmd-reset" class="btn btn-red" (click)="resetTimer()"><i class="fa fa-undo"></i>Сброс</a>-->
-<!--    <a *ngIf="isCounterTick" id="cmd-pause" class="btn btn-yellow" (click)="pauseTimer()"><i class="fa fa-pause"></i>Пауза</a>-->
-<!--    <a *ngIf="!isCounterTick" id="cmd-go" class="btn btn-green" (click)="startTimer()"><i class="fa fa-play"></i>Старт</a>-->
-<!--    <a *ngIf="counterType === 'work'" class="btn btn-green" (click)="switchToBreak()"><i class="fa fa-play"></i>Перерыв</a>-->
-<!--    <a *ngIf="counterType === 'rest'" class="btn btn-green" (click)="switchToWork()"><i class="fa fa-play"></i>Перерыв</a>-->
-<!--  </div>-->
-
-<!--  <div class="buttons" *ngIf="interrupting">-->
-<!--    <a *ngIf="counterType === 'work'" class="btn btn-red" (click)="takeARest()">Отдыхать</a>-->
-<!--    <a *ngIf="counterType === 'rest'" class="btn btn-green" (click)="switchToBreak()">Работать</a>-->
-<!--  </div>-->
-
-  <div class="timerButtons">
-    <div class="currentEventName">
-      {{ currentEvent ? currentEvent.name : 'Начать работу (25 мин)' }}
-    </div>
-    <ng-container *ngIf="!currentEvent">
-      <a (click)="handleCreateEventsAndPlay()">
-        <svg width="800px" height="800px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <g>
-            <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM10.622 8.415l4.879 3.252a.4.4 0 0 1 0 .666l-4.88 3.252a.4.4 0 0 1-.621-.332V8.747a.4.4 0 0 1 .622-.332z"/>
-          </g>
-        </svg>
-      </a>
-    </ng-container>
-    <ng-container *ngIf="currentEvent">
-      <a *ngIf="!isPlaying" (click)="handlePlay()">
-        <svg width="800px" height="800px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <g>
-            <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM10.622 8.415l4.879 3.252a.4.4 0 0 1 0 .666l-4.88 3.252a.4.4 0 0 1-.621-.332V8.747a.4.4 0 0 1 .622-.332z"/>
-          </g>
-        </svg>
-      </a>
-      <a *ngIf="isPlaying" (click)="pause()">
-        <svg width="800px" height="800px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <g>
-            <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM9 9h2v6H9V9zm4 0h2v6h-2V9z"/>
-          </g>
-        </svg>
-      </a>
-    </ng-container>
-
-  </div>
-
-  <div class="timerButtons timerButtons--Row2">
-    <div>
-      <!-- <div class="loops">{{loops}}/100</div>
-      <button class="button linkButton reset" (click)="resetTimer()">Сброс</button> -->
-    </div>
-    <div class="playNextWrapper" (click)="skip()" *ngIf="nextScheduleEvent">
-      <div class="playNextName noselect">
-        {{ nextScheduleEvent?.name }}
+      </ng-container>
+    </form>
+    <div class="counterRow" #counterRow>
+  <!--    [color]="counterType === 'work' ? '#686bf2' : '#20e6b7'"-->
+      <my-custom-element [(ngModel)]="counter"
+                        [suffix]="counterSuffix"
+                        [step]="5"
+                        [size]="190"
+                        [readonly]="true"
+                        [color]="'#ddd'"
+                        [customValueView]="customTimerValueView"
+                        [customValueViewFontSize]="'40px'"
+      ></my-custom-element>
+      <div class="counterRowMessage" [class.fullWidth]="message">
+        {{message}}
       </div>
-      <button class="button linkButton" [disabled]="false">
-        <svg height="512" viewBox="0 0 512 512" width="512" xmlns="http://www.w3.org/2000/svg">
-          <polygon points="368.53 64 368.53 227.52 96 64 96 448 368.53 284.48 368.53 448 416 448 416 64 368.53 64"/></svg>
-      </button>
     </div>
-  </div>
+
+
+
+    <div class="timerButtons">
+      <div class="currentEventName">
+        {{ currentEvent ? currentEvent.name : 'Начать работу (25 мин)' }}
+      </div>
+      <ng-container *ngIf="!currentEvent">
+        <a (click)="handleCreateEventsAndPlay()">
+          <svg width="800px" height="800px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <g>
+              <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM10.622 8.415l4.879 3.252a.4.4 0 0 1 0 .666l-4.88 3.252a.4.4 0 0 1-.621-.332V8.747a.4.4 0 0 1 .622-.332z"/>
+            </g>
+          </svg>
+        </a>
+      </ng-container>
+      <ng-container *ngIf="currentEvent">
+        <a *ngIf="!isPlaying" (click)="handlePlay()">
+          <svg width="800px" height="800px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <g>
+              <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM10.622 8.415l4.879 3.252a.4.4 0 0 1 0 .666l-4.88 3.252a.4.4 0 0 1-.621-.332V8.747a.4.4 0 0 1 .622-.332z"/>
+            </g>
+          </svg>
+        </a>
+        <a *ngIf="isPlaying" (click)="pause()">
+          <svg width="800px" height="800px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <g>
+              <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM9 9h2v6H9V9zm4 0h2v6h-2V9z"/>
+            </g>
+          </svg>
+        </a>
+      </ng-container>
+
+    </div>
+
+    <div class="timerButtons timerButtons--Row2">
+      <div>
+        <!-- <div class="loops">{{loops}}/100</div>
+        <button class="button linkButton reset" (click)="resetTimer()">Сброс</button> -->
+      </div>
+      <div class="playNextWrapper" (click)="skip()" *ngIf="nextScheduleEvent">
+        <div class="playNextName noselect">
+          {{ nextScheduleEvent?.name }}
+        </div>
+        <button class="button linkButton" [disabled]="false">
+          <svg height="512" viewBox="0 0 512 512" width="512" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="368.53 64 368.53 227.52 96 64 96 448 368.53 284.48 368.53 448 416 448 416 64 368.53 64"/></svg>
+        </button>
+      </div>
+    </div>
+  </ng-container>
+  <ng-container *ngIf="eventEndScreen">
+    <app-end-event-screen [nextEvent]="nextScheduleEvent"
+                          [endedEvent]="currentEvent"
+                          (playNextAway)="skip()"
+                          (playFirstAway)="playFirst()"
+    ></app-end-event-screen>
+  </ng-container>
   <div class="bottomRow">
     <app-navigation></app-navigation>
   </div>

@@ -46,7 +46,7 @@ import { IScheduleConfig } from '../../models/scheduleConfig.model';
 export interface ITick {
   action: string //"tick" | "pause"
   scheduleConfigHash: string
-  timePassed?: number
+  timePassed?: number,
 }
 
 @Component({
@@ -73,6 +73,7 @@ export class CounterComponent implements OnInit, OnDestroy {
   nextScheduleEvent: any
   suggestNext: any
   customTimerValueView: string = ''
+  eventEndScreen: boolean = false
 
   constructor(
     @Inject(SseService) private SseServ: SseService,
@@ -100,6 +101,7 @@ export class CounterComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    // this.eventEndScreen = true
     setTimeout(() => {
       this.isVisible = false
       this.cdr.detectChanges()
@@ -129,6 +131,13 @@ export class CounterComponent implements OnInit, OnDestroy {
           if (tick.action === 'pause') {
             this.isPlaying = false
             this.counter = tick.timePassed || 0
+          }
+          if (tick.action === 'eventEnd') {
+            this.isPlaying = false
+            this.counter = tick.timePassed || 0
+            this.eventEndScreen = true
+          } else {
+            this.eventEndScreen = false
           }
         }
       }
@@ -180,6 +189,12 @@ export class CounterComponent implements OnInit, OnDestroy {
         this.CounterServ.changePlayingEvent(this.nextScheduleEvent.id)
       }
     }
+  }
+
+  public playFirst () {
+    const events = this.StoreServ.getScheduleEvents()
+    .sort((a,b) => new Date(a.timeFrom).getTime() - new Date(b.timeFrom).getTime())
+    this.CounterServ.startEvent(events[0].id)
   }
 
 

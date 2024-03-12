@@ -15,33 +15,10 @@
   overflow-x: hidden;
   background-color: #222;
   color: #c6c6c6;
-}
-
-.interrupting {
-  background-color: #911b1b;
-  //transition: background-color 2s ease; /* Transition for smooth color change */
-  //animation: colorChange 4s infinite alternate;
-}
-.interruptToRest{
-  background: #6190E8;  /* fallback for old browsers */
-  background: -webkit-linear-gradient(to top, #A7BFE8, #6190E8);  /* Chrome 10-25, Safari 5.1-6 */
-  background: linear-gradient(to top, #A7BFE8, #6190E8); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-
-}
-.interruptToWork{
-  background: #3494E6;  /* fallback for old browsers */
-  background: -webkit-linear-gradient(to top, #EC6EAD, #3494E6);  /* Chrome 10-25, Safari 5.1-6 */
-  background: linear-gradient(to top, #EC6EAD, #3494E6); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-}
-.working {
-  background: #C33764;  /* fallback for old browsers */
-  background: -webkit-linear-gradient(to bottom, #1D2671, #C33764);  /* Chrome 10-25, Safari 5.1-6 */
-  background: linear-gradient(to bottom, #1D2671, #C33764); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-}
-.resting {
-  background: #159957;  /* fallback for old browsers */
-  background: -webkit-linear-gradient(to bottom, #155799, #159957);  /* Chrome 10-25, Safari 5.1-6 */
-  background: linear-gradient(to bottom, #155799, #159957); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .settingsRow{
@@ -51,6 +28,7 @@
   justify-content: space-between;
   padding: 0 15px;
 }
+
 h1 {
   margin-top: 20%;
   text-align: center;
@@ -60,8 +38,8 @@ h1 {
   display: flex;
   justify-content: center;
   align-items: center;
-
 }
+
 .row {
   overflow: hidden;
 }
