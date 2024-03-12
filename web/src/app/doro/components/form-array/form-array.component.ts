@@ -3,6 +3,7 @@ import {
   Component,
   EventEmitter,
   Inject,
+  Input,
   OnInit,
   Output
 } from '@angular/core';
@@ -23,12 +24,44 @@ import {
   switchMap
 } from "rxjs";
 
+const initialFormData = [
+  {
+    id: 1,
+    eventName: 'Работа',
+    eventType: 'work',
+    eventLength: 25,
+    visibility: true,
+  },
+  {
+    id: 2,
+    eventName: 'Отдых',
+    eventType: 'rest',
+    eventLength: 5,
+    visibility: true,
+  },
+  {
+    id: null,
+    eventName: '',
+    eventType: 'default',
+    eventLength: 25,
+    visibility: true,
+  }
+]
 @Component({
   selector: 'app-form-array',
   templateUrl: './form-array.component.html',
   styleUrl: './form-array.component.scss'
 })
 export class FormArrayComponent implements OnInit{
+  _formData: any[] = initialFormData
+
+  @Input() set formData (data: any[]) {
+    if (data) {
+      // this._formData = data
+      this.setForm(data)
+    }
+  }
+
   @Output() arrayAway: EventEmitter<any> = new EventEmitter<any>()
   timersConfigForm: FormGroup;
 
@@ -56,33 +89,11 @@ export class FormArrayComponent implements OnInit{
   }
 
   ngOnInit():void {
-    this.setForm()
+    // this.setForm()
   }
 
-  setForm () {
-    const data = [
-      {
-        id: 1,
-        eventName: 'Работа',
-        eventType: 'work',
-        eventLength: 25,
-        visibility: true,
-      },
-      {
-        id: 2,
-        eventName: 'Отдых',
-        eventType: 'rest',
-        eventLength: 5,
-        visibility: true,
-      },
-      {
-        id: null,
-        eventName: '',
-        eventType: 'default',
-        eventLength: 25,
-        visibility: true,
-      }
-    ]
+  setForm (inputData?: any[]) {
+    const data = inputData ?? this._formData
     data.forEach(timerConfig => {
       const timerConfigFg = this.fb.group({
         id: [timerConfig.id],

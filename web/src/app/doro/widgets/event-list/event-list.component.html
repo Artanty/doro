@@ -68,7 +68,7 @@
   <div class="controlsRow" [class.expanded]="isControlsExpanded">
     <div class="controlsInner">
       <div class="expandableRow">
-        <app-form-array (arrayAway)="updateEventTemplates($event)"></app-form-array>
+        <app-form-array [formData]="formData" (arrayAway)="updateEventTemplates($event)"></app-form-array>
 <!--        <a (click)="addEventTemplate()" class="addTemplateButton">Добавить шаблон</a>-->
       </div>
       <div class="visibleRow">
