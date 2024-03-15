@@ -83,9 +83,10 @@ export class CounterService {
       scheduleId: this.StoreServ.getSchedule()?.id
     })
       .subscribe((res: any) => {
-        console.log(res)
+        // console.log(res)
         const event = this.StoreServ.getScheduleEventById(res?.scheduleEvent_id)
         this.StoreServ.setCurrentScheduleEvent(event || null)
+        this._resetSuggestNext()
       })
   }
 
@@ -96,7 +97,7 @@ export class CounterService {
       scheduleId: this.StoreServ.getSchedule()?.id
     })
       .subscribe((res: any) => {
-        console.log(res)
+        // console.log(res)
       })
   }
   pauseEvent (eventId: number) {
@@ -106,7 +107,7 @@ export class CounterService {
       scheduleId: this.StoreServ.getSchedule()?.id
     })
       .subscribe((res: any) => {
-        console.log(res)
+        // console.log(res)
 
       })
   }
@@ -117,7 +118,7 @@ export class CounterService {
       scheduleId: this.StoreServ.getSchedule()?.id
     })
       .subscribe((res: any) => {
-        console.log(res)
+        // console.log(res)
       })
   }
 
@@ -133,6 +134,7 @@ export class CounterService {
         if (this.StoreServ.getCurrentScheduleEvent() === null) {
           this.StoreServ.setCurrentScheduleEvent(event || null)
         }
+        this._resetSuggestNext()
       })
   }
 
@@ -188,5 +190,9 @@ export class CounterService {
 
   public suggestNext (data: ISuggestNextEventSseResponse) {
     this.StoreServ.setSuggestNext([data.endedEvent, data.nextEvent])
+  }
+
+  private _resetSuggestNext () {
+    this.StoreServ.setSuggestNext(null)
   }
 }

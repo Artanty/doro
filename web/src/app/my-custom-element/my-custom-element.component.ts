@@ -255,7 +255,7 @@ export class MyCustomElementComponent implements OnInit, AfterViewInit, OnDestro
   }
 
   ngOnDestroy() {
-    console.log('Custom element destroyed');
+    // console.log('Custom element destroyed');
   }
 
   updateSVG(value: number) {

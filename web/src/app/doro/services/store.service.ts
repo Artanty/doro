@@ -91,8 +91,8 @@ export class StoreService {
   // }
 
   public setCurrentScheduleEvent (data: Nullable<IScheduleEvent>) {
-    console.log('setCurrentScheduleEvent: ')
-    console.log(data)
+    // console.log('setCurrentScheduleEvent: ')
+    // console.log(data)
     if (JSON.stringify(this.getCurrentScheduleEvent()) !== JSON.stringify(data)) {
       this.currentScheduleEvent$.next(data)
     }

@@ -7,20 +7,34 @@ import {StoreService} from "./store.service";
 import {IScheduleEvent} from "../models/scheduleEvent.model";
 import {differenceInSeconds} from "date-fns";
 import {
+  combineLatest,
   map,
+  shareReplay,
   tap
 } from "rxjs";
 import {SERVER_URL} from "../../../../env";
+import { SseService } from './sse.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ScheduleEventService {
 
+  obs$: any
   constructor(
     @Inject(HttpClient) private http: HttpClient,
-    @Inject(StoreService) private StoreServ: StoreService
-  ) { }
+    @Inject(StoreService) private StoreServ: StoreService,
+    @Inject(SseService) private SseServ: SseService
+  ) {
+    this.obs$ = combineLatest([
+      this.StoreServ.listenScheduleEvents(),
+      this.StoreServ.listenScheduleConfig(),
+      this.SseServ.listenTick(),
+      this.StoreServ.listenSuggestNext()
+    ]).pipe(shareReplay(1))
+   }
+
+
 
   createScheduleEvent (data: Partial<IScheduleEvent>) {
     return this.http.post<IScheduleEvent>(`${SERVER_URL}/scheduleEvent/create`, data)
