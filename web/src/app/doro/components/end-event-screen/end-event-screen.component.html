@@ -2,8 +2,8 @@
 <h1>Время вышло</h1>
 <p>Событие {{ endedEvent?.name }} закончилось</p>
 <ng-container *ngIf="nextEvent">
-  <div class="button">
-    <a (click)="playNextAway.emit()" [class.isPaused]="true">
+  <div class="button" (click)="playNextAway.emit()">
+    <a [class.isPaused]="true">
       <svg width="20px" height="20px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <circle cx="12" cy="11" r="9" />
         <g>

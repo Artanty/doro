@@ -42,7 +42,7 @@ import { Nullable } from '../../models/_helper-types';
 import { ITick } from '../../models/tick.model';
 import { IScheduleEvent, IScheduleEventView } from '../../models/scheduleEvent.model';
 
-import {deleteProps} from "../../helpers";
+import {deleteProps, secondsToMinutesAndSeconds} from "../../helpers";
 import {ScheduleEventService} from "../../services/schedule-event.service";
 import {ISuggestNextEventSseResponse} from "../../../../../../contracts/endEventSseResponse";
 
@@ -74,13 +74,15 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges, OnD
 
   ngOnInit() {
     this.loadEventTemplates()
-    combineLatest([
-      this.StoreServ.listenScheduleEvents(),
-      this.StoreServ.listenScheduleConfig(),
-      this.SseServ.listenTick(),
-      this.StoreServ.listenSuggestNext()
-    ])
+    // combineLatest([
+    //   this.StoreServ.listenScheduleEvents(),
+    //   this.StoreServ.listenScheduleConfig(),
+    //   this.SseServ.listenTick(),
+    //   this.StoreServ.listenSuggestNext()
+    // ])
+    this.ScheduleEventServ.obs$
     .subscribe(([scheduleEvents, scheduleConfig, tick, suggestNext]: [IScheduleEvent[], Nullable<IScheduleConfig>, ITick, Nullable<TSuggestNext>]) => {
+      // console.log(scheduleEvents, scheduleConfig, tick, suggestNext)
       if (scheduleEvents?.length) {
         if (scheduleConfig && scheduleConfig.scheduleEvent_id) {
           this.scheduleEvents = scheduleEvents.map((el: IScheduleEventView) => {
@@ -91,7 +93,7 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges, OnD
               if (el.isPlaying) {
                 const playingEventTickedSeconds = tick.timePassed
                 if (playingEventTickedSeconds) {
-                  el.timeLeft = el.timeLength - secondsToMinutes(playingEventTickedSeconds)
+                  el.timeLeft = secondsToMinutesAndSeconds(el.timeLength * 60 - playingEventTickedSeconds)
                 }
               }
             } else {
@@ -108,6 +110,7 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges, OnD
               }
             } else {
               el.isSuggestedNext = false
+              el.isEnded = false
             }
             return el
           })

@@ -29,21 +29,21 @@
         </div>
         <div class="details" (click)="stopPropagation($event)">
           <div class="timeFromAndTo">
-            <div class="timeFrom">{{ el.timeFrom | date: ' HH:mm' }}</div>
-            <div class="timeTo">{{ el.timeTo | date: ' HH:mm' }}</div>
+            <!-- <div class="timeFrom">{{ el.timeFrom | date: ' HH:mm' }}</div>
+            <div class="timeTo">{{ el.timeTo | date: ' HH:mm' }}</div> -->
           </div>
           <div class="timeLengthAndCount">
             <ng-container *ngIf="!el.isPlaying">
               <div class="time__data">
                 <span class="time__data__value">{{ el.timeLength }}</span>
-                <span class="time__data_suffix"> '</span>
+                <!-- <span class="time__data_suffix"> '</span> -->
               </div>
             </ng-container>
             <ng-container *ngIf="el.isPlaying">
               <div class="time__data">
 <!--                <span class="time__prefix">- </span>-->
                 <span class="time__data__value">{{ el.timeLeft }}</span>
-                <span class="time__data__suffix"> '</span>
+                <!-- <span class="time__data__suffix"> '</span> -->
               </div>
             </ng-container>
           </div>
