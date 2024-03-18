@@ -13,7 +13,24 @@ import {
   debounceTime,
   distinctUntilChanged
 } from "rxjs";
-import {CounterConfigService} from "../../services/counter-config.service";
+import {CounterConfigService, IWorkSimpleCounterConfig} from "../../services/counter-config.service";
+import { ScheduleEventService } from '../../services/schedule-event.service';
+
+export interface ICounterPeriodConfig {
+  bigRestLength: number;
+  bigRestRate: number;
+  periodEnd: string;
+  periodStart: string;
+  restLength: number;
+  scheduleName: string;
+  scheduleType: string;
+  workLength: number;
+  workName: string
+  restName: string
+}
+export interface ICounterConfigForm {
+  counterConfigFa: ICounterPeriodConfig[]
+}
 
 @Component({
   selector: 'app-counter-config',
@@ -25,44 +42,42 @@ export class CounterConfigComponent implements OnInit {
   get counterConfigFa(): FormArray {
     return this.counterConfigForm.get('counterConfigFa') as FormArray;
   }
+
   constructor(
     @Inject(FormBuilder) private fb: FormBuilder,
     @Inject(ChangeDetectorRef) private cdr: ChangeDetectorRef,
-    @Inject(CounterConfigService) private CounterConfigServ: CounterConfigService
+    @Inject(CounterConfigService) private CounterConfigServ: CounterConfigService,
+    @Inject(ScheduleEventService) private ScheduleEventServ: ScheduleEventService
   ){
     this.counterConfigForm = this.fb.group({
       counterConfigFa: this.fb.array([])
     });
-    this.counterConfigFa.valueChanges
-      .pipe(
-        debounceTime(2000),
-        distinctUntilChanged((prev: any, next: any) => JSON.stringify(prev) === JSON.stringify(next))
-      )
-      .subscribe((res: any) => {
-        console.log(res)
-      })
   }
   ngOnInit (): void {
     const data = [{
-      // scheduleName: 'Расписание по умолчанию',
+      scheduleName: 'Расписание по умолчанию',
       periodStart: '10:00',
       periodEnd: '18:30',
       workLength: 25,
       restLength: 5,
       bigRestLength: 15,
       bigRestRate: 3,
-      scheduleType: 'default'
+      scheduleType: 'default',
+      workName: 'Работа',
+      restName: 'Отдых',
     }]
-    data.forEach(timerConfig => {
+    data.forEach((timerConfig: ICounterPeriodConfig) => {
       const timerConfigFg = this.fb.group({
-        scheduleName: 'default',//[timerConfig.scheduleName],
+        scheduleName: [timerConfig.scheduleName],
         periodStart: [timerConfig.periodStart],
         periodEnd: [timerConfig.periodEnd],
         workLength: [timerConfig.workLength],
         restLength: [timerConfig.restLength],
         bigRestLength: [timerConfig.bigRestLength],
         bigRestRate: [timerConfig.bigRestRate],
-        scheduleType: [timerConfig.scheduleType]
+        scheduleType: [timerConfig.scheduleType],
+        workName: [timerConfig.workName],
+        restName: [timerConfig.restName]
       });
       (this.counterConfigForm.get('counterConfigFa') as FormArray).clear();
       (this.counterConfigForm.get('counterConfigFa') as FormArray).push(timerConfigFg);
@@ -71,7 +86,11 @@ export class CounterConfigComponent implements OnInit {
   }
 
   handleCreate() {
-    console.log(this.counterConfigForm.getRawValue())
-    // this.CounterConfigServ.fromCounterConfigToEventList()
+    const formResult: ICounterConfigForm = this.counterConfigForm.getRawValue()
+    this.ScheduleEventServ.createScheduleWithEvents({
+      schedule: this.CounterConfigServ.getScheduleFromConfig(formResult.counterConfigFa[0]),
+      events: this.CounterConfigServ.getEventsFromConfig(formResult.counterConfigFa[0])
+    }).subscribe()
   }
+
 }

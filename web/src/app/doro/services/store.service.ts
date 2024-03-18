@@ -25,7 +25,7 @@ export class StoreService {
   private scheduleEvents$: BehaviorSubject<IScheduleEvent[]> = new BehaviorSubject<IScheduleEvent[]>([])
   // private selectedScheduleEvent$: BehaviorSubject<any> = new BehaviorSubject(null)
   private currentScheduleEvent$ = new BehaviorSubject<Nullable<IScheduleEvent>>(null)
-  private viewState$: BehaviorSubject<TTab> = new BehaviorSubject<TTab>('COUNTER') // eventList  counter
+  private viewState$: BehaviorSubject<TTab> = new BehaviorSubject<TTab>('COUNTER_CONFIG') // eventList  counter
   private tick$: BehaviorSubject<Nullable<ITick>> = new BehaviorSubject<Nullable<ITick>>(null)
   private clientId: string | null = null
   private connectionState$ = new BehaviorSubject<TConnectionState>('LOADING')

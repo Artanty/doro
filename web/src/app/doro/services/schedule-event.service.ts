@@ -79,4 +79,18 @@ export class ScheduleEventService {
   //   ])
 
   // }
+
+  /** todo:
+   * schedule id === null -> create schedule
+   * schedule id !== null -> add events to schedule
+   */
+  createScheduleWithEvents (data: {schedule: any, events: Partial<IScheduleEvent>[] }) {
+    return this.http.post<any>(`${SERVER_URL}/scheduleEvent/batchCreate`, data)
+      .pipe(
+        tap((res: any) => {
+          // this.StoreServ.addScheduleEvents(res)
+          console.log(res)
+        })
+      )
+  }
 }

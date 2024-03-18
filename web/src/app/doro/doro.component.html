@@ -6,24 +6,25 @@
     <div class="slide" *ngSwitchCase="'LOADING'">
       <app-loading></app-loading>
     </div>
-    <div class="slide"
+    <ng-container *ngSwitchDefault>
+      <div class="slide"
          @animationTriggerName
          *ngIf="(viewState$ | async) === 'COUNTER'">
-      <app-counter></app-counter>
-    </div>
+        <app-counter></app-counter>
+      </div>
 
-    <div class="slide"
-         @animationTriggerName
-         *ngIf="(viewState$ | async) === 'EVENT_LIST'">
-      <app-event-list></app-event-list>
-    </div>
+      <div class="slide"
+          @animationTriggerName
+          *ngIf="(viewState$ | async) === 'EVENT_LIST'">
+        <app-event-list></app-event-list>
+      </div>
 
-    <div class="slide"
-         @animationTriggerName
-         *ngIf="(viewState$ | async) === 'COUNTER_CONFIG'">
-      <app-counter-config></app-counter-config>
-    </div>
-
+      <div class="slide"
+          @animationTriggerName
+          *ngIf="(viewState$ | async) !== 'COUNTER' && (viewState$ | async) !== 'EVENT_LIST'">
+        <app-counter-config></app-counter-config>
+      </div>
+    </ng-container>
   </div>
 </ng-container>
 

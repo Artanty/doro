@@ -29,8 +29,8 @@
         </div>
         <div class="details" (click)="stopPropagation($event)">
           <div class="timeFromAndTo">
-            <!-- <div class="timeFrom">{{ el.timeFrom | date: ' HH:mm' }}</div>
-            <div class="timeTo">{{ el.timeTo | date: ' HH:mm' }}</div> -->
+            <div class="timeFrom">{{ el.timeFrom | date: ' HH:mm' }}</div>
+            <div class="timeTo">{{ el.timeTo | date: ' HH:mm' }}</div>
           </div>
           <div class="timeLengthAndCount">
             <ng-container *ngIf="!el.isPlaying">
