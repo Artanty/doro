@@ -16,6 +16,9 @@ import CounterActionController from "./counterAction";
 import { deleteScheduleEventById } from "../dbActions/deleteScheduleEventById";
 import { getScheduleConfigById } from "../dbActions/getScheduleConfigById";
 import { createDefaultScheduleEvents } from "../dbActions/createDefaultScheduleEvents";
+import { createSchedule } from "../dbActions/createSchedule";
+import { Schedule } from "../models/Schedule";
+import { createScheduleEvents } from "../dbActions/createScheduleEvents";
 
 export default class ScheduleEventController {
     public static async getScheduleEventsByScheduleId(id: number): Promise<any> {
@@ -66,6 +69,20 @@ export default class ScheduleEventController {
     public static async createDefaultEventsAndPlay (data: any): Promise<any> {
         try {
             return await createDefaultScheduleEvents(data.scheduleId, [])
+        } catch (err) {
+            return { status: 'err' }
+        }
+    }
+
+    public static async createScheduleWithEvents(data: any): Promise<any> {
+        try {
+            return await createSchedule(data.schedule.name, data.schedule.scheduleType)
+            .then( async(schedule: Schedule) => {
+                return {
+                    schedule,
+                    events: await createScheduleEvents(schedule.id, data.events)
+                }
+            })
         } catch (err) {
             return { status: 'err' }
         }

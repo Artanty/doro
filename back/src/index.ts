@@ -442,6 +442,9 @@ app.post('/scheduleEvent/:action',async (req, res) => {
     if (action === 'createAndPlay') {
         response = await ScheduleEventController.createDefaultEventsAndPlay(req.body)
     }
+    if (action === 'batchCreate') {
+        response = await ScheduleEventController.createScheduleWithEvents(req.body)
+    }
 
     return res.send(response);
 })
