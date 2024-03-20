@@ -1,4 +1,5 @@
 <ng-container *ngIf="connectionState$ | async">
+  <div></div>
   <div class="wrapper" [ngSwitch]="connectionState">
     <div class="slide" *ngSwitchCase="'DISCONNECTED'">
       <app-noise (reconnectAway)="reconnect()"></app-noise>
@@ -7,26 +8,34 @@
       <app-loading></app-loading>
     </div>
     <ng-container *ngSwitchDefault>
-      <div class="slide"
-         @animationTriggerName
-         *ngIf="(viewState$ | async) === 'COUNTER'">
-        <app-counter></app-counter>
-      </div>
-
-      <div class="slide"
+      <ng-container *ngIf="(viewState$ | async) as view">
+        <div class="slide"
           @animationTriggerName
-          *ngIf="(viewState$ | async) === 'EVENT_LIST'">
-        <app-event-list></app-event-list>
-      </div>
+          *ngIf="view === 'COUNTER'">
+          <app-counter></app-counter>
+        </div>
 
-      <div class="slide"
-          @animationTriggerName
-          *ngIf="(viewState$ | async) !== 'COUNTER' && (viewState$ | async) !== 'EVENT_LIST'">
-        <app-counter-config></app-counter-config>
-      </div>
+        <div class="slide"
+            @animationTriggerName
+            *ngIf="view === 'EVENT_LIST'">
+          <app-event-list></app-event-list>
+        </div>
+
+        <div class="slide"
+            @animationTriggerName
+            *ngIf="view === 'COUNTER_CONFIG'">
+          <app-counter-config></app-counter-config>
+        </div>
+
+      </ng-container>
     </ng-container>
+    <div class="bottomRow backBottom">
+      <app-navigation ></app-navigation>
+    </div>
   </div>
+
 </ng-container>
+
 
 
 

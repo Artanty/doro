@@ -7,7 +7,6 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule, provideAnimations } from '@angular/platform-browser/animations';
 import { AudioComponent } from '../audio/audio.component';
-
 import { MyCustomElementComponent } from '../my-custom-element/my-custom-element.component';
 import { CounterService } from './services/counter.service';
 import { EventListComponent} from './widgets/event-list/event-list.component'

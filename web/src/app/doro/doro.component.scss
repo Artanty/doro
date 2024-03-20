@@ -3,18 +3,22 @@
   position: relative;
   width: 100%;
   height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 
   & .slide{
     display: block;
     position: absolute;
     width: 100%;
-    height: 100%;
+    height: calc(100% - 53px);
   }
 
-  & .backdrop{
-    z-index: 99;
+  & .bottomRow{
+    height: 53px;
     width: 100%;
-    height: 100%;
+    position: absolute;
+    bottom:0;
   }
 }
 

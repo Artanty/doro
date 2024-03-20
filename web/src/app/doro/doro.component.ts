@@ -13,6 +13,7 @@ import {
 } from '@angular/core';
 import {
   combineLatestWith,
+  distinctUntilChanged,
   map,
   Observable,
   startWith,
@@ -65,6 +66,9 @@ export class DoroComponent implements OnInit{
         return connection === 'READY'
         ? view
         : null
+      }),
+      tap(()=>{
+        // this.cdr.detectChanges()
       })
     );
     this.SseServ.createEventSource()
