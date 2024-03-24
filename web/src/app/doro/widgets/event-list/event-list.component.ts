@@ -12,13 +12,12 @@ import {
 } from '@angular/core';
 
 import {
-  Subscription,
-  combineLatest,
+  Observable,
   concatMap,
   delay,
+  filter,
   from,
   map,
-  switchMap,
   tap,
   timer,
 } from "rxjs";
@@ -26,8 +25,6 @@ import {
 import {
   add,
   differenceInMinutes,
-  format,
-  secondsToMinutes
 } from "date-fns";
 
 import {HttpClient} from "@angular/common/http";
@@ -44,7 +41,6 @@ import { IScheduleEvent, IScheduleEventView } from '../../models/scheduleEvent.m
 
 import {deleteProps, secondsToMinutesAndSeconds} from "../../helpers";
 import {ScheduleEventService} from "../../services/schedule-event.service";
-import {ISuggestNextEventSseResponse} from "../../../../../../contracts/endEventSseResponse";
 
 @Component({
   selector: 'app-event-list',
@@ -57,7 +53,7 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges, OnD
   scheduleEvents: IScheduleEventView[] = []
   isControlsExpanded: boolean = false
   eventTemplates: any[] = []
-  subs!: Subscription
+  currentSchedule$: Observable<{name: string, id: number}>
 
   constructor (
     @Inject(StoreService) public StoreServ: StoreService,
@@ -66,7 +62,18 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges, OnD
     @Inject(CounterService) private CounterServ: CounterService,
     @Inject(SseService) private SseServ: SseService,
     @Inject(ScheduleEventService) private ScheduleEventServ: ScheduleEventService
-  ) {}
+  ) {
+    this.currentSchedule$ = this.StoreServ.listenSchedule()
+    .pipe(
+      // startWith(null),
+      filter(Boolean),
+      map(res => ({ name: res.name, id: res.id })),
+      tap(el => {
+        console.log(el),
+        this.cdr.detectChanges()
+      }),
+      )
+  }
 
   tracker(_: any, item: any): any{
     return item.id;
@@ -74,12 +81,6 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges, OnD
 
   ngOnInit() {
     this.loadEventTemplates()
-    // combineLatest([
-    //   this.StoreServ.listenScheduleEvents(),
-    //   this.StoreServ.listenScheduleConfig(),
-    //   this.SseServ.listenTick(),
-    //   this.StoreServ.listenSuggestNext()
-    // ])
     this.ScheduleEventServ.obs$
     .subscribe(([scheduleEvents, scheduleConfig, tick, suggestNext]: [IScheduleEvent[], Nullable<IScheduleConfig>, ITick, Nullable<TSuggestNext>]) => {
       // console.log(scheduleEvents, scheduleConfig, tick, suggestNext)

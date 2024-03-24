@@ -1,7 +1,4 @@
 import {
-  AfterContentInit,
-  AfterViewChecked,
-  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -19,16 +16,12 @@ import {FormArray, FormBuilder, FormControl, FormGroup} from "@angular/forms";
 import 'dial-gauge';
 import {
   combineLatest,
-  debounceTime,
-  distinctUntilChanged,
-  EMPTY,
-  empty,
+  filter,
   map,
   Observable,
   Subscription,
   tap
 } from "rxjs";
-import { trigger, transition, style, animate, state } from '@angular/animations';
 import { differenceInMilliseconds, differenceInSeconds, format, formatDuration, minutesToSeconds } from 'date-fns';
 import { secondsToMinutesAndSeconds } from 'src/app/doro/helpers';
 import { fetchDataSequentially, TEndpointsWithDepsResponse } from 'src/app/doro/helpers/fetchDataSequentially';
@@ -74,6 +67,7 @@ export class CounterComponent implements OnInit, OnDestroy {
   suggestNext: any
   customTimerValueView: string = ''
   eventEndScreen: boolean = false
+  currentSchedule$: Observable<{name: string, id: number}>
 
   constructor(
     @Inject(SseService) private SseServ: SseService,
@@ -87,6 +81,17 @@ export class CounterComponent implements OnInit, OnDestroy {
     @Inject(StoreService) private StoreServ: StoreService,
     @Inject(ScheduleEventService) private ScheduleEventServ: ScheduleEventService
   ) {
+    this.currentSchedule$ = this.StoreServ.listenSchedule()
+    .pipe(
+      // startWith(null),
+      filter(Boolean),
+      map(res => ({ name: res.name, id: res.id })),
+      tap(el => {
+        console.log(el),
+        this.cdr.detectChanges()
+      }),
+      )
+
     this.timersConfigForm = this.fb.group({
       timersConfigFa: this.fb.array([])
     });
