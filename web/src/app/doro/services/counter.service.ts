@@ -151,7 +151,6 @@ export class CounterService {
           if (res.callback) {
             this[res.callback as keyof CounterService](res.response)
           }
-
         }
       });
     } else {
@@ -172,10 +171,10 @@ export class CounterService {
   getScheduleConfig() {
     this.http.post(`${SERVER_URL}/getScheduleConfig`, null)
       .subscribe((res: any) => {
-        const savedScheduleConfig = this.StoreServ.getScheduleConfig()
-        if (savedScheduleConfig === null || savedScheduleConfig?.hash !== res.hash) {
+        // const savedScheduleConfig = this.StoreServ.getScheduleConfig()
+        // if (savedScheduleConfig === null || savedScheduleConfig?.hash !== res.hash) {
           this.StoreServ.setScheduleConfig(res)
-        }
+        // }
       })
   }
 

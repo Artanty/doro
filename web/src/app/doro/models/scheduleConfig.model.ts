@@ -1,6 +1,8 @@
 export interface IScheduleConfig {
   id: number;
   hash: string;
+  scheduleHash: string;
+  scheduleEventsHash: string;
   date: string | null;
   weekDay: number | null;
   dateModificator: any;

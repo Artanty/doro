@@ -15,6 +15,7 @@ import {
 } from "rxjs";
 import {CounterConfigService, IWorkSimpleCounterConfig} from "../../services/counter-config.service";
 import { ScheduleEventService } from '../../services/schedule-event.service';
+import { StoreService } from '../../services/store.service';
 
 export interface ICounterPeriodConfig {
   bigRestLength: number;
@@ -47,7 +48,8 @@ export class CounterConfigComponent implements OnInit {
     @Inject(FormBuilder) private fb: FormBuilder,
     @Inject(ChangeDetectorRef) private cdr: ChangeDetectorRef,
     @Inject(CounterConfigService) private CounterConfigServ: CounterConfigService,
-    @Inject(ScheduleEventService) private ScheduleEventServ: ScheduleEventService
+    @Inject(ScheduleEventService) private ScheduleEventServ: ScheduleEventService,
+    @Inject(StoreService) private StoreServ: StoreService
   ){
     this.counterConfigForm = this.fb.group({
       counterConfigFa: this.fb.array([])
@@ -89,7 +91,8 @@ export class CounterConfigComponent implements OnInit {
     const formResult: ICounterConfigForm = this.counterConfigForm.getRawValue()
     this.ScheduleEventServ.createScheduleWithEvents({
       schedule: this.CounterConfigServ.getScheduleFromConfig(formResult.counterConfigFa[0]),
-      events: this.CounterConfigServ.getEventsFromConfig(formResult.counterConfigFa[0])
+      events: this.CounterConfigServ.getEventsFromConfig(formResult.counterConfigFa[0]),
+      scheduleConfigId: this.StoreServ.getScheduleConfig()?.id as number
     }).subscribe()
   }
 

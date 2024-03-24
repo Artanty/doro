@@ -8,12 +8,13 @@ import {IScheduleEvent} from "../models/scheduleEvent.model";
 import {differenceInSeconds} from "date-fns";
 import {
   combineLatest,
+  filter,
   map,
   shareReplay,
   tap
 } from "rxjs";
 import {SERVER_URL} from "../../../../env";
-import { SseService } from './sse.service';
+import { ApiService } from './../api/api.service'
 
 @Injectable({
   providedIn: 'root'
@@ -24,17 +25,15 @@ export class ScheduleEventService {
   constructor(
     @Inject(HttpClient) private http: HttpClient,
     @Inject(StoreService) private StoreServ: StoreService,
-    @Inject(SseService) private SseServ: SseService
+    @Inject(ApiService) private ApiServ: ApiService
   ) {
     this.obs$ = combineLatest([
       this.StoreServ.listenScheduleEvents(),
       this.StoreServ.listenScheduleConfig(),
-      this.SseServ.listenTick(),
+      this.StoreServ.listenTick().pipe(filter(Boolean)),
       this.StoreServ.listenSuggestNext()
     ]).pipe(shareReplay(1))
    }
-
-
 
   createScheduleEvent (data: Partial<IScheduleEvent>) {
     return this.http.post<IScheduleEvent>(`${SERVER_URL}/scheduleEvent/create`, data)
@@ -84,7 +83,7 @@ export class ScheduleEventService {
    * schedule id === null -> create schedule
    * schedule id !== null -> add events to schedule
    */
-  createScheduleWithEvents (data: {schedule: any, events: Partial<IScheduleEvent>[] }) {
+  createScheduleWithEvents (data: {schedule: any, events: Partial<IScheduleEvent>[], scheduleConfigId: number }) {
     return this.http.post<any>(`${SERVER_URL}/scheduleEvent/batchCreate`, data)
       .pipe(
         tap((res: any) => {
@@ -92,5 +91,13 @@ export class ScheduleEventService {
           console.log(res)
         })
       )
+  }
+
+  getScheduleEvents (id: number) {
+    this.ApiServ.requestScheduleEvents(id).pipe(
+      tap((res: any) => {
+        this.StoreServ.setScheduleEvents(res)
+      })
+    ).subscribe()
   }
 }

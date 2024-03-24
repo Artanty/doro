@@ -4,7 +4,9 @@ import {
   filter,
   delay,
   from,
-  of
+  of,
+  take,
+  startWith
 } from "rxjs";
 import { StoreService } from './store.service';
 import { ITick } from '../models/tick.model';
@@ -13,6 +15,8 @@ import {
   RECONNECT_TRIES,
   SERVER_URL
 } from "../../../../env";
+import { ScheduleEventService } from './schedule-event.service';
+import { ScheduleService } from './schedule.service';
 
 
 @Injectable({
@@ -22,7 +26,9 @@ export class SseService {
   private _eventSource!: EventSource
   constructor(
     @Inject(StoreService) private StoreServ: StoreService,
-    @Inject(CounterService) private CounterServ: CounterService
+    @Inject(CounterService) private CounterServ: CounterService,
+    @Inject(ScheduleEventService) private ScheduleEventServ: ScheduleEventService,
+    @Inject(ScheduleService) private ScheduleServ: ScheduleService
   ) {}
 
   public createEventSource(): void {
@@ -42,33 +48,63 @@ export class SseService {
         observer.next(messageData);
       }
     }).subscribe({
-      // next: (res: any) => {
-      //   this.StoreServ.setConnectionState('READY')
-      //   if (res.nextAction) {
-      //     this.CounterServ.nextActionHandler(res.nextAction)
-      //   }
-      //
-      //   if (res.scheduleConfigHash !== this.StoreServ.getScheduleConfig()?.hash) {
-      //     this.CounterServ.getScheduleConfig()
-      //   }
-      //   this.StoreServ.setTick(res)
-      // }
       next: (res: any) => {
         this.StoreServ.setConnectionState('READY')
-        if (res.nextAction) {
-          this.CounterServ.nextActionHandler(res.nextAction, res)
-        }
-        // if (res.action === 'endEvent') {
-        //   this.CounterServ.endEventHandler(res)
+        // if (res.nextAction) {
+        //   this.CounterServ.nextActionHandler(res.nextAction, res)
         // }
-        if (res.scheduleConfigHash !== this.StoreServ.getScheduleConfig()?.hash) {
+        if (this.readHashOf(res, 'config') !== this.config?.hash) {
           this.CounterServ.getScheduleConfig()
+        }
+        if (this.readHashOf(res, 'schedule') !== this.config?.scheduleHash) {
+          this.waitConfig().subscribe(() => {
+            this.config?.schedule_id && this.ScheduleServ.getSchedule(this.config?.schedule_id)
+          })
+        }
+        if (this.readHashOf(res, 'events') !== this.config?.scheduleEventsHash) {
+          this.waitConfig().subscribe(() => {
+            this.config?.schedule_id && this.ScheduleEventServ.getScheduleEvents(this.config?.schedule_id)
+          })
         }
         this.StoreServ.setTick(res)
       }
     })
   }
 
+  /**
+   * wait for first load of config
+   */
+  waitConfig() {
+    return this.StoreServ.listenScheduleConfig().pipe(
+      startWith(this.config),
+      filter(Boolean),
+      take(1)
+    )
+  }
+
+  get config () {
+    return this.StoreServ.getScheduleConfig()
+  }
+
+  private readHashOf (res: any, entity: string): string {
+    // hash: scheduleConfig.hash + '__' + scheduleConfig.scheduleHash + '__' + scheduleConfig.scheduleEventsHash
+    const hashes = res.hash.split('__')
+    let index
+    switch (entity) {
+      case 'config':
+        index = 0
+        break;
+      case 'schedule':
+        index = 1
+        break;
+      case 'events':
+        index = 2
+        break;
+      default:
+        throw new Error('function readHashOf failed. wrong entity name')
+    }
+    return hashes[index]
+  }
 
   public listenTick (): Observable<ITick> {
     return this.StoreServ.listenTick().pipe(filter(Boolean))
