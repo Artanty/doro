@@ -45,7 +45,7 @@ export default class ScheduleConfigController {
             const scheduleEvent = await getScheduleEventById(scheduleEventId) as ScheduleEvent
             Promise.all([scheduleConfig, scheduleEvent])
                 .then((res: [scheduleConfig: ScheduleConfig, scheduleEvent: ScheduleEvent]) => {
-                    CounterActionController.handleCounterAction(res[0], res[1], 'tick')
+                    CounterActionController.handleCounterAction('tick', res[0], res[1])
                 })
             // console.log(rr?.counterStartTime)
             return scheduleConfig
@@ -60,7 +60,7 @@ export default class ScheduleConfigController {
             const scheduleEvent = await getScheduleEventById(scheduleEventId) as ScheduleEvent
             Promise.all([scheduleConfig, scheduleEvent])
                 .then((res: [scheduleConfig: ScheduleConfig, scheduleEvent: ScheduleEvent]) => {
-                    CounterActionController.handleCounterAction(res[0], res[1], 'pause')
+                    CounterActionController.handleCounterAction('pause', res[0], res[1])
                 })
             // console.log(rr?.counterStartTime)
             return scheduleConfig
@@ -75,7 +75,7 @@ export default class ScheduleConfigController {
             const scheduleEvent = await getScheduleEventById(scheduleEventId) as ScheduleEvent
             Promise.all([scheduleConfig, scheduleEvent])
                 .then((res: [scheduleConfig: ScheduleConfig, scheduleEvent: ScheduleEvent]) => {
-                    CounterActionController.handleCounterAction(res[0], res[1], 'tick')
+                    CounterActionController.handleCounterAction('tick', res[0], res[1])
                 })
             // console.log(rr?.counterStartTime)
             return scheduleConfig
@@ -90,7 +90,7 @@ export default class ScheduleConfigController {
             const scheduleEvent = await getScheduleEventById(scheduleEventId) as ScheduleEvent
             Promise.all([scheduleConfig, scheduleEvent])
                 .then((res: [scheduleConfig: ScheduleConfig, scheduleEvent: ScheduleEvent]) => {
-                    CounterActionController.handleCounterAction(res[0], res[1], 'stop')
+                    CounterActionController.handleCounterAction('stop', res[0], res[1])
                 })
             return scheduleConfig
         } catch (err) {
@@ -104,7 +104,7 @@ export default class ScheduleConfigController {
             const scheduleEvent = await getScheduleEventById(scheduleEventId) as ScheduleEvent
             Promise.all([scheduleConfig, scheduleEvent])
                 .then((res: [scheduleConfig: ScheduleConfig, scheduleEvent: ScheduleEvent]) => {
-                    CounterActionController.handleCounterAction(res[0], res[1], 'changePlayingEvent')
+                    CounterActionController.handleCounterAction('changePlayingEvent', res[0], res[1])
                 })
             return scheduleConfig
         } catch (err) {

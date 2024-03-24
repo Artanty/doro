@@ -4,19 +4,14 @@ import SetTimersConfigController from "../controllers/timersConfig";
 import EventsController from "../controllers/events";
 import StatusController from "../controllers/status";
 import CounterActionController from "../controllers/counterAction";
+import { dd } from "../utils";
 
 const router = express.Router();
 
 router.get("/events", async (_req, res) => {
+    dd('sse connection....')
     const controller = new EventsController(_req, res);
     const response = await controller.handleEvents();
-    // return res.send(response);
-});
-
-router.post("/action", async (_req, res) => {
-    // const controller = new CounterActionController();
-    // await controller.handleCounterAction(_req, res);
-    // await CounterActionController.handleCounterAction();
     // return res.send(response);
 });
 

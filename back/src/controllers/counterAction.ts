@@ -36,9 +36,9 @@ export default class CounterActionController {
      * */
 
     public static async handleCounterAction(
+            counterAction: string,
             scheduleConfig: ScheduleConfig, 
-            scheduleEvent: ScheduleEvent, 
-            counterAction: string
+            scheduleEvent?: ScheduleEvent, 
         ) {
         const clients = getClients()
 
@@ -47,14 +47,14 @@ export default class CounterActionController {
             setCounter(scheduleConfig.counterTimePassed)
             const timerId = setInterval(() => {
                 let counter = getCounter()
-                if (this.getCounterLength(scheduleEvent) < counter) {
+                if (this.getCounterLength(scheduleEvent as any) < counter) {
                     console.log('tick interruptToRest()')
                     this.endCurrentEvent()
                 } else {
                     const data = {
                         timePassed: counter,
                         action: counterAction,
-                        scheduleConfigHash: scheduleConfig.hash
+                        hash: scheduleConfig.hash + '__' + scheduleConfig.scheduleHash + '__' + scheduleConfig.scheduleEventsHash
                     }
                     const clients = getClients()
                     clients.forEach(client => {
@@ -72,7 +72,7 @@ export default class CounterActionController {
             const data = {
                 timePassed: scheduleConfig.counterTimePassed,
                 action: counterAction,
-                scheduleConfigHash: scheduleConfig.hash
+                hash: scheduleConfig.hash + '__' + scheduleConfig.scheduleHash + '__' + scheduleConfig.scheduleEventsHash
             }
             clients.forEach(client => {
                 client.response.write(`id: ${getNextEventId.next().value}\n\n`)
@@ -83,7 +83,7 @@ export default class CounterActionController {
             this.resetTimerIdAndCounter()
             const data = {
                 action: 'reset',
-                scheduleConfigHash: scheduleConfig.hash
+                hash: scheduleConfig.hash + '__' + scheduleConfig.scheduleHash + '__' + scheduleConfig.scheduleEventsHash
             }
             clients.forEach(client => {
                 client.response.write(`id: ${getNextEventId.next().value}\n\n`)
@@ -94,14 +94,14 @@ export default class CounterActionController {
             this.resetTimerIdAndCounter()
             const timerId = setInterval(() => {
                 let counter = getCounter()
-                if (this.getCounterLength(scheduleEvent) < counter) {
+                if (this.getCounterLength(scheduleEvent as any) < counter) {
                     console.log('changePlayingEvent interruptToRest()')
                     this.endCurrentEvent()
                 } else {
                     const data = {
                         timePassed: counter,
                         action: 'tick',
-                        scheduleConfigHash: scheduleConfig.hash
+                        hash: scheduleConfig.hash + '__' + scheduleConfig.scheduleHash + '__' + scheduleConfig.scheduleEventsHash
                     }
                     const clients = getClients()
                     clients.forEach(client => {
@@ -114,7 +114,6 @@ export default class CounterActionController {
             }, 1000);
             setTimerId(timerId)
         }
-
     }
 
     static getCounterLength (scheduleEvent: ScheduleEvent) {
@@ -141,13 +140,29 @@ export default class CounterActionController {
             schedule_id,
             updatedConfig
         } = await ScheduleConfigController.stopEventAndGetNext() as any
+        const scheduleConfig = updatedConfig
         const data: any = {
             endedEvent,
             nextEvent,
             schedule_id,
             action: 'eventEnd',
             nextAction: 'suggestNext',
-            scheduleConfigHash: updatedConfig?.hash
+            hash: scheduleConfig.hash + '__' + scheduleConfig.scheduleHash + '__' + scheduleConfig.scheduleEventsHash
+        }
+        const clients = getClients()
+        clients.forEach(client => {
+            client.response.write(`id: ${getNextEventId.next().value}\n\n`)
+            client.response.write(`data: ${JSON.stringify(data)}\n\n`)
+        })
+    }
+    
+    static async broadcastConfig (scheduleConfig: ScheduleConfig, resetTimer?: boolean) {
+        if (resetTimer) {
+            this.resetTimerIdAndCounter()
+        }
+        const data = {
+            action: 'config',
+            hash: scheduleConfig.hash + '__' + scheduleConfig.scheduleHash + '__' + scheduleConfig.scheduleEventsHash
         }
         const clients = getClients()
         clients.forEach(client => {

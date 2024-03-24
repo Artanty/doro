@@ -19,6 +19,11 @@ import { createDefaultScheduleEvents } from "../dbActions/createDefaultScheduleE
 import { createSchedule } from "../dbActions/createSchedule";
 import { Schedule } from "../models/Schedule";
 import { createScheduleEvents } from "../dbActions/createScheduleEvents";
+import { setCurrentSchedule } from "../dbActions/setCurrentSchedule";
+import { dd } from "../utils";
+import { getActiveScheduleConfig } from "../dbActions/getActiveScheduleConfig";
+import { updateScheduleConfigHash } from "../dbActions/updateScheduleConfigHash";
+
 
 export default class ScheduleEventController {
     public static async getScheduleEventsByScheduleId(id: number): Promise<any> {
@@ -51,12 +56,14 @@ export default class ScheduleEventController {
                 configWithStoppedEvent = await stopScheduleEvent(
                     data.scheduleConfigId, 
                     data.scheduleEvent.id, 
-                    data.scheduleEvent.schedule_id) as ScheduleConfig
-                CounterActionController.handleCounterAction(configWithStoppedEvent, data.scheduleEvent, 'stop')
+                    data.scheduleEvent.schedule_id) 
+                CounterActionController.handleCounterAction('stop', configWithStoppedEvent, data.scheduleEvent)
             }
           
             return await deleteScheduleEventById(data.scheduleEvent.id)
-                .then((deleteRes: any) => {
+                .then(async(deleteRes: any) => {
+                    const configWithUpdatedHash = await updateScheduleConfigHash((configWithStoppedEvent || scheduleConfig) as any, 'scheduleEventsHash')
+                    CounterActionController.broadcastConfig(configWithUpdatedHash)
                     return { status: {
                         eventStopped: !!configWithStoppedEvent,
                         eventDeleted: !!deleteRes
@@ -66,9 +73,26 @@ export default class ScheduleEventController {
             return { status: 'err' }
         }
     }
+
     public static async createDefaultEventsAndPlay (data: any): Promise<any> {
         try {
-            return await createDefaultScheduleEvents(data.scheduleId, [])
+            if (data.scheduleId) {
+                await createDefaultScheduleEvents(data.scheduleId, [])
+                return { status: 'createDefaultScheduleEvents ok' }
+            } else {
+                await getActiveScheduleConfig().then( async(scheduleConfig: ScheduleConfig) => {
+                    if (scheduleConfig.scheduleEvent_id) {
+                        await createDefaultScheduleEvents(scheduleConfig.scheduleEvent_id, [])
+                        return { status: 'createDefaultScheduleEvents ok' }  
+                    } else {
+                        await createSchedule('Таймер по умолчанию', 'default').then(async(schedule: Schedule) => {
+                            await createDefaultScheduleEvents(schedule.id, [])
+                            return { status: 'createSchedule ok' } 
+                        })
+                    }
+                })
+                return { status: 'ok' }
+            }
         } catch (err) {
             return { status: 'err' }
         }
@@ -78,13 +102,23 @@ export default class ScheduleEventController {
         try {
             return await createSchedule(data.schedule.name, data.schedule.scheduleType)
             .then( async(schedule: Schedule) => {
-                return {
-                    schedule,
-                    events: await createScheduleEvents(schedule.id, data.events)
-                }
+                dd('createSchedule done')
+                return await createScheduleEvents(schedule.id, data.events).then( async (events) => {
+                    dd('createScheduleEvents done')
+                    return await setCurrentSchedule(data.scheduleConfigId, events[0]?.id, schedule.id)
+                    .then((scheduleConfig: ScheduleConfig) => {
+                        dd('setCurrentSchedule done')
+                        CounterActionController.broadcastConfig(scheduleConfig, true)
+                        return {
+                            status: scheduleConfig.id
+                        }
+                    })
+                })
+                
             })
         } catch (err) {
             return { status: 'err' }
         }
     }
+
 }

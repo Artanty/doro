@@ -8,11 +8,10 @@ import express, {
 import bodyParser from 'body-parser'
 import cors from 'cors'
 
-import Router from "./routes";
 import swaggerUi from "swagger-ui-express";
 import {ITimerConfig} from "./controllers/timersConfig";
 import { ValidateError } from 'tsoa'
-import {makeRangeIterator} from "./utils";
+import {dd, makeRangeIterator} from "./utils";
 // import { Schedule } from './models/Schedule';
 
 import {
@@ -106,7 +105,7 @@ app.use(function errorHandler(
     next();
 });
 
-app.use(Router);
+app.use(router);
 app.use(bodyParser.urlencoded({extended: false}));
 
 const PORT = 3000;
@@ -140,6 +139,8 @@ export function setTimerId (newTimerId: any) {
 }
 app.listen(PORT, () => {
     console.log(`Events service listening at http://localhost:${PORT}`)
+    dd('create default config if none')
+    ScheduleConfigController.getScheduleConfig()
 })
 
 
@@ -442,6 +443,9 @@ app.post('/scheduleEvent/:action',async (req, res) => {
     if (action === 'createAndPlay') {
         response = await ScheduleEventController.createDefaultEventsAndPlay(req.body)
     }
+    /**
+     * + save as current shcedule
+     */
     if (action === 'batchCreate') {
         response = await ScheduleEventController.createScheduleWithEvents(req.body)
     }

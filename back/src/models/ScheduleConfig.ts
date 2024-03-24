@@ -85,5 +85,13 @@ export class ScheduleConfig extends Model<InferAttributes<ScheduleConfig>, Infer
     @Default(false)
     declare configIsActive: CreationOptional<boolean>;
 
+    @Attribute(DataTypes.STRING)
+    @NotNull
+    declare scheduleHash: string;
+
+    @Attribute(DataTypes.STRING)
+    @NotNull
+    declare scheduleEventsHash: string;
+
     isForceSync?: boolean = false
 }

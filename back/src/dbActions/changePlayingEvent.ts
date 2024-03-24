@@ -2,10 +2,7 @@ import {ScheduleConfig} from "../models/ScheduleConfig";
 import {ScheduleEvent} from "../models/ScheduleEvent";
 import {getScheduleConfigById} from "./getScheduleConfigById";
 import {getHash} from "../utils";
-/**
- * Проигрываем scheduleEvent начиная с момента,
- * на котором остановились
- * */
+
 export async function changePayingScheduleEvent (
     scheduleConfigId: number,
     scheduleEventId: number,

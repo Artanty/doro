@@ -46,8 +46,12 @@ async function createScheduleAndConfig() {
         schedule_id: newSchedule.id,
         name: 'Отдых'
     })
+    const hash = getHash(Math.floor(Math.random() * 10), new Date().getTime())
     return await ScheduleConfig.create({
-        hash: getHash(Math.floor(Math.random() * 10), new Date().getTime()),
-        schedule_id: newSchedule.id // Assign the newly created schedule's id
+        schedule_id: newSchedule.id,
+        hash: hash,
+        scheduleHash: hash,
+        scheduleEventsHash: hash,
+        configIsActive: true
     })
 }

@@ -17,6 +17,7 @@ import * as e from "express";
 import {ScheduleConfig} from "../models/ScheduleConfig";
 import {saveDefaultScheduleConfig} from "../dbActions/saveDefaultScheduleConfig";
 import {getLatestScheduleConfig} from "../dbActions/getLatestScheduleConfig";
+import { getActiveScheduleConfig } from "../dbActions/getActiveScheduleConfig";
 export interface IEventState {
     "sessionId": number,
     "sessionLength"?: number,
@@ -72,18 +73,21 @@ export default class EventsController {
     // }
 }
 
-export function eventsHandler(request: e.Request, response: e.Response) {
+export async function eventsHandler(request: e.Request, response: e.Response) {
     const headers = {
         'Content-Type': 'text/event-stream',
         'Connection': 'keep-alive',
         'Cache-Control': 'no-cache'
     };
-
+    const scheduleConfig = await getActiveScheduleConfig()
+    
     response.writeHead(200, headers);
     const clientId = Date.now();
     response.write(`id: ${getNextEventId.next().value}\n\n`)
-    // response.write(`data: ${JSON.stringify({clientId: String(clientId), state: getState()})}\n\n`)
-    response.write(`data: ${JSON.stringify({ clientId: String(clientId), nextAction: ['getScheduleConfig','getSchedule','getScheduleEvents']})}\n\n`)
+    response.write(`data: ${JSON.stringify({ 
+        clientId: String(clientId), 
+        hash: scheduleConfig.hash + '__' + scheduleConfig.scheduleHash + '__' + scheduleConfig.scheduleEventsHash 
+    })}\n\n`)
 
     const newClient = {
         id: clientId,

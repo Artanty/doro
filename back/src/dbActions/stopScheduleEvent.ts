@@ -10,7 +10,7 @@ import {getCounter} from "../index";
 export async function stopScheduleEvent (
     scheduleConfigId: number,
     scheduleEventId: number,
-    scheduleId: number): Promise<ScheduleConfig | null> {
+    scheduleId: number): Promise<ScheduleConfig> {
     return await ScheduleConfig.findOne({
         where:
             {
@@ -19,16 +19,13 @@ export async function stopScheduleEvent (
                 id: scheduleConfigId,
             },
         rejectOnEmpty: true
-    }).then( async (scheduleConfig: ScheduleConfig | null) => {
-        if (scheduleConfig) {
-            await scheduleConfig.update({
-                scheduleEvent_id: scheduleEventId,
-                counterIsPaused: true,
-                hash: getHash(Math.floor(Math.random() * 10), new Date().getTime()),
-                counterTimePassed: 0
-            })
-        }
-        return scheduleConfig
+    }).then( async (scheduleConfig: ScheduleConfig) => {
+        return await scheduleConfig.update({
+            scheduleEvent_id: scheduleEventId,
+            counterIsPaused: true,
+            hash: getHash(Math.floor(Math.random() * 10), new Date().getTime()),
+            counterTimePassed: 0
+        })
     })
 
 }
