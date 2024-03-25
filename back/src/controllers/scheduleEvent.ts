@@ -23,6 +23,8 @@ import { setCurrentSchedule } from "../dbActions/setCurrentSchedule";
 import { dd } from "../utils";
 import { getActiveScheduleConfig } from "../dbActions/getActiveScheduleConfig";
 import { updateScheduleConfigHash } from "../dbActions/updateScheduleConfigHash";
+import { setCurrentScheduleEvent } from "../dbActions/setCurrentScheduleEvent";
+import { playScheduleEvent } from "../dbActions/playScheduleEvent";
 
 
 export default class ScheduleEventController {
@@ -77,17 +79,34 @@ export default class ScheduleEventController {
     public static async createDefaultEventsAndPlay (data: any): Promise<any> {
         try {
             if (data.scheduleId) {
-                await createDefaultScheduleEvents(data.scheduleId, [])
-                return { status: 'createDefaultScheduleEvents ok' }
+                return await createDefaultScheduleEvents(data.scheduleId, []).then(async(events: ScheduleEvent[]) => {
+                    return await updateScheduleConfigHash(undefined, 'scheduleEventsHash').then(async(config: ScheduleConfig)=>{
+                        dd('updateScheduleConfigHash')
+                        const configWithUpdCurEvent = await setCurrentScheduleEvent(config.id, config.schedule_id, events[0]?.id) 
+                        const configWithPlay = await playScheduleEvent(configWithUpdCurEvent.id, configWithUpdCurEvent.scheduleEvent_id, configWithUpdCurEvent.schedule_id)
+                        CounterActionController.handleCounterAction('tick', configWithPlay, events[0])
+                        return { status: 'createDefaultScheduleEvents ok' }
+                    })
+                })
             } else {
-                await getActiveScheduleConfig().then( async(scheduleConfig: ScheduleConfig) => {
-                    if (scheduleConfig.scheduleEvent_id) {
-                        await createDefaultScheduleEvents(scheduleConfig.scheduleEvent_id, [])
-                        return { status: 'createDefaultScheduleEvents ok' }  
+                await getActiveScheduleConfig().then(async(scheduleConfig: ScheduleConfig) => {
+                    if (scheduleConfig.schedule_id) {
+                        await createDefaultScheduleEvents(scheduleConfig.schedule_id, []).then(async() => {
+                            const config = await updateScheduleConfigHash(scheduleConfig, 'scheduleEventsHash')
+                            CounterActionController.broadcastConfig(config)
+                            return { status: 'createDefaultScheduleEvents ok' } 
+                        })
                     } else {
                         await createSchedule('Таймер по умолчанию', 'default').then(async(schedule: Schedule) => {
-                            await createDefaultScheduleEvents(schedule.id, [])
-                            return { status: 'createSchedule ok' } 
+                            await createDefaultScheduleEvents(schedule.id, []).then(async() => {
+                                await updateScheduleConfigHash(scheduleConfig, 'scheduleEventsHash').then(async(config1) => {
+                                    await updateScheduleConfigHash(config1, 'scheduleHash').then(async(config2) => {
+                                        CounterActionController.broadcastConfig(config2)
+                                        return { status: 'createSchedule ok' } 
+                                    })
+                                })
+                            
+                            })
                         })
                     }
                 })

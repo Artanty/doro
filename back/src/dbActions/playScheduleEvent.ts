@@ -10,7 +10,7 @@ import {getCounter} from "../index";
 export async function playScheduleEvent (
     scheduleConfigId: number,
     scheduleEventId: number,
-    scheduleId: number): Promise<ScheduleConfig | null> {
+    scheduleId: number): Promise<ScheduleConfig> {
     const result = await ScheduleConfig.findOne({
         where:
             {
@@ -20,7 +20,7 @@ export async function playScheduleEvent (
                 counterIsPaused: true,
             },
         rejectOnEmpty: true
-    }).then( async (scheduleConfig: ScheduleConfig | null) => {
+    }).then( async (scheduleConfig: ScheduleConfig) => {
         if (scheduleConfig) {
             await scheduleConfig.update({
                 scheduleEvent_id: scheduleEventId,
@@ -32,6 +32,5 @@ export async function playScheduleEvent (
         }
         return scheduleConfig
     })
-    console.log(result)
     return result
 }
