@@ -208,9 +208,6 @@ export class CounterComponent implements OnInit, OnDestroy {
       scheduleId: this.StoreServ.getScheduleConfig()?.schedule_id,
       scheduleConfigId: this.StoreServ.getScheduleConfig()?.id
     }
-    this.ScheduleEventServ.createEventsAndPlay(data).subscribe((res => {
-      this.StoreServ.setScheduleEvents(res)
-      this.CounterServ.startEvent(res[0].id) // todo use current event
-    }))
+    this.ScheduleEventServ.createEventsAndPlay(data).subscribe()
   }
 }
