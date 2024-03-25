@@ -208,8 +208,7 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges, OnD
   }
 
   handleSheduleEventClick (el: any) {
-    // this.StoreServ.setCurrentScheduleEvent(el)
-    // todo delete or make activeEvent
+    //
   }
 
   stopPropagation (event: Event){

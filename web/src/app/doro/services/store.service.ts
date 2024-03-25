@@ -23,17 +23,13 @@ export class StoreService {
   private scheduleConfig$: BehaviorSubject<Nullable<IScheduleConfig>> = new BehaviorSubject<Nullable<IScheduleConfig>>(null)
   private schedule$: BehaviorSubject<any> = new BehaviorSubject(null)
   private scheduleEvents$: BehaviorSubject<IScheduleEvent[]> = new BehaviorSubject<IScheduleEvent[]>([])
-  // private selectedScheduleEvent$: BehaviorSubject<any> = new BehaviorSubject(null)
-  private currentScheduleEvent$ = new BehaviorSubject<Nullable<IScheduleEvent>>(null)
   private viewState$: BehaviorSubject<TTab> = new BehaviorSubject<TTab>('COUNTER') // eventList  counter
   private tick$: BehaviorSubject<Nullable<ITick>> = new BehaviorSubject<Nullable<ITick>>(null)
   private clientId: string | null = null
   private connectionState$ = new BehaviorSubject<TConnectionState>('LOADING')
   private suggestNext$ = new BehaviorSubject<Nullable<TSuggestNext>>(null)
 
-  constructor() {
-    // console.log('Store created')
-  }
+  constructor() {}
 
   public setScheduleConfig (data: Nullable<IScheduleConfig>) {
     this.scheduleConfig$.next(data)
@@ -80,28 +76,10 @@ export class StoreService {
     return this.scheduleEvents$.asObservable()
   }
 
-  // public setSelectedScheduleEvent (data: any) {
-  //   this.selectedScheduleEvent$.next(data)
-  // }
-  // public getSelectedScheduleEvent (): any {
-  //   return this.selectedScheduleEvent$.value
-  // }
-  // public listenSelectedScheduleEvent () {
-  //   return this.selectedScheduleEvent$.asObservable()
-  // }
-
-  public setCurrentScheduleEvent (data: Nullable<IScheduleEvent>) {
-    // console.log('setCurrentScheduleEvent: ')
-    // console.log(data)
-    if (JSON.stringify(this.getCurrentScheduleEvent()) !== JSON.stringify(data)) {
-      this.currentScheduleEvent$.next(data)
-    }
-  }
   public getCurrentScheduleEvent (): Nullable<IScheduleEvent> {
-    return this.currentScheduleEvent$.value
-  }
-  public listenCurrentScheduleEvent (): Observable<Nullable<IScheduleEvent>> {
-    return this.currentScheduleEvent$.asObservable()
+    const config = this.getScheduleConfig()
+    const events = this.getScheduleEvents()
+    return events?.find(el => el.id === config?.scheduleEvent_id) || null
   }
 
   public setViewState (data: TTab) {

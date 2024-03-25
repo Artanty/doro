@@ -23,8 +23,6 @@ import {
   tap
 } from "rxjs";
 import { differenceInMilliseconds, differenceInSeconds, format, formatDuration, minutesToSeconds } from 'date-fns';
-import { secondsToMinutesAndSeconds } from 'src/app/doro/helpers';
-import { fetchDataSequentially, TEndpointsWithDepsResponse } from 'src/app/doro/helpers/fetchDataSequentially';
 import { ClientService } from 'src/app/doro/services/client.service';
 import { CounterService } from 'src/app/doro/services/counter.service';
 import { SseService } from 'src/app/doro/services/sse.service';
