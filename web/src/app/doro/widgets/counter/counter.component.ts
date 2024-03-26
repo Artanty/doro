@@ -85,7 +85,7 @@ export class CounterComponent implements OnInit, OnDestroy {
       filter(Boolean),
       map(res => ({ name: res.name, id: res.id })),
       tap(el => {
-        console.log(el),
+        // console.log(el),
         this.cdr.detectChanges()
       }),
       )
@@ -110,32 +110,35 @@ export class CounterComponent implements OnInit, OnDestroy {
       this.cdr.detectChanges()
     }, 2000)
 
-    combineLatest([
-      this.StoreServ.listenScheduleEvents(),
-      this.StoreServ.listenScheduleConfig(),
-      this.SseServ.listenTick(),
-      this.StoreServ.listenSuggestNext()
-    ])
+    // combineLatest([
+    //   this.StoreServ.listenScheduleEvents(),
+    //   this.StoreServ.listenScheduleConfig(),
+    //   this.SseServ.listenTick(),
+    //   this.StoreServ.listenSuggestNext()
+    // ])
+    this.ScheduleEventServ.obs$
     .subscribe(([scheduleEvents, scheduleConfig, tick, suggestNext]: [IScheduleEvent[], Nullable<IScheduleConfig>, ITick, Nullable<TSuggestNext>]) => {
       if (scheduleEvents?.length) {
         if (scheduleConfig && scheduleConfig.scheduleEvent_id) {
+          console.log(tick)
           const currentEvent = scheduleEvents.find(se => scheduleConfig.scheduleEvent_id === se.id) ?? scheduleEvents[0]
           if (currentEvent) {
             this.nextScheduleEvent = getNextItemAfterId(scheduleEvents, currentEvent.id)
             this.customTimerValueView = this.setCustomTimerValueView(currentEvent)
+
           }
           this.currentEvent = currentEvent ?? null
           this.suggestNext = suggestNext
 
-          if (tick.action === 'tick') {
+          if (tick?.action === 'tick') {
             this.counter = tick.timePassed || 0
             this.isPlaying = true
           }
-          if (tick.action === 'pause') {
+          if (tick?.action === 'pause') {
             this.isPlaying = false
             this.counter = tick.timePassed || 0
           }
-          if (tick.action === 'eventEnd') {
+          if (tick?.action === 'eventEnd') {
             this.isPlaying = false
             this.counter = tick.timePassed || 0
             this.eventEndScreen = true

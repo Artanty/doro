@@ -50,24 +50,29 @@ export class SseService {
     }).subscribe({
       next: (res: any) => {
         this.StoreServ.setConnectionState('READY')
-        // if (res.nextAction) {
-        //   this.CounterServ.nextActionHandler(res.nextAction, res)
-        // }
-        if (this.readHashOf(res, 'config') !== this.config?.hash) {
-          this.CounterServ.getScheduleConfig()
+          // console.log('tick config hash: ')
+          // console.log(this.readHashOf(res, 'config'))
+          // console.log('diff schedule: ')
+          // console.log(this.readHashOf(res, 'schedule') !== this.config?.scheduleHash)
+          // console.log('diff events :' )
+          // console.log(this.readHashOf(res, 'events') !== this.config?.scheduleEventsHash)
+          if (this.readHashOf(res, 'config') !== this.config?.hash) {
+            this.CounterServ.getScheduleConfig()
+          }
+          if (this.readHashOf(res, 'schedule') !== this.config?.scheduleHash) {
+            this.waitConfig().subscribe(() => {
+              this.config?.schedule_id && this.ScheduleServ.getSchedule(this.config?.schedule_id)
+            })
+          }
+          if (this.readHashOf(res, 'events') !== this.config?.scheduleEventsHash) {
+            this.waitConfig().subscribe(() => {
+              this.config?.schedule_id && this.ScheduleEventServ.getScheduleEvents(this.config?.schedule_id)
+            })
+          }
+          if (res.action === 'tick') {
+            this.StoreServ.setTick(res)
+          }
         }
-        if (this.readHashOf(res, 'schedule') !== this.config?.scheduleHash) {
-          this.waitConfig().subscribe(() => {
-            this.config?.schedule_id && this.ScheduleServ.getSchedule(this.config?.schedule_id)
-          })
-        }
-        if (this.readHashOf(res, 'events') !== this.config?.scheduleEventsHash) {
-          this.waitConfig().subscribe(() => {
-            this.config?.schedule_id && this.ScheduleEventServ.getScheduleEvents(this.config?.schedule_id)
-          })
-        }
-        this.StoreServ.setTick(res)
-      }
     })
   }
 

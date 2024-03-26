@@ -71,13 +71,6 @@ function initEventSource (sseServ: SseService) {
       deps: [CounterService],
       multi: true
     },
-    // {
-    //   provide: APP_INITIALIZER,
-    //   useFactory: initEventSource,
-    //   deps: [SseService],
-    //   multi: true
-    // },
-    // provideAnimations(),
   ],
   schemas: [ CUSTOM_ELEMENTS_SCHEMA ],
 })

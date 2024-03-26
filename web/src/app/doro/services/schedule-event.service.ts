@@ -30,7 +30,7 @@ export class ScheduleEventService {
     this.obs$ = combineLatest([
       this.StoreServ.listenScheduleEvents(),
       this.StoreServ.listenScheduleConfig(),
-      this.StoreServ.listenTick().pipe(filter(Boolean)),
+      this.StoreServ.listenTick(),//.pipe(filter(Boolean)),
       this.StoreServ.listenSuggestNext()
     ]).pipe(shareReplay(1))
    }

@@ -69,7 +69,6 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges, OnD
       filter(Boolean),
       map(res => ({ name: res.name, id: res.id })),
       tap(el => {
-        console.log(el),
         this.cdr.detectChanges()
       }),
       )
@@ -154,7 +153,7 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges, OnD
   }
 
   public deleteScheduleEvent (data: IScheduleEventView, index: number) {
-    const reqData = {
+    const reqData = { //todo change to pickPtrops
       scheduleEvent: deleteProps(data, ['isActive', 'timeLength', 'isPlaying', 'timeLeft']) as IScheduleEvent,
       scheduleConfigId: (this.StoreServ.getScheduleConfig()?.id) as number
     }
@@ -167,8 +166,6 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges, OnD
           element.classList.add('fade-out');
         }
       }),
-      delay(1000),
-      concatMap(async () => this.StoreServ.removeScheduleEvents(reqData.scheduleEvent))
     )
     .subscribe()
   }
@@ -256,8 +253,14 @@ export class EventListComponent implements OnInit, AfterViewInit, OnChanges, OnD
   }
   formData: any[] = []
   loadEventTemplates () {
-    const data = localStorage.getItem('eventTemplates') ?? ''
-    this.formData  = JSON.parse(data)
+    try {
+      const data = localStorage.getItem('eventTemplates') ?? ''
+      if (data) {
+        this.formData = JSON.parse(data)
+      }
+    } catch (e) {
+      console.log(e)
+    }
   }
 
   public addEventTemplate () {

@@ -15,3 +15,13 @@ export function deleteProps <T extends object, K extends keyof T & string>(obj: 
   });
   return obj
 }
+
+export function pickProps <T extends object, K extends keyof T & string>(obj: T, props: K | K[]): Partial<T> {
+  let resultObj: any = {}
+  assureArray(props).forEach(prop => {
+    if (obj.hasOwnProperty(prop)) {
+      resultObj[prop] = obj[prop]
+    }
+  });
+  return resultObj
+}

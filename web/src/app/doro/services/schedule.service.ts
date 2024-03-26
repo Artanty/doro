@@ -17,7 +17,6 @@ export class ScheduleService {
   ) { }
 
   getSchedule (id: number) {
-    console.log(88)
     this.ApiServ.requestSchedule(id).pipe(
       tap((res: any) => {
         this.StoreServ.setSchedule(res)
