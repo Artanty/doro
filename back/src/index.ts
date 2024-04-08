@@ -159,17 +159,6 @@ export function removeClient (clientId: any) {
     ClientController.stopScheduleEventIfNoClients()
 }
 
-
-// app.get('/events', eventsHandler);
-
-/**
- * {
- *     "sessionId": 1,
- *     "sessionLength": 25,
- *     "sessionRestLength": 5,
- *     "sessionName": "work"
- * }
- */
 function getTimerConfig (sessionId: number) {
     return timersConfig.find(e => e.sessionId === sessionId)
 }
