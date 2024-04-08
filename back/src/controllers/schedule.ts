@@ -1,6 +1,3 @@
-import {getLatestScheduleConfig} from "../dbActions/getLatestScheduleConfig";
-import {ScheduleConfig} from "../models/ScheduleConfig";
-import {saveDefaultScheduleConfig} from "../dbActions/saveDefaultScheduleConfig";
 import {getScheduleById} from "../dbActions/getSchedule";
 
 export default class ScheduleController {

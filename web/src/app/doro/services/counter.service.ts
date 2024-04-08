@@ -106,12 +106,17 @@ export class CounterService {
     const eventId = this.StoreServ.getScheduleConfig()?.scheduleEvent_id
     return eventId ? (this.StoreServ.getScheduleEventById(eventId) || null) : null
   }
-
+  once = false
   getScheduleConfig() {
-    this.http.post(`${SERVER_URL}/getScheduleConfig`, null)
-      .subscribe((res: any) => {
-        this.StoreServ.setScheduleConfig(res)
-      })
+    // if (!this.once) {
+      // setTimeout(() => {
+        this.http.post(`${SERVER_URL}/getScheduleConfig`, null)
+          .subscribe((res: any) => {
+            this.StoreServ.setScheduleConfig(res)
+            // this.once = true
+          })
+      // }, 1000)
+    // }
   }
 
   public suggestNext (data: ISuggestNextEventSseResponse) {

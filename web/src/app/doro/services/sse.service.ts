@@ -17,6 +17,7 @@ import {
 } from "../../../../env";
 import { ScheduleEventService } from './schedule-event.service';
 import { ScheduleService } from './schedule.service';
+import { UserService } from './user.service';
 
 
 @Injectable({
@@ -28,12 +29,13 @@ export class SseService {
     @Inject(StoreService) private StoreServ: StoreService,
     @Inject(CounterService) private CounterServ: CounterService,
     @Inject(ScheduleEventService) private ScheduleEventServ: ScheduleEventService,
-    @Inject(ScheduleService) private ScheduleServ: ScheduleService
+    @Inject(ScheduleService) private ScheduleServ: ScheduleService,
+    @Inject(UserService) private UserServ: UserService
   ) {}
 
   public createEventSource(): void {
     let tries = RECONNECT_TRIES - 1
-    this._eventSource = new EventSource(`${SERVER_URL}/events`);
+    this._eventSource = new EventSource(`${SERVER_URL}/events?token=${encodeURIComponent(this.UserServ.getUserToken())}`);
     this._eventSource.onerror = event => {
       if (tries) {
         tries--
@@ -50,12 +52,7 @@ export class SseService {
     }).subscribe({
       next: (res: any) => {
         this.StoreServ.setConnectionState('READY')
-          // console.log('tick config hash: ')
-          // console.log(this.readHashOf(res, 'config'))
-          // console.log('diff schedule: ')
-          // console.log(this.readHashOf(res, 'schedule') !== this.config?.scheduleHash)
-          // console.log('diff events :' )
-          // console.log(this.readHashOf(res, 'events') !== this.config?.scheduleEventsHash)
+
           if (this.readHashOf(res, 'config') !== this.config?.hash) {
             this.CounterServ.getScheduleConfig()
           }

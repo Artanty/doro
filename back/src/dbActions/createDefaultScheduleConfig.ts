@@ -1,5 +1,5 @@
 import {ScheduleConfig} from "../models/ScheduleConfig";
-import {getHash} from "../utils";
+import {dd, getHash} from "../utils";
 import {Database} from "../core/dbConnect";
 import {Schedule} from "../models/Schedule";
 import {ScheduleEvent} from "../models/ScheduleEvent";
@@ -7,21 +7,11 @@ import {
     add,
     startOfToday
 } from "date-fns";
+import { createUser } from "./createUser";
 
-export async function saveDefaultScheduleConfig () {
+export async function createDefaultScheduleConfig () {
+    dd('Содание пользователя, конфига, расписания и 2 событий по умолчанию')
     await Database.getInstance().query('SET FOREIGN_KEY_CHECKS = 0');
-    // const result = await ScheduleConfig.create({
-    //     hash: getHash(Math.floor(Math.random() * 10), new Date().getTime()),
-    //     // date: undefined,
-    //     // weekDay: undefined,
-    //     // dateModificator: undefined,
-    //     // schedule_id: 1,
-    //     schedule: {
-    //         name: 'Таймер по умолчанию',
-    //         scheduleType: 'default',
-    //     },
-    //     include: ['schedule']
-    // })
     const result = await createScheduleAndConfig();
     await Database.getInstance().query('SET FOREIGN_KEY_CHECKS = 1');
     return result
@@ -47,11 +37,12 @@ async function createScheduleAndConfig() {
         name: 'Отдых'
     })
     const hash = getHash(Math.floor(Math.random() * 10), new Date().getTime())
-    return await ScheduleConfig.create({
+    const config = await ScheduleConfig.create({
         schedule_id: newSchedule.id,
         hash: hash,
         scheduleHash: hash,
         scheduleEventsHash: hash,
         configIsActive: true
     })
+    return await createUser('Artey', 'password', config.id)
 }

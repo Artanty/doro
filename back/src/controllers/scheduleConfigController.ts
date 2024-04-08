@@ -1,6 +1,5 @@
 import {getLatestScheduleConfig} from "../dbActions/getLatestScheduleConfig";
 import {ScheduleConfig} from "../models/ScheduleConfig";
-import {saveDefaultScheduleConfig} from "../dbActions/saveDefaultScheduleConfig";
 import {getScheduleConfigById} from "../dbActions/getScheduleConfigById";
 import {activateScheduleConfig} from "../dbActions/activateScheduleConfig";
 import {playScheduleEvent} from "../dbActions/playScheduleEvent";
@@ -13,21 +12,12 @@ import {stopScheduleEvent} from "../dbActions/stopScheduleEvent";
 import {changePayingScheduleEvent} from "../dbActions/changePlayingEvent";
 import { getActiveScheduleConfig } from "../dbActions/getActiveScheduleConfig";
 import {getNextScheduleEventAfter} from "../dbActions/getNextScheduleEventAfter";
+import { dd } from "../utils";
 
 export default class ScheduleConfigController {
 
     public static async getScheduleConfig(): Promise<any> {
-        try {
-            return getLatestScheduleConfig().then((latestConfig: ScheduleConfig | null) => {
-                if (latestConfig) {
-                    return latestConfig
-                } else {
-                    return saveDefaultScheduleConfig()
-                }
-            })
-        } catch (err) {
-            return { status: 'err' }
-        }
+        return getLatestScheduleConfig()
     }
 
     public static async activateScheduleConfig(id: number): Promise<any> {
@@ -77,10 +67,9 @@ export default class ScheduleConfigController {
                 .then((res: [scheduleConfig: ScheduleConfig, scheduleEvent: ScheduleEvent]) => {
                     CounterActionController.handleCounterAction('tick', res[0], res[1])
                 })
-            // console.log(rr?.counterStartTime)
             return scheduleConfig
         } catch (err) {
-            return { status: 'err' }
+            return { status: err }
         }
     }
 
@@ -145,6 +134,14 @@ export default class ScheduleConfigController {
             })
         } catch (err) {
             return { status: err }
+        }
+    }
+
+    public static async getScheduleConfigById(id: number): Promise<any> {
+        try {
+            return await getScheduleConfigById(id)
+        } catch (err) {
+            return { status: 'err' }
         }
     }
 }

@@ -1,5 +1,6 @@
 [
   "ScheduleConfig",
   "Schedule",
-  "ScheduleEvent"
+  "ScheduleEvent",
+  "User"
 ]

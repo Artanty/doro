@@ -14,10 +14,8 @@ import {
 } from "tsoa";
 import * as e from "express";
 
-import {ScheduleConfig} from "../models/ScheduleConfig";
-import {saveDefaultScheduleConfig} from "../dbActions/saveDefaultScheduleConfig";
-import {getLatestScheduleConfig} from "../dbActions/getLatestScheduleConfig";
 import { getActiveScheduleConfig } from "../dbActions/getActiveScheduleConfig";
+import { dd } from "../utils";
 export interface IEventState {
     "sessionId": number,
     "sessionLength"?: number,
@@ -58,6 +56,7 @@ export default class EventsController {
         private readonly request: e.Request,
         private readonly response: e.Response
     ) {}
+
     public async handleEvents(): Promise<any> {
         try {
             eventsHandler(this.request, this.response)
@@ -65,12 +64,12 @@ export default class EventsController {
             // response.send({ status: 'err' });
         }
     }
-    // @Get("/")
-    // public async handleEvents(): Promise<any> {
-    //     return {
-    //         message: "hello",
-    //     };
-    // }
+
+    private async checkUserToken(): Promise<any> {
+        // const token = req.query.token;
+
+    
+    }
 }
 
 export async function eventsHandler(request: e.Request, response: e.Response) {
@@ -79,7 +78,10 @@ export async function eventsHandler(request: e.Request, response: e.Response) {
         'Connection': 'keep-alive',
         'Cache-Control': 'no-cache'
     };
+    console.log('function eventsHandler')
     const scheduleConfig = await getActiveScheduleConfig()
+    
+    dd('отправляем клиенту, который подключился последний активный конфиг, id: ' + scheduleConfig.id)
     
     response.writeHead(200, headers);
     const clientId = Date.now();
@@ -93,11 +95,6 @@ export async function eventsHandler(request: e.Request, response: e.Response) {
         id: clientId,
         response
     };
-    // getOrCreateScheduleConfig().then((res: any) => {
-    //     console.log(res)
-    //     response.write(`id: ${getNextEventId.next().value}\n\n`)
-    //     response.write(`data: ${JSON.stringify(res)}\n\n`)
-    // })
 
     addClient(newClient);
 

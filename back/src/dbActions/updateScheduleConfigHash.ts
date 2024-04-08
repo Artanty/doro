@@ -19,11 +19,11 @@ async function updateHash (scheduleConfig: ScheduleConfig, hashName?: string) {
   const hash = getHash(Math.floor(Math.random() * 10), new Date().getTime())
   if (hashName === 'hash') {
     return await scheduleConfig.update({
-      scheduleEventsHash: hash
+      hash: hash
     })
   } else if (hashName === 'scheduleHash') {
     return await scheduleConfig.update({
-      scheduleEventsHash: hash
+      scheduleHash: hash
     })
   } else { // (hashName === 'scheduleEventsHash')
     return await scheduleConfig.update({

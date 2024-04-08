@@ -11,8 +11,6 @@ import {
     AutoIncrement,
     BelongsTo,
     Default,
-    HasMany,
-    HasOne,
     NotNull,
     PrimaryKey
 } from "@sequelize/core/decorators-legacy";

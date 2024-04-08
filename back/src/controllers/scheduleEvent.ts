@@ -1,6 +1,5 @@
-import {getLatestScheduleConfig} from "../dbActions/getLatestScheduleConfig";
+
 import {ScheduleConfig} from "../models/ScheduleConfig";
-import {saveDefaultScheduleConfig} from "../dbActions/saveDefaultScheduleConfig";
 import {getScheduleById} from "../dbActions/getSchedule";
 import {getScheduleEventsByScheduleId} from "../dbActions/getScheduleEventsByScheduleId";
 import {createScheduleEvent} from "../dbActions/createScheduleEvent";
@@ -11,7 +10,7 @@ import {
 } from "../dbActions/getNextScheduleEventAfter"
 import {getScheduleEventById} from "../dbActions/getScheduleEventById";
 import {ScheduleEvent} from "../models/ScheduleEvent";
-import { stopScheduleEvent } from "../dbActions/stopScheduleEvent";
+import { stopEvent, stopScheduleEvent } from "../dbActions/stopScheduleEvent";
 import CounterActionController from "./counterAction";
 import { deleteScheduleEventById } from "../dbActions/deleteScheduleEventById";
 import { getScheduleConfigById } from "../dbActions/getScheduleConfigById";
@@ -44,35 +43,38 @@ export default class ScheduleEventController {
     }
 
     // scheduleEvent: IScheduleEvent, scheduleConfigId: number
-    public static async deleteScheduleEvent(data: any): Promise<any> {
+    public static async deleteScheduleEvent(req: any): Promise<any> {
         try {
-            let configWithStoppedEvent: ScheduleConfig | null = null
-            /**
-             * get config
-             * if config has eventId
-             * stop it
-             * stop timer + send SSE
-             */
-            const scheduleConfig = await getScheduleConfigById(data.scheduleConfigId)
-            if (scheduleConfig?.scheduleEvent_id === data.scheduleEvent.id) {
-                configWithStoppedEvent = await stopScheduleEvent(
-                    data.scheduleConfigId, 
-                    data.scheduleEvent.id, 
-                    data.scheduleEvent.schedule_id) 
-                CounterActionController.handleCounterAction('stop', configWithStoppedEvent, data.scheduleEvent)
+            const config = await getScheduleConfigById(req.scheduleConfigId)
+            if (config.scheduleEvent_id === req.scheduleEvent.id && config.counterIsPaused !== true) {
+                /**
+                 * If deleted event is playing - stop it, then delete
+                 */
+                const configWithStoppedEvent = await stopScheduleEvent(req.scheduleConfigId, req.scheduleEvent.id, req.scheduleEvent.schedule_id)
+                const isDeleted = await deleteScheduleEventById(req.scheduleEvent.id)
+                
+                Promise.all([configWithStoppedEvent, isDeleted])
+                .then((res: [scheduleConfig: ScheduleConfig, isDel:number]) => {
+                    CounterActionController.handleCounterAction('stop', res[0])
+                })
+                return {
+                    config: configWithStoppedEvent,
+                    isDeleted: !!isDeleted
+                }
+            
             }
           
-            return await deleteScheduleEventById(data.scheduleEvent.id)
-                .then(async(deleteRes: any) => {
-                    const configWithUpdatedHash = await updateScheduleConfigHash((configWithStoppedEvent || scheduleConfig) as any, 'scheduleEventsHash')
-                    CounterActionController.broadcastConfig(configWithUpdatedHash)
-                    return { status: {
-                        eventStopped: !!configWithStoppedEvent,
-                        eventDeleted: !!deleteRes
-                    } }
-                })
+            // return await deleteScheduleEventById(data.scheduleEvent.id)
+            //     .then(async(deleteRes: any) => {
+            //         const configWithUpdatedHash = await updateScheduleConfigHash((configWithStoppedEvent || scheduleConfig) as any, 'scheduleEventsHash')
+            //         CounterActionController.broadcastConfig(configWithUpdatedHash)
+            //         return { status: {
+            //             eventStopped: !!configWithStoppedEvent,
+            //             eventDeleted: !!deleteRes
+            //         } }
+            //     })
         } catch (err) {
-            return { status: 'err' }
+            return { status: err }
         }
     }
 

@@ -32,6 +32,7 @@ import ScheduleController from "./controllers/schedule";
 import {activateScheduleConfig} from "./dbActions/activateScheduleConfig";
 import { VariableWatcher } from './utils/variableWather';
 import ClientController from "./controllers/clientController";
+import { ErrorLogger } from './utils/ErrorLogger';
 
 // import {rr} from "./dbActions/saveState";
 const app: Application  = express();
@@ -139,8 +140,8 @@ export function setTimerId (newTimerId: any) {
 }
 app.listen(PORT, () => {
     console.log(`Events service listening at http://localhost:${PORT}`)
-    dd('create default config if none')
-    ScheduleConfigController.getScheduleConfig()
+    // dd('create default config if none')
+    // ScheduleConfigController.getScheduleConfig()
 })
 
 
@@ -180,6 +181,15 @@ function getRestLength (sessionId: number) {
 }
 function getIsPaused () {
     return isPaused
+}
+
+let isBusy = false
+
+export function setBusy(val: boolean) {
+    isBusy = val
+}
+export function getBusy () {
+    return isBusy
 }
 
 export async function setState(request: Request, response: Response) {
@@ -342,9 +352,9 @@ function shareTimersConfig (request: Request, response: Response) {
 // app.post('/getTimersConfig', shareTimersConfig);
 app.post('/getTimersConfig', () => {});
 
-app.post("/getScheduleConfig", async (_req, res) => {
+app.post("/getScheduleConfig", async (_req: any, res) => {
 
-    const response = await ScheduleConfigController.getScheduleConfig();
+    const response = await ScheduleConfigController.getScheduleConfig()//ById(_req.scheduleConfigId);
     return res.send(response);
 });
 app.post("/getSchedule", async (_req, res) => {
@@ -431,26 +441,30 @@ app.post('/scheduleConfig/:action',async (req, res) => {
 })
 
 app.post('/scheduleEvent/:action',async (req, res) => {
-    const action = req.params.action;
-    let response = null
+    try {
+        const action = req.params.action;
+        let response = null
 
-    if (action === 'create') {
-        response = await ScheduleEventController.createScheduleEvent(req.body)
-    }
-    if (action === 'delete') {
-        response = await ScheduleEventController.deleteScheduleEvent(req.body)
-    }
-    if (action === 'createAndPlay') {
-        response = await ScheduleEventController.createDefaultEventsAndPlay(req.body)
-    }
-    /**
-     * + save as current shcedule
-     */
-    if (action === 'batchCreate') {
-        response = await ScheduleEventController.createScheduleWithEvents(req.body)
-    }
+        if (action === 'create') {
+            response = await ScheduleEventController.createScheduleEvent(req.body)
+        }
+        if (action === 'delete') {
+            response = await ScheduleEventController.deleteScheduleEvent(req.body)
+        }
+        if (action === 'createAndPlay') {
+            response = await ScheduleEventController.createDefaultEventsAndPlay(req.body)
+        }
+        /**
+         * + save as current shcedule
+         */
+        if (action === 'batchCreate') {
+            response = await ScheduleEventController.createScheduleWithEvents(req.body)
+        }
 
-    return res.send(response);
+        return res.send(response);   
+    } catch (err) {
+        ErrorLogger.logError(err);
+    }
 })
 
 

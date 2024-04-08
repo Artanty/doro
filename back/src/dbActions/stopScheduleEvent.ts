@@ -2,7 +2,7 @@ import {ScheduleConfig} from "../models/ScheduleConfig";
 import {ScheduleEvent} from "../models/ScheduleEvent";
 import {getScheduleConfigById} from "./getScheduleConfigById";
 import {getHash} from "../utils";
-import {getCounter} from "../index";
+import {getCounter, setBusy} from "../index";
 /**
  * counterIsPaused: false | true
  * Таймер перед остановкой может находиться в любом сотоянии
@@ -27,5 +27,14 @@ export async function stopScheduleEvent (
             counterTimePassed: 0
         })
     })
+}
 
+export async function stopEvent (
+    config: ScheduleConfig
+    ): Promise<ScheduleConfig> {
+        config.counterIsPaused = true
+        config.hash = getHash(Math.floor(Math.random() * 10), new Date().getTime())
+        config.counterTimePassed = 0
+        config.dateModificator = 'new1'
+        return await config.save()
 }

@@ -40,7 +40,10 @@ export class AppComponent {
   }
 
   custom() {
-
+this.http.post(`${SERVER_URL}/getScheduleConfig`, null)
+      .subscribe((res: any) => {
+        //
+      })
   }
 
 }

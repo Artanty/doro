@@ -9,10 +9,8 @@ import { dd } from "../utils";
 const router = express.Router();
 
 router.get("/events", async (_req, res) => {
-    dd('sse connection....')
     const controller = new EventsController(_req, res);
     const response = await controller.handleEvents();
-    // return res.send(response);
 });
 
 router.get("/ping", async (_req, res) => {

@@ -1,5 +1,6 @@
 import {
     CreationOptional,
+    DataType,
     DataTypes,
     InferAttributes,
     InferCreationAttributes,
@@ -10,13 +11,16 @@ import {
     Attribute,
     AutoIncrement,
     BelongsTo,
+    Column,
     Default,
+    HasMany,
     HasOne,
     NotNull,
     PrimaryKey
 } from "@sequelize/core/decorators-legacy";
 import {ScheduleEvent} from "./ScheduleEvent";
 import {Schedule} from "./Schedule";
+import { User } from "./User";
 
 /**
  * Чтобы понять, в каком состоянии сейчас таймер
@@ -59,14 +63,17 @@ export class ScheduleConfig extends Model<InferAttributes<ScheduleConfig>, Infer
     @Attribute(DataTypes.INTEGER)
     declare schedule_id: number;
 
-    @BelongsTo(() => ScheduleEvent, {
+    // @HasMany(() => ScheduleEvent, 'id')
+    // declare scheduleEvents: NonAttribute<ScheduleEvent>[]
+
+    @BelongsTo(() => User, {
         foreignKey: {
-            name: 'scheduleEvent_id',
+            name: 'user_id',
             onDelete: 'CASCADE',
         },
         targetKey: 'id',
     })
-    declare scheduleEvent?: NonAttribute<ScheduleEvent>
+    declare user?: NonAttribute<User>
 
     @Attribute(DataTypes.INTEGER)
     declare scheduleEvent_id: CreationOptional<number>;

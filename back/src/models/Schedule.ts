@@ -12,12 +12,8 @@ import {
     PrimaryKey,
     AutoIncrement,
     NotNull,
-    HasMany,
-    HasOne,
     Default
 } from '@sequelize/core/decorators-legacy';
-import {ScheduleEvent} from "./ScheduleEvent";
-import {ScheduleConfig} from "./ScheduleConfig";
 
 export interface IExtendedAttributes {
     isForceSync?: boolean;
