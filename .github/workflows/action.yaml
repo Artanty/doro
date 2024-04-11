@@ -27,12 +27,13 @@ jobs:
       run: npm run build
       working-directory: ./back
 
-    - name: Upload to server
-      uses: appleboy/scp-action@master
-      with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USER }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        source: "./back/build/*"
-        target: "/server"
-        
+    - name: Deploy to Server
+      uses: easingthemes/ssh-deploy@v2.1.5
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        REMOTE_HOST: ${{ secrets.SSH_HOST }}
+        REMOTE_USER: ${{ secrets.SSH_USER }}
+        ARGS: -rltgoDzvO --exclude .git --exclude .github
+        SOURCE: back/build/
+        TARGET: server
+          
