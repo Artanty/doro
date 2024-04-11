@@ -20,6 +20,9 @@ import {LoadingComponent} from "./components/loading/loading.component";
 import {ScrollDirective} from "./directives/scroll.directive";
 import {FormArrayComponent} from "./components/form-array/form-array.component";
 import {EndEventScreenComponent} from "./components/end-event-screen/end-event-screen.component";
+import { EVENT_BUS } from 'typlib';
+import { BehaviorSubject } from 'rxjs';
+import { authProps } from '../app.component';
 
 function initConfigActivator (counterServ: CounterService) {
   return () => counterServ.scheduleConfigActivator()
@@ -62,7 +65,7 @@ function initEventSource (sseServ: SseService) {
   exports: [
     DoroComponent,
     MyCustomElementComponent,
-
+    LoadingComponent
   ],
   providers: [
     {
@@ -71,11 +74,20 @@ function initEventSource (sseServ: SseService) {
       deps: [CounterService],
       multi: true
     },
+    // { provide: EVENT_BUS, useValue: new BehaviorSubject(authProps) },
+    // { provide: 'PRODUCT_NAME', useValue: 'doro' }
+    { provide: 'COMPONENT_TO_PASS', useClass: LoadingComponent },
+    {
+      provide: 'components',
+      useValue: {
+        LoadingComponent
+      },
+      multi: true,
+    },
   ],
   schemas: [ CUSTOM_ELEMENTS_SCHEMA ],
 })
 export class DoroModule implements DoBootstrap {
-// export class DoroModule  {
   constructor(private injector: Injector) {}
   ngDoBootstrap(appRef: ApplicationRef) {
     const customElement = createCustomElement(MyCustomElementComponent, { injector: this.injector });

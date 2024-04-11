@@ -10,5 +10,8 @@
   "include": [
     "src/**/*.d.ts",
     "../../contracts/*.ts"
-  ]
+  ],
+  "paths": {
+    "mfe-component": ["http://localhost:4204/remoteEntry.js"]
+  }
 }

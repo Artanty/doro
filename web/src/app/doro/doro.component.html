@@ -1,3 +1,5 @@
+<button (click)="test()">send test from doro</button>
+<button (click)="test1()">send test from doro1</button>
 <ng-container *ngIf="connectionState$ | async">
   <div></div>
   <div class="wrapper" [ngSwitch]="connectionState">
@@ -6,6 +8,11 @@
     </div>
     <div class="slide" *ngSwitchCase="'LOADING'">
       <app-loading></app-loading>
+    </div>
+    <div class="slide" *ngSwitchCase="'AUTH'">
+      <div class="mfeWrapper" #placeHolder>
+
+      </div>
     </div>
     <ng-container *ngSwitchDefault>
       <ng-container *ngIf="(viewState$ | async) as view">
@@ -30,7 +37,7 @@
       </ng-container>
     </ng-container>
     <div class="bottomRow backBottom">
-      <app-navigation ></app-navigation>
+      <app-navigation></app-navigation>
     </div>
   </div>
 

@@ -6,8 +6,9 @@ import { Injectable } from '@angular/core';
 export class UserService {
 
   constructor() { }
-
+  APP_NAME = 'doro'
   getUserToken() {
     return '$e3f12#';
   }
+
 }

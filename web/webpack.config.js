@@ -27,29 +27,25 @@ module.exports = {
   },
   plugins: [
     new ModuleFederationPlugin({
-      // library: { type: "module" },
-
-      // For remotes (please adjust)
       name: "mfe1",
       filename: "remoteEntry.js",
       exposes: {
         './Module': './src/app/doro/doro.module.ts',
+        './Component': './src/app/doro/components/loading/loading.component.ts',
       },
-
-      // For hosts (please adjust)
-      // remotes: {
-      //     "mfe1": "http://localhost:3000/remoteEntry.js",
-
-      // },
+      remotes: {
+        "au": "au@https://au2.vercel.app/remoteEntry.js",
+        // "au": "au@http://localhost:4204/remoteEntry.js"
+      },
 
       shared: share({
         "@angular/core": { singleton: true, strictVersion: true, requiredVersion: 'auto' },
         "@angular/common": { singleton: true, strictVersion: true, requiredVersion: 'auto' },
         "@angular/common/http": { singleton: true, strictVersion: true, requiredVersion: 'auto' },
         "@angular/router": { singleton: true, strictVersion: true, requiredVersion: 'auto' },
-
+        "typlib": { singleton: true, strictVersion: true, requiredVersion: 'auto' },
         ...sharedMappings.getDescriptors()
-      })
+      }),
 
     }),
     sharedMappings.getPlugin()

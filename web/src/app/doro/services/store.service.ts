@@ -26,7 +26,7 @@ export class StoreService {
   private viewState$: BehaviorSubject<TTab> = new BehaviorSubject<TTab>('COUNTER') // eventList  counter
   private tick$: BehaviorSubject<Nullable<ITick>> = new BehaviorSubject<Nullable<ITick>>(null)
   private clientId: string | null = null
-  private connectionState$ = new BehaviorSubject<TConnectionState>('LOADING')
+  private connectionState$ = new BehaviorSubject<TConnectionState>('AUTH')
   private suggestNext$ = new BehaviorSubject<Nullable<TSuggestNext>>(null)
 
   constructor() {}
