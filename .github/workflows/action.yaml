@@ -38,5 +38,5 @@ jobs:
 
     - name: Deploy to server
       run: |
-        scp -r build/* ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/back
+        scp -r build/* ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:root/back
       working-directory: ./back
