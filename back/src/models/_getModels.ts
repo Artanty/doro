@@ -9,22 +9,25 @@ export function getModels () {
 
     const modelsDirectory = path.join(__dirname, '../models');
 
-// Array to store model classes
+    // Array to store model classes
     const modelClasses: ModelStatic[] = [];
 
 
 // Read files in the models directory
+console.log('pre files:')
+console.log(fs.readdirSync(modelsDirectory))
     const files = fs.readdirSync(modelsDirectory)
         .filter((file: string) => {
             return (
                 file.indexOf('.') !== 0 &&
-
-                file.slice(-3) === '.ts' &&
+                (process.env.NODE_ENV === 'development' ? (file.slice(-3) === '.ts') : (file.slice(-3) === '.js')) &&
                 file.indexOf('.test.ts') === -1
             );
         })
 
 // Iterate through each file
+console.log('files:')
+console.log(files)
     files.forEach((file: string) => {
         const filePath = path.join(modelsDirectory, file);
 

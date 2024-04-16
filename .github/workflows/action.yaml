@@ -24,25 +24,21 @@ jobs:
       working-directory: ./back
 
     - name: Build
-      run: npm run build
+      run: DB_USERNAME=${{ secrets.DB_USERNAME }} && DB_PASSWORD=${{ secrets.DB_PASSWORD }} && DB_DATABASE=${{ secrets.DB_DATABASE }} && DB_HOST=${{ secrets.DB_HOST }} && DB_DIALECT=${{ secrets.DB_DIALECT }} && DB_SYNC_MODE_FORCE=${{ secrets.DB_SYNC_MODE_FORCE }} && npm run build
       working-directory: ./back
-
-    # - name: Deploy to Server
-    #   uses: easingthemes/ssh-deploy@v2.1.5
-    #   env:
-    #     SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-    #     REMOTE_HOST: ${{ secrets.SSH_HOST }}
-    #     REMOTE_USER: ${{ secrets.SSH_USER }}
-    #     ARGS: -rltgoDzvO --exclude .git --exclude .github
-    #     SOURCE: back/build/
-    #     TARGET: server
 
     - name: Copy folder content recursively to remote
       uses: garygrossgarten/github-action-scp@release
       with:
         local: ./back
-        remote: scp/directory
+        remote: back/build/
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USER }}
         password: ${{ secrets.USER_PASS }}
-          
+        env: |
+          DB_USERNAME=${{ secrets.DB_USERNAME }} 
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DB_DATABASE=${{ secrets.DB_DATABASE }}
+          DB_HOST=${{ secrets.DB_HOST }}
+          DB_DIALECT=${{ secrets.DB_DIALECT }}
+          DB_SYNC_MODE_FORCE=${{ secrets.DB_SYNC_MODE_FORCE }}

@@ -39,7 +39,7 @@ const app: Application  = express();
 // connection;
 
 Database.getInstance({models: getModels()})
-
+dd(process.env.DB_DATABASE ?? 'no DB_DATABASE value')
 checkDbConnection().then( async (sequelizeInstance: any) => {
     console.log(Database.getInstance().models)
     // console.log(sequelizeInstance instanceof Sequelize)
