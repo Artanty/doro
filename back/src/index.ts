@@ -140,7 +140,7 @@ export function setTimerId (newTimerId: any) {
 }
 app.listen(PORT, () => {
     console.log(`Events service listening at http://localhost:${PORT}`)
-    dd('CHECK')
+    dd('CHECK 1')
     // dd('create default config if none')
     // ScheduleConfigController.getScheduleConfig()
 })
