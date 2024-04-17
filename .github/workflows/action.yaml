@@ -56,3 +56,4 @@ jobs:
           # cd back
           # pm2 restart index.js
           ls -l
+          npm -v
