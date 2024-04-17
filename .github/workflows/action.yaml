@@ -27,18 +27,21 @@ jobs:
       run: DB_USERNAME=${{ secrets.DB_USERNAME }} && DB_PASSWORD=${{ secrets.DB_PASSWORD }} && DB_DATABASE=${{ secrets.DB_DATABASE }} && DB_HOST=${{ secrets.DB_HOST }} && DB_DIALECT=${{ secrets.DB_DIALECT }} && DB_SYNC_MODE_FORCE=${{ secrets.DB_SYNC_MODE_FORCE }} && npm run build
       working-directory: ./back
 
+    - name: Create configuration file
+      run: |
+        echo "DB_USERNAME=${{ secrets.DB_USERNAME }} 
+        DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+        DB_DATABASE=${{ secrets.DB_DATABASE }}
+        DB_HOST=${{ secrets.DB_HOST }}
+        DB_DIALECT=${{ secrets.DB_DIALECT }}
+        DB_SYNC_MODE_FORCE=${{ secrets.DB_SYNC_MODE_FORCE }}" > .env
+      working-directory: ./back/build
+
     - name: Copy folder content recursively to remote
       uses: garygrossgarten/github-action-scp@release
       with:
-        local: ./back
-        remote: back/build/
+        local: ./back/build
+        remote: back
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USER }}
         password: ${{ secrets.USER_PASS }}
-        env: |
-          DB_USERNAME=${{ secrets.DB_USERNAME }} 
-          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-          DB_DATABASE=${{ secrets.DB_DATABASE }}
-          DB_HOST=${{ secrets.DB_HOST }}
-          DB_DIALECT=${{ secrets.DB_DIALECT }}
-          DB_SYNC_MODE_FORCE=${{ secrets.DB_SYNC_MODE_FORCE }}
