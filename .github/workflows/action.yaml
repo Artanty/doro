@@ -52,24 +52,9 @@ jobs:
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
-          # npm install
-          # cd back
-          # pm2 restart index.js
-          # Check if npm is in the PATH
-          if ! command -v npm &> /dev/null; then
-            # If npm is not in the PATH, try to find it in the default installation directory
-            NPM_PATH=$(which npm)
-            if [ -z "$NPM_PATH" ]; then
-              # If npm is not found in the default installation directory, exit with an error
-              echo "npm could not be found in the PATH or the default installation directory."
-              exit 1
-            fi
-            # If npm is found, use it
-            echo "npm found at $NPM_PATH"
-            NPM_CMD="$NPM_PATH"
-          else
-            # If npm is in the PATH, use it
-            NPM_CMD="npm"
-          fi
-          # Run npm -v using the determined command
-          $NPM_CMD -v
+          ls -l
+          npm -v
+          npm install
+          cd back
+          pm2 restart index.js
+          
