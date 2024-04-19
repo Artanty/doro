@@ -54,6 +54,6 @@ jobs:
         script: |
           npm install
           cd back
-          # pm2 restart index.js
           pm2 stop all
+          pm2 start index.js
           
