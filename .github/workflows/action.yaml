@@ -56,5 +56,6 @@ jobs:
           npm -v
           npm install
           cd back
+          npm list
           pm2 restart index.js
           
