@@ -24,6 +24,11 @@ for /f "delims=" %%i in ('npm version patch --no-git-tag-version') do (
 :: Remove the 'v' prefix from the version
 set TAG_VERSION=%NEW_VERSION:~1%
 
+:: Commit the changes to the master branch
+git add .
+git commit -m "Bump version to %TAG_VERSION%"
+git push origin master
+
 :: Create an annotated tag with the new version
 git tag -a "v%TAG_VERSION%" -m "Version %TAG_VERSION%"
 
