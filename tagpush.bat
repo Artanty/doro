@@ -57,7 +57,7 @@ for /f "delims=" %%i in ('git log --pretty^=format:"%%s" HEAD...v%CURRENT_VERSIO
 )
 
 :: Create an annotated tag with the new version and commit messages, including the web version
-git tag -a "v%TAG_VERSION%" -m "App version: %TAG_VERSION% Web Version: %WEB_TAG_VERSION% Back Version: %BACK_TAG_VERSION% Commit Messages: %COMMIT_MESSAGES%"
+git tag -a "v%TAG_VERSION%" -m "App version: %TAG_VERSION%" -m "Web Version: %WEB_TAG_VERSION% Back Version: %BACK_TAG_VERSION%" -m "Commit Messages: %COMMIT_MESSAGES%"
 
 :: Push the new tag to the remote repository
 git push origin "v%TAG_VERSION%"
