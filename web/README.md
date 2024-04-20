@@ -13,8 +13,8 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 
 ## run steps
 
+- cd web
 - npm run start --port 4201
-
 
 icons:
 
