@@ -13,9 +13,6 @@ for /f "delims=" %%i in ('git diff origin/master..HEAD') do (
     exit /b
 )
 
-:: Change to the 'back' directory
-cd back
-
 :: Get the current version from package.json
 for /f "delims=" %%i in ('node -p "require('./package.json').version"') do set CURRENT_VERSION=%%i
 
@@ -24,6 +21,22 @@ git rev-parse v%CURRENT_VERSION% > nul 2>&1 || (
     echo There is no tag for the current version v%CURRENT_VERSION%. Create a tag for the current version before running this script.
     exit /b
 )
+
+:: Increment the patch version of the 'back' directory and save the new value in a variable
+cd back
+for /f "delims=" %%i in ('npm version patch --no-git-tag-version') do (
+    set BACK_NEW_VERSION=%%i
+)
+set BACK_TAG_VERSION=%BACK_NEW_VERSION:~1%
+cd ..
+
+:: Get the current version from package.json of the 'web' directory and save the new value in a variable
+cd web
+for /f "delims=" %%i in ('npm version patch --no-git-tag-version') do (
+    set WEB_NEW_VERSION=%%i
+)
+set WEB_TAG_VERSION=%WEB_NEW_VERSION:~1%
+cd ..
 
 :: Increment the patch version and save the new value in a variable
 for /f "delims=" %%i in ('npm version patch --no-git-tag-version') do (
@@ -43,8 +56,10 @@ for /f "delims=" %%i in ('git log --pretty^=format:"%%s" HEAD...v%CURRENT_VERSIO
     set COMMIT_MESSAGES=%%i
 )
 
-:: Create an annotated tag with the new version and commit messages
-git tag -a "v%TAG_VERSION%" -m "Version %TAG_VERSION%
+:: Create an annotated tag with the new version and commit messages, including the web version
+git tag -a "v%TAG_VERSION%" -m "App version: %TAG_VERSION%
+Web Version: %WEB_TAG_VERSION%
+Back Version: %BACK_TAG_VERSION%
 Commit Messages:
 %COMMIT_MESSAGES%"
 
