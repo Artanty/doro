@@ -2,15 +2,17 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    tags:
+      - '*'
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Set env
+      run: echo "TAG=$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
+    
     - name: Checkout code
       uses: actions/checkout@v2
 
@@ -56,4 +58,3 @@ jobs:
           cd back
           pm2 stop all
           pm2 start index.js
-          

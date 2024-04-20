@@ -1,6 +1,6 @@
 {
   "name": "back",
-  "version": "1.0.0",
+  "version": "1.0.5",
   "description": "",
   "main": "app.js",
   "scripts": {
@@ -10,7 +10,8 @@
     "dev": "nodemon --config nodemon.json",
     "devv": "concurrently \"nodemon\" \"nodemon -x tsoa spec\"",
     "swagger": "tsoa spec",
-    "db-sync": "ts-node src/dbMigrations/_runDbSync.ts"
+    "db-sync": "ts-node src/dbMigrations/_runDbSync.ts",
+    "tagpush": "cmd /c tagpush.bat"
   },
   "keywords": [],
   "author": "Artyom",

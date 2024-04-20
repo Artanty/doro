@@ -1,0 +1,20 @@
+{
+  "name": "doro",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "tagpush": "cmd /c tagpush.bat"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Artanty/doro.git"
+  },
+  "author": "Artyom",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Artanty/doro/issues"
+  },
+  "homepage": "https://github.com/Artanty/doro#readme"
+}
