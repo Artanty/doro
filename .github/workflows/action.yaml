@@ -16,6 +16,12 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
+    - name: Create release branch
+      run: git checkout -b release/${{ env.TAG }}
+    
+    - name: Push Build to Releases
+      uses: ncipollo/release-action@v1
+
     - name: Set up Node.js
       uses: actions/setup-node@v2
       with:
