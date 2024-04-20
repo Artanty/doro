@@ -1,6 +1,18 @@
 @echo off
 setlocal
 
+:: Check for uncommitted changes
+git diff-index --quiet HEAD -- || (
+    echo There are uncommitted changes. Commit or stash them before running this script.
+    exit /b
+)
+
+:: Check for unpushed commits
+for /f "delims=" %%i in ('git diff origin/master..HEAD') do (
+    echo There are unpushed commits. Push them before running this script.
+    exit /b
+)
+
 :: Change to the 'back' directory
 cd back
 
