@@ -1,9 +1,5 @@
 name: Node.js CI
 
-env:
-  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
 on:
   push:
     branches: [ master ]
@@ -40,12 +36,21 @@ jobs:
       run: npm run build
       working-directory: ./web
 
-    - name: Install Vercel CLI
-      run: npm install --global vercel@canary
-      working-directory: ./web
+    # - name: Install Vercel CLI
+    #   run: npm install --global vercel@canary
+    #   working-directory: ./web
 
+    # - name: Deploy to Vercel
+    #   run: npx vercel --prod --yes
+    #   env:
+    #     VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    #   working-directory: ./web
+  
     - name: Deploy to Vercel
-      run: npx vercel --prod --yes
-      env:
-        VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      working-directory: ./web
+      uses: amondnet/vercel-action@v20
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }} # Make sure to set this in your repository secrets
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        vercel-args: '--prebuilt'
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }} # If you have a specific project ID
+ 
