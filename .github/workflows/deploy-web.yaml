@@ -44,7 +44,11 @@ jobs:
       run: mkdir -p .vercel/output
 
     - name: Move build output to .vercel/output
-      run: mv ./web/dist/* .vercel/output/
+      run: |
+        # Ensure the build output directory exists
+        mkdir -p .vercel/output/static
+        # Move the build output to the .vercel/output/static directory
+        mv ./web/dist/* .vercel/output/static/
 
     - name: Deploy to Vercel
       uses: amondnet/vercel-action@v25
