@@ -17,10 +17,8 @@ import {
 import {
   BehaviorSubject,
   combineLatestWith,
-  distinctUntilChanged,
   map,
   Observable,
-  startWith,
   tap
 } from 'rxjs';
 import {StoreService} from './services/store.service';
@@ -67,14 +65,10 @@ export class DoroComponent implements OnInit{
   public connectionState$: Observable<TConnectionState>
   public viewState$: Observable<TTab | null>
   connectionState: TConnectionState = 'LOADING'
-
   @ViewChild('placeHolder', { read: ViewContainerRef })
   viewContainer!: ViewContainerRef;
-
   authEventBus$!: BehaviorSubject<IAuthDto>
-
   isEventSourceCreated: boolean = false
-
 
   constructor (
     @Inject(StoreService) private StoreServ: StoreService,
@@ -104,12 +98,8 @@ export class DoroComponent implements OnInit{
         return connection === 'READY'
         ? view
         : null
-      }),
-      tap(()=>{
-        // this.cdr.detectChanges()
       })
     );
-    // here was create event source
   }
 
   ngOnInit (): void {

@@ -13,7 +13,7 @@ import {
   shareReplay,
   tap
 } from "rxjs";
-import {SERVER_URL} from "../../../../env";
+
 import { ApiService } from './../api/api.service'
 
 @Injectable({
@@ -36,7 +36,7 @@ export class ScheduleEventService {
    }
 
   createScheduleEvent (data: Partial<IScheduleEvent>) {
-    return this.http.post<IScheduleEvent>(`${SERVER_URL}/scheduleEvent/create`, data)
+    return this.http.post<IScheduleEvent>(`${process.env['SERVER_URL']}/scheduleEvent/create`, data)
       .pipe(
         tap((res: IScheduleEvent) => {
           this.StoreServ.addScheduleEvents(res)
@@ -45,7 +45,7 @@ export class ScheduleEventService {
   }
 
   deleteScheduleEvent (data: { scheduleEvent: IScheduleEvent, scheduleConfigId: number }) {
-    return this.http.post<any>(`${SERVER_URL}/scheduleEvent/delete`, data)
+    return this.http.post<any>(`${process.env['SERVER_URL']}/scheduleEvent/delete`, data)
   }
 
   getLastScheduleEvent (scheduleId?: number): IScheduleEvent | undefined {
@@ -59,7 +59,7 @@ export class ScheduleEventService {
 
   createEventsAndPlay (data: { scheduleId?: number, scheduleConfigId?: number }) {
     if (!data.scheduleId || !data.scheduleConfigId) { console.error('FIX IT!') }
-    return this.http.post<IScheduleEvent[]>(`${SERVER_URL}/scheduleEvent/createAndPlay`, data)
+    return this.http.post<IScheduleEvent[]>(`${process.env['SERVER_URL']}/scheduleEvent/createAndPlay`, data)
       .pipe(
         // tap((res: IScheduleEvent) => {
         //   // this.StoreServ.addScheduleEvents(res)
@@ -84,7 +84,7 @@ export class ScheduleEventService {
    * schedule id !== null -> add events to schedule
    */
   createScheduleWithEvents (data: {schedule: any, events: Partial<IScheduleEvent>[], scheduleConfigId: number }) {
-    return this.http.post<any>(`${SERVER_URL}/scheduleEvent/batchCreate`, data)
+    return this.http.post<any>(`${process.env['SERVER_URL']}/scheduleEvent/batchCreate`, data)
       .pipe(
         tap((res: any) => {
           // this.StoreServ.addScheduleEvents(res)

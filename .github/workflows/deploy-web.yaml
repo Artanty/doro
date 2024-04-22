@@ -26,6 +26,12 @@ jobs:
       run: npm ci
       working-directory: ./web
 
+    - name: Create configuration file
+      run: |
+        echo "RECONNECT_TRIES=${{ secrets.RECONNECT_TRIES }} 
+        SERVER_URL=${{ secrets.SERVER_URL }}" > .env
+      working-directory: ./web
+
     - name: Build project
       run: npm run build
       working-directory: ./web

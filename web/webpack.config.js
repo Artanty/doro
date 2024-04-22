@@ -2,7 +2,7 @@ const ModuleFederationPlugin = require("webpack/lib/container/ModuleFederationPl
 const mf = require("@angular-architects/module-federation/webpack");
 const path = require("path");
 const share = mf.share;
-
+const Dotenv = require('dotenv-webpack');
 const sharedMappings = new mf.SharedMappings();
 sharedMappings.register(
   path.join(__dirname, 'tsconfig.json'),
@@ -20,7 +20,8 @@ module.exports = {
   resolve: {
     alias: {
       ...sharedMappings.getAliases(),
-    }
+    },
+    symlinks: true
   },
   experiments: {
     outputModule: true
@@ -48,6 +49,9 @@ module.exports = {
       }),
 
     }),
-    sharedMappings.getPlugin()
+    sharedMappings.getPlugin(),
+    new Dotenv({
+      path: './.env', // Path to .env file (this is the default)
+    })
   ],
 };

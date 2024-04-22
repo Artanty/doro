@@ -1,7 +1,6 @@
 import {Inject, Injectable} from '@angular/core';
 import {getEntryFromSseResponse} from "../helpers/getEntryFromSseResponse";
 import {HttpClient} from "@angular/common/http";
-import {SERVER_URL} from "../../../../env";
 
 @Injectable({
   providedIn: 'root'
@@ -38,10 +37,10 @@ export class ClientService {
 
   checkClientId (clientId: number) {
     const data = {clientId: clientId}//JSON.stringify({data: 'wwww'})
-    return this.http.post(`${SERVER_URL}/checkClientId`, data)
+    return this.http.post(`${process.env['SERVER_URL']}/checkClientId`, data)
   }
 
   getClients(){
-    this.http.get(`${SERVER_URL}/status`).subscribe(res => console.log(res))
+    this.http.get(`${process.env['SERVER_URL']}/status`).subscribe(res => console.log(res))
   }
 }

@@ -14,7 +14,6 @@ import {
 } from "rxjs";
 import {HttpClient} from "@angular/common/http";
 
-import {SERVER_URL} from "../../../../env";
 import {
   IEndEventSseResponse,
   ISuggestNextEventSseResponse
@@ -42,7 +41,7 @@ export class CounterService {
         map(res => res?.[0]),
         switchMap((scheduleConfig: any) => {
           if (scheduleConfig.configIsActive === false) {
-            return this.http.post(`${SERVER_URL}/scheduleConfig/activate`, { scheduleConfigId: scheduleConfig.id })
+            return this.http.post(`${process.env['SERVER_URL']}/scheduleConfig/activate`, { scheduleConfigId: scheduleConfig.id })
           } else {
             return EMPTY
           }
@@ -53,7 +52,7 @@ export class CounterService {
   }
 
   startEvent (eventId: number) {
-    this.http.post(`${SERVER_URL}/scheduleConfig/playEvent`, {
+    this.http.post(`${process.env['SERVER_URL']}/scheduleConfig/playEvent`, {
       scheduleEventId: eventId,
       scheduleConfigId: this.StoreServ.getScheduleConfig()?.id,
       scheduleId: this.StoreServ.getSchedule()?.id
@@ -64,7 +63,7 @@ export class CounterService {
   }
 
   stopEvent (eventId: number) {
-    this.http.post(`${SERVER_URL}/scheduleConfig/stopEvent`, {
+    this.http.post(`${process.env['SERVER_URL']}/scheduleConfig/stopEvent`, {
       scheduleEventId: eventId,
       scheduleConfigId: this.StoreServ.getScheduleConfig()?.id,
       scheduleId: this.StoreServ.getSchedule()?.id
@@ -73,7 +72,7 @@ export class CounterService {
       })
   }
   pauseEvent (eventId: number) {
-    this.http.post(`${SERVER_URL}/scheduleConfig/pauseEvent`, {
+    this.http.post(`${process.env['SERVER_URL']}/scheduleConfig/pauseEvent`, {
       scheduleEventId: eventId,
       scheduleConfigId: this.StoreServ.getScheduleConfig()?.id,
       scheduleId: this.StoreServ.getSchedule()?.id
@@ -82,7 +81,7 @@ export class CounterService {
       })
   }
   resumeEvent (eventId: number) {
-    this.http.post(`${SERVER_URL}/scheduleConfig/resumeEvent`, {
+    this.http.post(`${process.env['SERVER_URL']}/scheduleConfig/resumeEvent`, {
       scheduleEventId: eventId,
       scheduleConfigId: this.StoreServ.getScheduleConfig()?.id,
       scheduleId: this.StoreServ.getSchedule()?.id
@@ -92,7 +91,7 @@ export class CounterService {
   }
 
   changePlayingEvent (eventId: number) {
-    this.http.post(`${SERVER_URL}/scheduleConfig/changePlayingEvent`, {
+    this.http.post(`${process.env['SERVER_URL']}/scheduleConfig/changePlayingEvent`, {
       scheduleEventId: eventId,
       scheduleConfigId: this.StoreServ.getScheduleConfig()?.id,
       scheduleId: this.StoreServ.getSchedule()?.id
@@ -110,7 +109,7 @@ export class CounterService {
   getScheduleConfig() {
     // if (!this.once) {
       // setTimeout(() => {
-        this.http.post(`${SERVER_URL}/getScheduleConfig`, null)
+        this.http.post(`${process.env['SERVER_URL']}/getScheduleConfig`, null)
           .subscribe((res: any) => {
             this.StoreServ.setScheduleConfig(res)
             // this.once = true
