@@ -40,26 +40,32 @@ jobs:
       run: npm install --global vercel@canary
       working-directory: ./web
     
-    - name: Create .vercel/output directory
-      run: mkdir -p .vercel/output
+    # - name: Create .vercel/output directory
+    #   run: mkdir -p .vercel/output
     
-    - name: Run Vercel build
-      run: npx vercel build --token=${{ secrets.VERCEL_TOKEN }}
+    # - name: Run Vercel build
+    #   run: npx vercel build --token=${{ secrets.VERCEL_TOKEN }}
 
-    - name: Move build output to .vercel/output
-      run: |
-        # Ensure the build output directory exists
-        mkdir -p .vercel/output/static
-        # Move the build output to the .vercel/output/static directory
-        mv ./web/dist/* .vercel/output/static/
+    # - name: Move build output to .vercel/output
+    #   run: |
+    #     # Ensure the build output directory exists
+    #     mkdir -p .vercel/output/static
+    #     # Move the build output to the .vercel/output/static directory
+    #     mv ./web/dist/* .vercel/output/static/
 
-    - name: Deploy to Vercel
-      uses: amondnet/vercel-action@v25
-      with:
-        vercel-token: ${{ secrets.VERCEL_TOKEN }} # Make sure to set this in your repository secrets
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        vercel-args: '--prebuilt'
-        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }} # If you're in a team/organization
-        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }} # If you have a specific project ID
+    # - name: Deploy to Vercel
+    #   uses: amondnet/vercel-action@v25
+    #   with:
+    #     vercel-token: ${{ secrets.VERCEL_TOKEN }} # Make sure to set this in your repository secrets
+    #     github-token: ${{ secrets.GITHUB_TOKEN }}
+    #     vercel-args: '--prebuilt'
+    #     vercel-org-id: ${{ secrets.VERCEL_ORG_ID }} # If you're in a team/organization
+    #     vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }} # If you have a specific project ID
 
+    - name: Pull Vercel Environment Information
+      run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+    - name: Build Project Artifacts
+      run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+    - name: Deploy Project Artifacts to Vercel
+      run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
  
