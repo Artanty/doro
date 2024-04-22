@@ -36,9 +36,9 @@ jobs:
       run: npm run build
       working-directory: ./web
 
-    # - name: Install Vercel CLI
-    #   run: npm install --global vercel@canary
-    #   working-directory: ./web
+    - name: Install Vercel CLI
+      run: npm install --global vercel@canary
+      working-directory: ./web
 
     # - name: Deploy to Vercel
     #   run: npx vercel --prod --yes
@@ -52,5 +52,8 @@ jobs:
         vercel-token: ${{ secrets.VERCEL_TOKEN }} # Make sure to set this in your repository secrets
         github-token: ${{ secrets.GITHUB_TOKEN }}
         vercel-args: '--prebuilt'
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }} # If you're in a team/organization
         vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }} # If you have a specific project ID
+        working-directory: ./web/dist
+
  
