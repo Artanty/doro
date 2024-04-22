@@ -42,7 +42,10 @@ jobs:
     
     - name: Create .vercel/output directory
       run: mkdir -p .vercel/output
-
+    
+    - name: Run Vercel build
+      run: npx vercel build --token=${{ secrets.VERCEL_TOKEN }} --prebuilt
+      
     - name: Move build output to .vercel/output
       run: |
         # Ensure the build output directory exists
@@ -58,6 +61,5 @@ jobs:
         vercel-args: '--prebuilt'
         vercel-org-id: ${{ secrets.VERCEL_ORG_ID }} # If you're in a team/organization
         vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }} # If you have a specific project ID
-        working-directory: ./.vercel/output/
 
  
