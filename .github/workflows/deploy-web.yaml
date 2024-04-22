@@ -39,15 +39,15 @@ jobs:
     - name: Install Vercel CLI
       run: npm install --global vercel@canary
       working-directory: ./web
+    
+    - name: Create .vercel/output directory
+      run: mkdir -p .vercel/output
 
-    # - name: Deploy to Vercel
-    #   run: npx vercel --prod --yes
-    #   env:
-    #     VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-    #   working-directory: ./web
-  
+    - name: Move build output to .vercel/output
+      run: mv ./web/dist/* .vercel/output/
+
     - name: Deploy to Vercel
-      uses: amondnet/vercel-action@v20
+      uses: amondnet/vercel-action@v25
       with:
         vercel-token: ${{ secrets.VERCEL_TOKEN }} # Make sure to set this in your repository secrets
         github-token: ${{ secrets.GITHUB_TOKEN }}
