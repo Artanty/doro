@@ -54,6 +54,6 @@ jobs:
         vercel-args: '--prebuilt'
         vercel-org-id: ${{ secrets.VERCEL_ORG_ID }} # If you're in a team/organization
         vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }} # If you have a specific project ID
-        working-directory: ./web/dist
+        working-directory: ./.vercel/output/
 
  
