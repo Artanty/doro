@@ -44,8 +44,8 @@ jobs:
       run: mkdir -p .vercel/output
     
     - name: Run Vercel build
-      run: npx vercel build --token=${{ secrets.VERCEL_TOKEN }} --prebuilt
-      
+      run: npx vercel build --token=${{ secrets.VERCEL_TOKEN }}
+
     - name: Move build output to .vercel/output
       run: |
         # Ensure the build output directory exists
