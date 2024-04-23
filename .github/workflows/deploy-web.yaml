@@ -38,9 +38,9 @@ jobs:
         SERVER_URL=${{ secrets.SERVER_URL }}" > .env
       working-directory: ./web
 
-    - name: Build project
-      run: npm run build
-      working-directory: ./web
+    # - name: Build project
+    #   run: npm run build
+    #   working-directory: ./web
 
     - name: Install Vercel CLI
       run: npm install --global vercel@canary
