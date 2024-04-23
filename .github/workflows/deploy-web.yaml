@@ -33,9 +33,9 @@ jobs:
         SERVER_URL=${{ secrets.SERVER_URL }}" > .env
       working-directory: ./web
 
-    - name: Build project
-      run: npm run build
-      working-directory: ./web
+    # - name: Build project
+    #   run: npm run build
+    #   working-directory: ./web
 
     # - name: Install Vercel CLI
     #   run: npm install --global vercel@canary
@@ -53,6 +53,8 @@ jobs:
 
     # - name: Deploy Project Artifacts to Vercel
     #   run: vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }}
+    - name: Change directory to 'web'
+      run: cd web
     - uses: actions/checkout@v2
       #  your build commands
     - run: |
@@ -64,4 +66,4 @@ jobs:
         vercel-args: '--prod' #Optional
         vercel-org-id: ${{ secrets.VERCEL_ORG_ID}}  #Required
         vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID}} #Required 
-        working-directory: ./web
+        working-directory: ./dist/counter
