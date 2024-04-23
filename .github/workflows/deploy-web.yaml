@@ -17,15 +17,20 @@ jobs:
     
     - name: Checkout code
       uses: actions/checkout@v2
-
-    - name: Set up Node.js
-      uses: actions/setup-node@v2
+    - uses: actions/cache@v1
       with:
-        node-version: '18'
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+    # - name: Set up Node.js
+    #   uses: actions/setup-node@v2
+    #   with:
+    #     node-version: '18'
 
-    - name: Install dependencies
-      run: npm ci
-      working-directory: ./web
+    # - name: Install dependencies
+    #   run: npm ci
+    #   working-directory: ./web
 
     - name: Create configuration file
       run: |
@@ -53,8 +58,11 @@ jobs:
 
     # - name: Deploy Project Artifacts to Vercel
     #   run: vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }}
-
-    - uses: actions/checkout@v2
+    - name: Check Node.js and npm versions
+      run: |
+        node --version
+        npm --version
+    # - uses: actions/checkout@v2
       #  your build commands
     - run: |
         cd web
