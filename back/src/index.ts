@@ -63,6 +63,11 @@ app.get("/ping", async (_req, res) => {
         message: "hello",
     });
 });
+app.get("/", async (_req, res) => {
+    res.send({
+        message: "hello",
+    });
+});
 
 app.use(cors());
 app.use(bodyParser.json());
