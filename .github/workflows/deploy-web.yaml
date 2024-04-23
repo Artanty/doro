@@ -58,6 +58,7 @@ jobs:
       #  your build commands
     - run: |
         cd web
+        npm ci
         npm run build
     - uses: amondnet/vercel-action@v25 #deploy
       with:
