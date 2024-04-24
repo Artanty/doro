@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "deploy": "cmd /c tagpush.bat"
+    "tagpush": "cmd /c .build\\tagpush.bat",
+    "setenv": "cmd /c .build\\web\\set-current-version2env.bat",
+    "deploy": "cmd /c .build\\deploy-all.bat"
   },
   "repository": {
     "type": "git",
