@@ -44,7 +44,12 @@ jobs:
         DB_DATABASE=${{ secrets.DB_DATABASE }}
         DB_HOST=${{ secrets.DB_HOST }}
         DB_DIALECT=${{ secrets.DB_DIALECT }}
-        DB_SYNC_MODE_FORCE=${{ secrets.DB_SYNC_MODE_FORCE }}" > .env
+        DB_SYNC_MODE_FORCE=${{ secrets.DB_SYNC_MODE_FORCE }}
+        ENV_TAG=${{ env.TAG }}
+        SSH_HOST=${{ secrets.SSH_HOST }}
+        SSH_USER=${{ secrets.SSH_USER }}
+        USER_PASS=${{ secrets.USER_PASS }}
+        SSH_PRIVATE_KEY=${{ secrets.SSH_PRIVATE_KEY }}" > .env
       working-directory: ./back/build
 
     - name: Copy folder content recursively to remote
