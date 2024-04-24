@@ -76,7 +76,8 @@ export async function eventsHandler(request: e.Request, response: e.Response) {
     const headers = {
         'Content-Type': 'text/event-stream',
         'Connection': 'keep-alive',
-        'Cache-Control': 'no-cache'
+        'Cache-Control': 'no-cache',
+        'X-Accel-Buffering': 'no'
     };
     console.log('function eventsHandler')
     const scheduleConfig = await getActiveScheduleConfig()
