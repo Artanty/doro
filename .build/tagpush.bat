@@ -26,7 +26,7 @@ git rev-parse v%CURRENT_VERSION% > nul 2>&1 || (
 )
 
 :: Increment the patch version of the 'back' directory and save the new value in a variable
-cd back
+cd ../back
 for /f "delims=" %%i in ('npm version patch --no-git-tag-version') do (
     set BACK_NEW_VERSION=%%i
 )
@@ -64,18 +64,6 @@ git tag -a "v%TAG_VERSION%" -m "App version: %TAG_VERSION%" -m "Web Version: %WE
 
 :: Push the new tag to the remote repository
 git push origin "v%TAG_VERSION%"
-
-
-
-:: Temporarily change to the web directory
-pushd .build\web\
-
-:: Run the batch script in the web directory
-call set-current-version2env.bat
-
-:: Return to the original directory
-popd
-
 
 
 endlocal
