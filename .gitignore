@@ -1,2 +1,4 @@
 /.idea
-/downloads  
+/downloads
+.env
+/.env

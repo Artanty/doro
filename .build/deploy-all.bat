@@ -16,26 +16,4 @@ call set-current-version2env.bat
 :: Return to the original directory
 cd ..\..\
 
-
-
 endlocal
-
-
-
-@REM @echo off
-
-@REM :: Change to the web directory
-@REM cd .build\web\
-
-@REM :: Call the first script
-@REM echo Running deploy script...
-@REM call set-current-version2env.bat
-
-@REM @REM :: Call the second script
-@REM @REM echo Running deploy2 script...
-@REM @REM call tagpush2.bat
-
-@REM :: Return to the original directory
-@REM cd ..\..\
-
-@REM echo All scripts have been executed.

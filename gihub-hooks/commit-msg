@@ -1,0 +1,69 @@
+#!/bin/sh
+
+# Read the commit message file from the arguments
+commit_msg_file=$1
+commit_msg_source=$2
+commit_hash=$3
+
+# Read the current commit message from the file
+commit_msg=$(cat "$commit_msg_file")
+
+# Read environment variables from .env file
+while IFS='=' read -r key value
+do
+    eval "${key}=\"${value}\""
+done < .env
+
+# Default to dev environment
+plan_url=$PLAN_URL
+
+# Construct the JSON payload with double quotes around the message and externalServiceName
+json_payload=$(printf '{ "message": "%s", "externalServiceName": "%s" }' "$commit_msg" "$PLAN_EXTERNAL_SERVICE_NAME")
+
+# Make a POST request to the server and get the response
+response=$(curl -s -X POST -H "Content-Type: application/json" -d "$json_payload" "$plan_url/tasks/find-or-create")
+
+# Check if the curl command was successful
+if [ $? -ne 0 ]; then
+  echo "An error occurred with the curl command. Exiting commit."
+  exit 1
+fi
+
+extract_json_value() {
+  local json="$1"
+  local key="$2"
+  local num="${3:-1}" # Default to the first occurrence if num is not provided
+  echo "$json" | awk -F"[,:]" -v key="$key" '{
+    for (i=1; i<=NF; i++) {
+      if ($i ~ /\042'$key'\042/) {
+        # Extract the value (next field, remove surrounding quotes)
+        value = gensub(/^"|"$/, "", "g", $(i+1))
+        # Print the value
+        print value
+        # If num is provided, only print the nth occurrence
+        if (num > 1) {
+          num--
+        } else {
+          exit
+        }
+      }
+    }
+  }'
+}
+
+error=$(extract_json_value "$response" "error")
+
+# Check if the response has 'error'
+if [ -z "$error" ]; then
+ 
+  # Replace the commit message with the new one
+  commit_msg="$response"
+  echo "$commit_msg" > "$commit_msg_file"
+
+  # Exit with a zero status to allow the commit
+  exit 0
+
+else
+  echo $(extract_json_value "$response" "message")
+  exit 1
+fi

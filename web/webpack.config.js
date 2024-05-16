@@ -28,7 +28,7 @@ module.exports = {
   },
   plugins: [
     new ModuleFederationPlugin({
-      name: "mfe1",
+      name: "doro",
       filename: "remoteEntry.js",
       exposes: {
         './Module': './src/app/doro/doro.module.ts',

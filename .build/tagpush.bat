@@ -33,7 +33,7 @@ for /f "delims=" %%i in ('npm version patch --no-git-tag-version') do (
 set BACK_TAG_VERSION=%BACK_NEW_VERSION:~1%
 cd ..
 
-:: Get the current version from package.json of the 'web' directory and save the new value in a variable
+:: Increment the current version from package.json of the 'web' directory and save the new value in a variable
 cd web
 for /f "delims=" %%i in ('npm version patch --no-git-tag-version') do (
     set WEB_NEW_VERSION=%%i
@@ -59,7 +59,7 @@ for /f "delims=" %%i in ('git log --pretty^=format:"%%s" HEAD...v%CURRENT_VERSIO
     set COMMIT_MESSAGES=%%i
 )
 
-:: Create an annotated tag with the new version and commit messages, including the web version
+:: Create an annotated tag with the new version and commit messages, including web & back version
 git tag -a "v%TAG_VERSION%" -m "App version: %TAG_VERSION%" -m "Web Version: %WEB_TAG_VERSION% Back Version: %BACK_TAG_VERSION%" -m "Commit Messages: %COMMIT_MESSAGES%"
 
 :: Push the new tag to the remote repository

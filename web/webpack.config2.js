@@ -4,7 +4,7 @@ const {
 } = require('@angular-architects/module-federation/webpack');
 
 module.exports = withModuleFederationPlugin({
-  name: 'mfe1',
+  name: 'doro',
 
   exposes: {
     './Module': './src/app/doro/doro.module.ts',
