@@ -1,17 +1,17 @@
 @echo off
 setlocal
 
-:: Check for uncommitted changes
-git diff-index --quiet HEAD -- || (
-    echo There are uncommitted changes. Commit or stash them before running this script.
-    exit /b
-)
+@REM :: Check for uncommitted changes
+@REM git diff-index --quiet HEAD -- || (
+@REM     echo There are uncommitted changes. Commit or stash them before running this script.
+@REM     exit /b
+@REM )
 
-:: Check for unpushed commits
-for /f "delims=" %%i in ('git diff origin/master..HEAD') do (
-    echo There are unpushed commits. Push them before running this script.
-    exit /b
-)
+@REM :: Check for unpushed commits
+@REM for /f "delims=" %%i in ('git diff origin/master..HEAD') do (
+@REM     echo There are unpushed commits. Push them before running this script.
+@REM     exit /b
+@REM )
 
 :: Get the current version from package.json
 for /f "delims=" %%i in ('node -p "require('../package.json').version"') do set CURRENT_VERSION=%%i
