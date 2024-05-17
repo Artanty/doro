@@ -32,7 +32,7 @@ set TAG_VERSION=%NEW_VERSION:~1%
 
 :: Commit the changes to the master branch
 git add .
-git commit -m "* build: DORO-0001 %TAG_VERSION%"
+git commit -m "* build: DORO-0001 %TAG_VERSION%;"
 git push origin master
 
 :: Get the commit messages since the last tag
