@@ -2,10 +2,10 @@
 setlocal
 
 :: Get the current APP version from package.json
-for /f "delims=" %%i in ('node -p "require('../../package.json').version"') do set CURRENT_VERSION=%%i
+for /f "delims=" %%i in ('node -p "require('../package.json').version"') do set CURRENT_VERSION=%%i
 
-:: Define the path to WEB .env file
-set ENV_FILE=../../.env
+:: Define the path to .env file
+set ENV_FILE=../.env
 
 :: Check if the .env file exists
 if not exist "%ENV_FILE%" (
