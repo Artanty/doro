@@ -1,45 +1,37 @@
 @echo off
-setlocal
+setlocal EnableDelayedExpansion
 
-:: Check for uncommitted changes
-git diff-index --quiet HEAD -- || (
-    echo There are uncommitted changes. Commit or stash them before running this script.
+:: Get the latest tag in the format v1.0.40
+for /f "delims=" %%i in ('git describe --tags --abbrev^=0') do set LATEST_TAG=%%i
+
+:: Check if there are any tags
+if "%LATEST_TAG%"=="" (
+    echo No tags found.
     exit /b
 )
 
-:: Check for unpushed commits
-for /f "delims=" %%i in ('git diff origin/master..HEAD') do (
-    echo There are unpushed commits. Push them before running this script.
-    exit /b
+:: Extract the version number from the latest tag
+set VERSION_NUMBER=%LATEST_TAG:~1%
+
+:: Display the extracted version number
+echo Latest version: %VERSION_NUMBER%
+
+:: Increment the last digit of the version number
+for /f "tokens=1,2,3 delims=." %%a in ("%VERSION_NUMBER%") do (
+    set /a NEW_PATCH=%%c+1
+    set NEW_VERSION=%%a.%%b.!NEW_PATCH!
 )
 
-:: Get the current version from package.json
-for /f "delims=" %%i in ('node -p "require('../package.json').version"') do set CURRENT_VERSION=%%i
+:: Create a new tag with the incremented version number
+git tag -a "v!NEW_VERSION!" -m "App version: !NEW_VERSION!"
 
-:: Check if the current version has a tag
-git rev-parse v%CURRENT_VERSION% > nul 2>&1 || (
-    echo There is no tag for the current version v%CURRENT_VERSION%. Create a tag for the current version before running this script.
-    exit /b
+:: Get the commit messages between the latest tag and the previous one
+for /f "delims=" %%i in ('git log --pretty^=format:"%%s" !LATEST_TAG!..HEAD') do (
+    set "COMMIT_MESSAGES=%%i"
 )
 
-:: Increment the patch version and save the new value in a variable
-for /f "delims=" %%i in ('npm version patch --no-git-tag-version') do (
-    set NEW_VERSION=%%i
-)
-
-:: Remove the 'v' prefix from the version
-set TAG_VERSION=%NEW_VERSION:~1%
-
-:: Get the commit messages since the last tag
-for /f "delims=" %%i in ('git log --pretty^=format:"%%s" HEAD...v%CURRENT_VERSION%') do (
-    set COMMIT_MESSAGES=%%i
-)
-
-:: Create an annotated tag with the new version and commit messages, including web & back version
-git tag -a "v%TAG_VERSION%" -m "App version: %TAG_VERSION%" -m "Changes: %COMMIT_MESSAGES%"
-
-:: Push the new tag to the remote repository
-git push origin "v%TAG_VERSION%"
-
+:: Display the new version and commit messages
+echo New version: !NEW_VERSION!
+echo Commit messages: !COMMIT_MESSAGES!
 
 endlocal
