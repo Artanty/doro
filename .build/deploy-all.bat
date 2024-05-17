@@ -1,10 +1,10 @@
 @echo off
 setlocal
 
-:: Temporarily change to the web directory
+:: Temporarily change to the build directory
 cd .build
 
-:: Run the batch script in the web directory
+:: Run the batch script in the build directory
 call tagpush.bat
 
 :: Run the batch script in the web directory
