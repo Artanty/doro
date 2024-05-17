@@ -5,7 +5,7 @@ setlocal
 for /f "delims=" %%i in ('node -p "require('../../package.json').version"') do set CURRENT_VERSION=%%i
 
 :: Define the path to WEB .env file
-set ENV_FILE=../../web/.env
+set ENV_FILE=../../.env
 
 :: Check if the .env file exists
 if not exist "%ENV_FILE%" (

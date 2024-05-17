@@ -1,11 +1,11 @@
 {
   "name": "doro",
-  "version": "1.0.30",
+  "version": "1.0.31",
   "description": "",
   "main": "index.js",
   "scripts": {
     "tagpush": "cmd /c .build\\tagpush.bat",
-    "setenv": "cmd /c .build\\web\\set-current-version2env.bat",
+    "setenv": "cmd /c .build\\web\\ver2env.bat",
     "deploy": "cmd /c .build\\deploy-all.bat"
   },
   "repository": {
