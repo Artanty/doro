@@ -1,17 +1,17 @@
 @echo off
 setlocal
 
-@REM :: Check for uncommitted changes
-@REM git diff-index --quiet HEAD -- || (
-@REM     echo There are uncommitted changes. Commit or stash them before running this script.
-@REM     exit /b
-@REM )
+:: Check for uncommitted changes
+git diff-index --quiet HEAD -- || (
+    echo There are uncommitted changes. Commit or stash them before running this script.
+    exit /b
+)
 
-@REM :: Check for unpushed commits
-@REM for /f "delims=" %%i in ('git diff origin/master..HEAD') do (
-@REM     echo There are unpushed commits. Push them before running this script.
-@REM     exit /b
-@REM )
+:: Check for unpushed commits
+for /f "delims=" %%i in ('git diff origin/master..HEAD') do (
+    echo There are unpushed commits. Push them before running this script.
+    exit /b
+)
 
 :: Get the current version from package.json
 for /f "delims=" %%i in ('node -p "require('../package.json').version"') do set CURRENT_VERSION=%%i
@@ -29,14 +29,6 @@ for /f "delims=" %%i in ('npm version patch --no-git-tag-version') do (
 
 :: Remove the 'v' prefix from the version
 set TAG_VERSION=%NEW_VERSION:~1%
-
-:: Wait for 3 seconds
-timeout /t 3 /nobreak > nul
-
-:: Commit the changes to the master branch
-git add .
-git commit -m "* build: DORO-0001 %TAG_VERSION%;"
-git push origin master
 
 :: Get the commit messages since the last tag
 for /f "delims=" %%i in ('git log --pretty^=format:"%%s" HEAD...v%CURRENT_VERSION%') do (
