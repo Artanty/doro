@@ -30,6 +30,9 @@ for /f "delims=" %%i in ('npm version patch --no-git-tag-version') do (
 :: Remove the 'v' prefix from the version
 set TAG_VERSION=%NEW_VERSION:~1%
 
+:: Wait for 3 seconds
+timeout /t 3 /nobreak > nul
+
 :: Commit the changes to the master branch
 git add .
 git commit -m "* build: DORO-0001 %TAG_VERSION%;"
