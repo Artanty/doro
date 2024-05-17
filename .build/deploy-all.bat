@@ -8,7 +8,7 @@ cd .build
 call tagpush.bat
 
 :: Run the batch script in the web directory
-call ver2env.bat
+call tag2env.bat
 
 :: Return to the original directory
 cd ..\
