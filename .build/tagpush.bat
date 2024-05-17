@@ -21,7 +21,7 @@ for /f "tokens=1,2,3 delims=." %%a in ("%VERSION_NUMBER%") do (
     set /a NEW_PATCH=%%c+1
     set NEW_VERSION=%%a.%%b.!NEW_PATCH!
 )
-COMMIT_MESSAGES='123'
+
 :: Get the commit messages between the latest tag and the previous one
 for /f "delims=" %%i in ('git log --pretty^=format:"%%s" !LATEST_TAG!..HEAD') do (
     set "COMMIT_MESSAGES=%%i"

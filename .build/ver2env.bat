@@ -1,8 +1,16 @@
 @echo off
 setlocal
 
-:: Get the current APP version from package.json
-for /f "delims=" %%i in ('node -p "require('../package.json').version"') do set CURRENT_VERSION=%%i
+:: Get the current APP version from the latest Git tag
+for /f "delims=" %%i in ('git describe --tags --abbrev^=0') do set CURRENT_VERSION=%%i
+
+:: If there are no tags, set the version to 1.0.0
+if "%CURRENT_VERSION%"=="" (
+    set CURRENT_VERSION=1.0.0
+) else (
+    :: Remove the 'v' prefix from the tag
+    set CURRENT_VERSION=%CURRENT_VERSION:v=%
+)
 
 :: Define the path to .env file
 set ENV_FILE=../.env
