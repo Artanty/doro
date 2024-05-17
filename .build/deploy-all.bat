@@ -11,6 +11,6 @@ call tagpush.bat
 call ver2env.bat
 
 :: Return to the original directory
-cd ..\..\
+cd ..\
 
 endlocal
