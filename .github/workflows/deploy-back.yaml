@@ -6,7 +6,7 @@ on:
       - '*'
 
 jobs:
-  build-and-deploy:
+  back-build-and-deploy:
     runs-on: ubuntu-latest
     permissions:  #for Create release branch
       contents: write
@@ -60,6 +60,7 @@ jobs:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USER }}
         password: ${{ secrets.USER_PASS }}
+
     - name: Executing remote ssh commands using password
       uses: appleboy/ssh-action@master
       with:
