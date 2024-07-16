@@ -68,7 +68,7 @@ jobs:
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
-          npm install
           cd back
+          npm install
           pm2 stop all
           pm2 start index.js
