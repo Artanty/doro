@@ -52,6 +52,9 @@ jobs:
         SSH_PRIVATE_KEY=${{ secrets.SSH_PRIVATE_KEY }}" > .env
       working-directory: ./back/build
 
+    - name: Copy package.json to build directory
+      run: cp ./back/package.json ./back/build/package.json
+
     - name: Copy folder content recursively to remote
       uses: garygrossgarten/github-action-scp@release
       with:
@@ -68,7 +71,8 @@ jobs:
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
-          cd back
+          ls -l
+          cd /root/back
           npm install
           pm2 stop all
           pm2 start index.js
