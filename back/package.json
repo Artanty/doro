@@ -2,11 +2,11 @@
   "name": "back",
   "version": "1.0.31",
   "description": "",
-  "main": "app.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npx tsc",
-    "start": "node dist/app.js",
+    "start": "node build/index.js",
     "dev": "nodemon --config nodemon.json",
     "devv": "concurrently \"nodemon\" \"nodemon -x tsoa spec\"",
     "swagger": "tsoa spec",

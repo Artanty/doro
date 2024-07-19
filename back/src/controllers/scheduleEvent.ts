@@ -24,6 +24,7 @@ import { getActiveScheduleConfig } from "../dbActions/getActiveScheduleConfig";
 import { updateScheduleConfigHash } from "../dbActions/updateScheduleConfigHash";
 import { setCurrentScheduleEvent } from "../dbActions/setCurrentScheduleEvent";
 import { playScheduleEvent } from "../dbActions/playScheduleEvent";
+import { ErrorLogger } from "../utils/ErrorLogger";
 
 
 export default class ScheduleEventController {
@@ -38,6 +39,7 @@ export default class ScheduleEventController {
         try {
             return await createScheduleEvent(data)
         } catch (err) {
+            ErrorLogger.logError(err);
             return { status: 'err' }
         }
     }

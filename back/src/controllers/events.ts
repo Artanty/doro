@@ -16,6 +16,8 @@ import * as e from "express";
 
 import { getActiveScheduleConfig } from "../dbActions/getActiveScheduleConfig";
 import { dd } from "../utils";
+import { ErrorLogger } from "../utils/ErrorLogger";
+
 export interface IEventState {
     "sessionId": number,
     "sessionLength"?: number,
@@ -61,7 +63,10 @@ export default class EventsController {
         try {
             eventsHandler(this.request, this.response)
         } catch (err) {
+            ErrorLogger.logError(err);
+            throw new Error(JSON.stringify(err))
             // response.send({ status: 'err' });
+            
         }
     }
 
@@ -77,7 +82,8 @@ export async function eventsHandler(request: e.Request, response: e.Response) {
         'Content-Type': 'text/event-stream',
         'Connection': 'keep-alive',
         'Cache-Control': 'no-cache',
-        'X-Accel-Buffering': 'no'
+        'X-Accel-Buffering': 'no',
+        'Access-Control-Allow-Origin': '*',
     };
     console.log('function eventsHandler')
     const scheduleConfig = await getActiveScheduleConfig()
