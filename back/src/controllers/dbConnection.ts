@@ -3,12 +3,13 @@ import { getDbConnection } from "../dbActions/getDbConnection";
 import { log, logError } from "../utils/Logger";
 
 export default class DbConnectionController {
-  public static async getDbConnection(): Promise<any> {
+  public static async getDbConnection(): Promise<void> {
     try {
       await getDbConnection()
       log('Database connected', { badge: CORE_BADGE })
     } catch (err: unknown) {
-      logError(err)
+      await logError(err)
+
       throw err
     }
   }    
