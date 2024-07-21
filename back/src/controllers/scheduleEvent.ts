@@ -24,7 +24,8 @@ import { getActiveScheduleConfig } from "../dbActions/getActiveScheduleConfig";
 import { updateScheduleConfigHash } from "../dbActions/updateScheduleConfigHash";
 import { setCurrentScheduleEvent } from "../dbActions/setCurrentScheduleEvent";
 import { playScheduleEvent } from "../dbActions/playScheduleEvent";
-import { ErrorLogger } from "../utils/ErrorLogger";
+import { logError } from "../utils/Logger";
+// import { ErrorLogger } from "../utils/Logger";
 
 
 export default class ScheduleEventController {
@@ -38,9 +39,9 @@ export default class ScheduleEventController {
     public static async createScheduleEvent(data: any): Promise<any> {
         try {
             return await createScheduleEvent(data)
-        } catch (err) {
-            ErrorLogger.logError(err);
-            return { status: 'err' }
+        } catch (err: unknown) {
+            logError(err)
+            throw err
         }
     }
 

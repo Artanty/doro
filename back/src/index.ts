@@ -15,7 +15,7 @@ import {dd, makeRangeIterator} from "./utils";
 // import { Schedule } from './models/Schedule';
 
 import {
-    checkDbConnection,
+
     Database,
     // sequelize,
 } from './core/dbConnect'
@@ -32,24 +32,28 @@ import ScheduleController from "./controllers/schedule";
 import {activateScheduleConfig} from "./dbActions/activateScheduleConfig";
 import { VariableWatcher } from './utils/variableWather';
 import ClientController from "./controllers/clientController";
-import { ErrorLogger } from './utils/ErrorLogger';
+
+import DbConnectionController from './controllers/dbConnection';
+import { log } from './utils/Logger';
+import { CORE_BADGE } from './core/constants';
 
 // import {rr} from "./dbActions/saveState";
-const app: Application  = express();
+const app: Application = express();
+  
 // connection;
-
 Database.getInstance({models: getModels()})
 dd(process.env.DB_DATABASE ?? 'no DB_DATABASE value')
-checkDbConnection().then( async (sequelizeInstance: any) => {
-    console.log(Database.getInstance().models)
-    // console.log(sequelizeInstance instanceof Sequelize)
-    // setTimeout(() => {
-    //     createScheduleConfigTable(sequelizeInstance)
-    // }, 1000)
-    // rr()
-    // await Schedule.sync({ force: true });
-    // console.log('The table for the User model was just (re)created!');
-})
+DbConnectionController.getDbConnection()
+// checkDbConnection().then( async (sequelizeInstance: any) => {
+//     console.log(Database.getInstance().models)
+//     // console.log(sequelizeInstance instanceof Sequelize)
+//     // setTimeout(() => {
+//     //     createScheduleConfigTable(sequelizeInstance)
+//     // }, 1000)
+//     // rr()
+//     // await Schedule.sync({ force: true });
+//     // console.log('The table for the User model was just (re)created!');
+// })
 
 
 // console.log('new')
@@ -114,7 +118,7 @@ app.use(function errorHandler(
 app.use(router);
 app.use(bodyParser.urlencoded({extended: false}));
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 let clients: any[] = [];
 let facts = [];
@@ -144,8 +148,7 @@ export function setTimerId (newTimerId: any) {
     timerId = newTimerId
 }
 app.listen(PORT, () => {
-    console.log(`Events service listening at http://localhost:${PORT}`)
-    dd('CHECK 2')
+    log(`Node.js started at http://localhost:${PORT}`, { badge: CORE_BADGE })
     // dd('create default config if none')
     // ScheduleConfigController.getScheduleConfig()
 })
@@ -458,10 +461,19 @@ app.post('/scheduleEvent/:action',async (req, res) => {
 
         return res.send(response);   
     } catch (err) {
-        ErrorLogger.logError(err);
+        return res.status(400).send(handleError(err));
     }
 })
 
-
-
-
+function handleError(error: unknown): { error: string } {
+    let errorText = ''
+    if (error instanceof Error) {
+        errorText = error.message
+    }
+    errorText = String(error)
+    
+    const result = {
+        error: errorText.replace(/\n/g, ' ')
+    }
+    return result
+}

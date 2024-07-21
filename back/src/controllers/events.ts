@@ -16,7 +16,7 @@ import * as e from "express";
 
 import { getActiveScheduleConfig } from "../dbActions/getActiveScheduleConfig";
 import { dd } from "../utils";
-import { ErrorLogger } from "../utils/ErrorLogger";
+import { logError } from "../utils/Logger";
 
 export interface IEventState {
     "sessionId": number,
@@ -63,7 +63,7 @@ export default class EventsController {
         try {
             eventsHandler(this.request, this.response)
         } catch (err) {
-            ErrorLogger.logError(err);
+            logError(err)
             throw new Error(JSON.stringify(err))
             // response.send({ status: 'err' });
             

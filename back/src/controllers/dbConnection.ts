@@ -1,0 +1,16 @@
+import { CORE_BADGE } from "../core/constants";
+import { getDbConnection } from "../dbActions/getDbConnection";
+import { log, logError } from "../utils/Logger";
+
+export default class DbConnectionController {
+  public static async getDbConnection(): Promise<any> {
+    try {
+      await getDbConnection()
+      log('Database connected', { badge: CORE_BADGE })
+    } catch (err: unknown) {
+      logError(err)
+      throw err
+    }
+  }    
+}
+

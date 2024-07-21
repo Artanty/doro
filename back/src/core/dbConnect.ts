@@ -25,29 +25,34 @@ export class Database {
             username: process.env.DB_USERNAME,
             password: process.env.DB_PASSWORD,
             host: process.env.DB_HOST,
-            dialect: process.env.DB_DIALECT,
+            dialect: process.env.DB_DIALECT ?? "mysql",
+            logging: false,
         } as Options
     }
 
     public static getInstance(additionalOptions: Options = {}): Sequelize {
 
-        const options = mergeObjects(Database.getDbConnectOptions(), additionalOptions)
-
         if (!Database.instance) {
-            Database.instance = new Sequelize(options);
+            Database.instance = Database.createInstance(additionalOptions) 
         }
         return Database.instance;
     }
-}
 
+    private static createInstance (additionalOptions: Options) {
 
-export async function checkDbConnection () {
-    try {
-        await Database.getInstance().authenticate();
-        console.log('Connection has been established successfully.');
-    } catch (error) {
-        console.error('Unable to connect to the database:', error);
+        const options = mergeObjects(Database.getDbConnectOptions(), additionalOptions)
+
+        return new Sequelize(options);
     }
 }
+
+
+
+
+// export function setLogger (dbInstance: Sequelize) {
+//     dbInstance.on('error', (error) => {
+//         console.error('Database connection error:', error);
+//       });
+// }
 
 
