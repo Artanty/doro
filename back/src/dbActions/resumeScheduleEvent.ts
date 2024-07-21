@@ -29,6 +29,5 @@ export async function resumeScheduleEvent (
         }
         return scheduleConfig
     })
-    console.log(result)
     return result
 }

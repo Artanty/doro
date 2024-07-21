@@ -6,9 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npx tsc",
-    "start": "node build/index.js",
-    "dev": "nodemon --config nodemon.json",
-    "devv": "concurrently \"nodemon\" \"nodemon -x tsoa spec\"",
+    "prePreStart": "node build/index.js",
+    "preStart": "nodemon --config nodemon.json",
+    "start": "concurrently \"nodemon\" \"nodemon -x tsoa spec\"",
     "swagger": "tsoa spec",
     "db-sync": "ts-node src/dbMigrations/_runDbSync.ts",
     "tagpush": "cmd /c tagpush.bat"

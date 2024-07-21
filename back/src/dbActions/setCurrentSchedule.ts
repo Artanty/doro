@@ -29,6 +29,5 @@ export async function setCurrentSchedule (
       }
       return scheduleConfig
   })
-  console.log(result)
   return result
 }

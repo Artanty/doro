@@ -1,5 +1,6 @@
 import {
     addClient,
+    getClients,
     getNextEventId,
     getState,
     removeClient,
@@ -16,7 +17,7 @@ import * as e from "express";
 
 import { getActiveScheduleConfig } from "../dbActions/getActiveScheduleConfig";
 import { dd } from "../utils";
-import { logError } from "../utils/Logger";
+import { log, logError } from "../utils/Logger";
 
 export interface IEventState {
     "sessionId": number,
@@ -85,11 +86,11 @@ export async function eventsHandler(request: e.Request, response: e.Response) {
         'X-Accel-Buffering': 'no',
         'Access-Control-Allow-Origin': '*',
     };
-    console.log('function eventsHandler')
     const scheduleConfig = await getActiveScheduleConfig()
     
     dd('отправляем клиенту, который подключился последний активный конфиг, id: ' + scheduleConfig.id)
-    
+    console.log(getClients())
+    log(getClients())
     response.writeHead(200, headers);
     const clientId = Date.now();
     response.write(`id: ${getNextEventId.next().value}\n\n`)

@@ -15,6 +15,5 @@ export class VariableWatcher extends EventEmitter {
 // const clientsWatcher = new VariableWatcher();
 
 // clientsWatcher.on('variableChanged', (newValue: any) => {
-//   console.log('Variable changed:', newValue);
 // });
 //   clientsWatcher.setVariable(42)

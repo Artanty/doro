@@ -15,6 +15,8 @@ import { Database } from "../core/dbConnect";
 import {getModels} from "../models/_getModels";
 import path from "path";
 import { createDefaultScheduleConfig } from "../dbActions/createDefaultScheduleConfig";
+import { log } from "../utils/Logger";
+
 
 const modelClasses = getModels()
 addDbModels(modelClasses)
@@ -32,7 +34,7 @@ const globalForceSync = process.env.DB_SYNC_MODE_FORCE === 'true'
 let deleteTablesAction: () => Promise<void>
 
 if (globalForceSync) {
-    dd('Удаление всех таблиц со всеми данными')
+    log('Удаление всех таблиц со всеми данными')
     const forceSync = async () => {
         await Database.getInstance().query('SET FOREIGN_KEY_CHECKS = 0');
         await Database.getInstance().sync({ force: true });
@@ -41,17 +43,17 @@ if (globalForceSync) {
     deleteTablesAction = forceSync
 } else {
     const tableControlledSync = async () => {
-        dd('Синхронизация таблиц с моделями с индивидуальными настройками')
+        log('Синхронизация таблиц с моделями с индивидуальными настройками')
         try {
             await Database.getInstance().query('SET FOREIGN_KEY_CHECKS = 0');
             await Promise.all(modelClasses
                 .filter(filterPermittedClasses)
                 .map(async (model) => {
                     const syncMode = getTableSyncMode(model);
-                    console.log(`The table for the ${model.name} model`);
-                    console.log(`(sync mode: ${jsStr(syncMode)})`);
+                    log(`The table for the ${model.name} model`);
+                    log(`(sync mode: ${jsStr(syncMode)})`);
                     await model.sync(syncMode);
-                    console.log(`was just ${(jsStr(syncMode) === jsStr(boolToObjSyncMode(true))) ? '(re)created' : 'updated'}!`);
+                    log(`was just ${(jsStr(syncMode) === jsStr(boolToObjSyncMode(true))) ? '(re)created' : 'updated'}!`);
                 }));
         } catch (error) {
             console.error('Error during table synchronization:', error);

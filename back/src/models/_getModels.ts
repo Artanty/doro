@@ -14,8 +14,6 @@ export function getModels () {
 
 
 // Read files in the models directory
-console.log('pre files:')
-console.log(fs.readdirSync(modelsDirectory))
     const files = fs.readdirSync(modelsDirectory)
         .filter((file: string) => {
             return (
@@ -26,8 +24,6 @@ console.log(fs.readdirSync(modelsDirectory))
         })
 
 // Iterate through each file
-console.log('files:')
-console.log(files)
     files.forEach((file: string) => {
         const filePath = path.join(modelsDirectory, file);
 

@@ -27,6 +27,5 @@ export async function changePayingScheduleEvent (
         }
         return scheduleConfig
     })
-    console.log(result)
     return result
 }

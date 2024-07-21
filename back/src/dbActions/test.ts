@@ -2,7 +2,6 @@ import {ScheduleConfig} from "../models/ScheduleConfig";
 import {Database} from "../core/dbConnect";
 
 export async function test (testCase: string) {
-    console.log(testCase)
     switch (testCase) {
         case '1':
             return await ScheduleConfig.findOne({
@@ -20,11 +19,8 @@ export async function test (testCase: string) {
                 });
 
                 if (!lastRecord) {
-                    console.log('No records found to delete');
                     return;
                 }
-
-                console.log('Last record deleted successfully');
                 return await lastRecord.destroy();
             } catch (error) {
                 console.error('Error deleting last record:', error);

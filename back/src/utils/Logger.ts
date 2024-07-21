@@ -33,9 +33,13 @@ export class Logger {
     
     if (extra && extra.badge) {
         extraText = '[' + extra.badge.toUpperCase() + '] '
-    } 
+    }
 
-    const errorMessage = `${(extraText ?? '')}Event: ${event}\nTimestamp: ${new Date().toISOString()}\n\n`;
+    const date = new Date()
+
+    const localeDateString = date.toTimeString().slice(0, 8)
+
+    const errorMessage = `${(extraText ?? '')}Event: ${event}\n${localeDateString} (locale)\nTimestamp: ${date.toISOString()}\n\n`;
     
     return Logger.saveToFile(errorMessage, 'event')
   }
@@ -98,7 +102,11 @@ export function logError (error: unknown, options?: TLogOptions): Promise<void |
   return Logger.logError(error as Error, options)
 }
 
-export function log(event: string, options?: TLogOptions): Promise<void | Error> {
+export function log(event: string | any[], options?: TLogOptions): Promise<void | Error> {
+  
+  if (Array.isArray(event)) {
+    event = event.join(', ')
+  }
 
   // todo - вынести в метод. в зависимости от настроек подставлять таймстемп
   const badge = (options && options.badge) 

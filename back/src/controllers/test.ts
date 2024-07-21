@@ -26,8 +26,6 @@ export default class TestController {
             return {getCounter: getCounter()}
         } else if (this.testCase === '2') {
             const res = await ScheduleConfigController.stopEventAndGetNext()
-            console.log('res: ')
-            console.log(res)
             return res
         } else {
             return test(this.testCase)

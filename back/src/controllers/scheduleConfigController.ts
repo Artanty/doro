@@ -37,7 +37,6 @@ export default class ScheduleConfigController {
                 .then((res: [scheduleConfig: ScheduleConfig, scheduleEvent: ScheduleEvent]) => {
                     CounterActionController.handleCounterAction('tick', res[0], res[1])
                 })
-            // console.log(rr?.counterStartTime)
             return scheduleConfig
         } catch (err) {
             return { status: 'err' }
@@ -52,7 +51,6 @@ export default class ScheduleConfigController {
                 .then((res: [scheduleConfig: ScheduleConfig, scheduleEvent: ScheduleEvent]) => {
                     CounterActionController.handleCounterAction('pause', res[0], res[1])
                 })
-            // console.log(rr?.counterStartTime)
             return scheduleConfig
         } catch (err) {
             return { status: 'err' }

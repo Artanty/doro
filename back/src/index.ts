@@ -42,23 +42,7 @@ const app: Application = express();
   
 // connection;
 Database.getInstance({models: getModels()})
-dd(process.env.DB_DATABASE ?? 'no DB_DATABASE value')
 DbConnectionController.getDbConnection()
-// checkDbConnection().then( async (sequelizeInstance: any) => {
-//     console.log(Database.getInstance().models)
-//     // console.log(sequelizeInstance instanceof Sequelize)
-//     // setTimeout(() => {
-//     //     createScheduleConfigTable(sequelizeInstance)
-//     // }, 1000)
-//     // rr()
-//     // await Schedule.sync({ force: true });
-//     // console.log('The table for the User model was just (re)created!');
-// })
-
-
-// console.log('new')
-
-
 
 export const getNextEventId = makeRangeIterator()
 
@@ -163,7 +147,6 @@ export function addClient (newClient: any) {
 }
 
 export function removeClient (clientId: any) {
-    // console.log(`${clientId} Connection closed`);
     clients = clients.filter(client => client.id !== clientId);
     ClientController.stopScheduleEventIfNoClients()
 }
@@ -305,7 +288,6 @@ export async function setState(request: Request, response: Response) {
 // app.post('/action', setState);
 
 function interruptToRest () {
-    console.log('triggered')
     clearInterval(timerId)
     timerId = null
     counter = 0
@@ -379,11 +361,8 @@ export function setTimersConfig (request: Request, response: Response) {
     })
     return response.json({ status: 'ok' })
 }
-// app.post('/setTimersConfig', setTimersConfig);
+
 export function setTimersConfig2 (timersConfig: ITimerConfig[]) {
-    // getOrCreateScheduleConfig().then((res: any) => {
-    //     console.log(res)
-    // })
     clients.forEach(client => {
         client.response.write(`id: timersConfig\n\n`)
         client.response.write(`data: ${JSON.stringify({ action: 'timersConfig', data: timersConfig})}\n\n`)
@@ -411,8 +390,8 @@ app.get("/test", async (_req, res) => {
     const controller = new TestController(testCase);
     const response = await controller.handle();
     return res.send(response);
-});
-
+  });
+  
 app.post('/scheduleConfig/:action',async (req, res) => {
     const action = req.params.action;
     let response = null

@@ -48,7 +48,6 @@ export default class CounterActionController {
             const timerId = setInterval(() => {
                 let counter = getCounter()
                 if (this.getCounterLength(scheduleEvent as any) < counter) {
-                    console.log('tick interruptToRest()')
                     this.endCurrentEvent()
                 } else {
                     const data = {
@@ -95,7 +94,6 @@ export default class CounterActionController {
             const timerId = setInterval(() => {
                 let counter = getCounter()
                 if (this.getCounterLength(scheduleEvent as any) < counter) {
-                    console.log('changePlayingEvent interruptToRest()')
                     this.endCurrentEvent()
                 } else {
                     const data = {
