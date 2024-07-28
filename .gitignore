@@ -2,3 +2,4 @@
 /downloads
 .env
 /.env
+node_modules

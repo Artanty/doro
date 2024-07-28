@@ -17,5 +17,9 @@
   "bugs": {
     "url": "https://github.com/Artanty/doro/issues"
   },
-  "homepage": "https://github.com/Artanty/doro#readme"
+  "homepage": "https://github.com/Artanty/doro#readme",
+  "devDependencies": {
+    "axios": "^1.7.2",
+    "dotenv": "^16.4.5"
+  }
 }
