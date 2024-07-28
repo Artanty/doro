@@ -1,5 +1,4 @@
 import express, {
-    Express,
     Request,
     Response,
     Application,
@@ -7,76 +6,29 @@ import express, {
 } from 'express'
 import bodyParser from 'body-parser'
 import cors from 'cors'
-
-import swaggerUi from "swagger-ui-express";
-import {ITimerConfig} from "./controllers/timersConfig";
 import { ValidateError } from 'tsoa'
 import {dd, makeRangeIterator} from "./utils";
-// import { Schedule } from './models/Schedule';
-
-import {
-
-    Database,
-    // sequelize,
-} from './core/dbConnect'
-
-import { Sequelize, Op, Model, DataTypes } from '@sequelize/core';
-import {mergeObjects} from "./utils/mergeObjects";
+import {Database} from './core/dbConnect'
 import {getModels} from "./models/_getModels";
-import StatusController from "./controllers/status";
-import router from "./routes";
-import TestController from "./controllers/test";
-import ScheduleConfigController from "./controllers/scheduleConfigController";
-import ScheduleEventController from "./controllers/scheduleEvent";
-import ScheduleController from "./controllers/schedule";
-import {activateScheduleConfig} from "./dbActions/activateScheduleConfig";
-import { VariableWatcher } from './utils/variableWather';
+import router, { collectRoutes } from "./routes";
 import ClientController from "./controllers/clientController";
 
 import DbConnectionController from './controllers/dbConnection';
 import { log } from './utils/Logger';
 import { CORE_BADGE } from './core/constants';
 
-// import {rr} from "./dbActions/saveState";
+
 const app: Application = express();
   
-// connection;
 Database.getInstance({models: getModels()})
 DbConnectionController.getDbConnection()
 
 export const getNextEventId = makeRangeIterator()
 
-app.get("/ping", async (_req, res) => {
-    res.send({
-        message: "hello",
-    });
-});
-app.get("/", async (_req, res) => {
-    res.send({
-        message: "hello",
-    });
-});
-
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static("public"));
 
-app.use(
-    "/docs",
-    swaggerUi.serve,
-    swaggerUi.setup(undefined, {
-        swaggerOptions: {
-            url: "/swagger.json",
-        },
-        customJs: "/swagger.js",
-        customCssUrl: "/swagger.css"
-    })
-);
-// app.use(function notFoundHandler(_req, res: Response) {
-//     res.status(404).send({
-//         message: "Not Found",
-//     });
-// });
 app.use(function errorHandler(
     err: unknown,
     req: Request,
@@ -100,23 +52,16 @@ app.use(function errorHandler(
 });
 
 app.use(router);
+
+collectRoutes(app)
 app.use(bodyParser.urlencoded({extended: false}));
 
 const PORT = process.env.PORT || 3000;
 
 let clients: any[] = [];
-let facts = [];
 let state = { sessionId: 0 }
 let timerId: any
 let counter = 0
-let timersConfig: any[] = []
-let loops = 1
-let allWorkTime= 0
-let allRestTime = 0
-let isPaused = false
-
-
-
 
 export function getCounter() {
     return counter
@@ -133,11 +78,7 @@ export function setTimerId (newTimerId: any) {
 }
 app.listen(PORT, () => {
     log(`Node.js started at http://localhost:${PORT}`, { badge: CORE_BADGE })
-    // dd('create default config if none')
-    // ScheduleConfigController.getScheduleConfig()
 })
-
-
 
 export function getState () {
     return state
@@ -151,19 +92,6 @@ export function removeClient (clientId: any) {
     ClientController.stopScheduleEventIfNoClients()
 }
 
-function getTimerConfig (sessionId: number) {
-    return timersConfig.find(e => e.sessionId === sessionId)
-}
-function getTimerLength (sessionId: number) {
-    return minutesToSeconds(getTimerConfig(sessionId)?.sessionLength)
-}
-function getRestLength (sessionId: number) {
-    return minutesToSeconds(getTimerConfig(sessionId)?.sessionRestLength)
-}
-function getIsPaused () {
-    return isPaused
-}
-
 let isBusy = false
 
 export function setBusy(val: boolean) {
@@ -173,286 +101,6 @@ export function getBusy () {
     return isBusy
 }
 
-export async function setState(request: Request, response: Response) {
-    const { action, sessionId } = request.body;
-    state = { ...getTimerConfig(sessionId), action: action }
-    if (action === 'tick') {
-        timerId = setInterval(() => {
-            if (getTimerLength(sessionId) < counter) {
-                interruptToRest()
-            } else {
-                const data = {
-                    timePassed: counter,
-                    sessionId: sessionId,
-                    action: action,
-                    loops: loops,
-                    allRestTime: allRestTime,
-                    allWorkTime: allWorkTime
-                }
-                clients.forEach(client => {
-                    client.response.write(`id: ${getNextEventId.next().value}\n\n`)
-                    client.response.write(`data: ${JSON.stringify(data)}\n\n`)
-                })
-                counter += 1;
-                allWorkTime += 1
-            }
-        }, 1000);
-    }
-    if (action === 'reset') {
-        clearInterval(timerId)
-        timerId = null
-        counter = 0
-        loops = 0
-        const data = {
-            timePassed: 0,
-            timeAll: 0,
-            action: action
-        }
-        clients.forEach(client => {
-            client.response.write(`id: ${getNextEventId.next().value}\n\n`)
-            client.response.write(`data: ${JSON.stringify(data)}\n\n`)
-        })
-    }
-    if (action === 'pause') {
-        isPaused = true
-        clearInterval(timerId)
-        timerId = null
-        const data = {
-            action: action
-        }
-        /**
-         * Вместо этого добавить геттер доп условия к getTimerLength
-         * и если это условие есть, то на следующем тике отправлять экшн паузы
-         */
-        clients.forEach(client => {
-            client.response.write(`id: ${getNextEventId.next().value}\n\n`)
-            client.response.write(`data: ${JSON.stringify(data)}\n\n`)
-        })
-        setTimeout(() => {
-            isPaused = false
-        }, 1000)
-    }
-    if (action === 'switch') {
-        clearInterval(timerId)
-        timerId = null
-        counter = 0
-        timerId = setInterval(() => {
-            // sendTickMessageToAll({ ...state, timePassed: counter})
-            const data = {
-                // timePassed: counter,
-                // timeAll: newState.timeAll,
-                // action: newState.action
-            }
-            clients.forEach(client => {
-                client.response.write(`id: ${getNextEventId.next().value}\n\n`)
-                client.response.write(`data: ${JSON.stringify(data)}\n\n`)
-            })
-            counter += 1;
-        }, 1000);
-    }
-    if (action === 'restTick') {
-        clearInterval(timerId)
-        timerId = null
-        counter = 0
-        timerId = setInterval(() => {
-            if (getRestLength(sessionId) < counter) {
-                interruptToSession()
-            } else {
-
-                const data = {
-                    timePassed: counter,
-                    sessionId: sessionId,
-                    action: action,
-                    loops: loops,
-                    allRestTime: allRestTime,
-                    allWorkTime: allWorkTime
-                }
-                clients.forEach(client => {
-                    client.response.write(`id: ${getNextEventId.next().value}\n\n`)
-                    client.response.write(`data: ${JSON.stringify(data)}\n\n`)
-                })
-                counter += 1;
-                allRestTime += 1
-            }
-        }, 1000);
-    }
-    if (action === 'forceInterruptToRest') {
-        interruptToRest()
-    }
-    if (action === 'forceInterruptToWork') {
-        interruptToSession()
-    }
-    response.json({ status: 'ok' })
-}
-
-// app.post('/action', setState);
-
-function interruptToRest () {
-    clearInterval(timerId)
-    timerId = null
-    counter = 0
-    const data = {
-        sessionId: state.sessionId,
-        action: 'interruptToRest',
-
-    }
-    clients.forEach(client => {
-        client.response.write(`id: ${getNextEventId.next().value}\n\n`)
-        client.response.write(`data: ${JSON.stringify(data)}\n\n`)
-    })
-}
-
-function interruptToSession () {
-    allRestTime = counter
-    clearInterval(timerId)
-    timerId = null
-    counter = 0
-    loops += 1
-    const data = {
-        sessionId: state.sessionId,
-        action: 'interruptToSession'
-    }
-    clients.forEach(client => {
-        client.response.write(`id: ${getNextEventId.next().value}\n\n`)
-        client.response.write(`data: ${JSON.stringify(data)}\n\n`)
-    })
-}
-
-app.get('/facts', (request, response) => response.json({facts: facts.length}));
-function shareTimersConfig (request: Request, response: Response) {
-    const config = initTimersConfig()
-    clients.forEach(client => {
-        client.response.write(`id: ${getNextEventId.next().value}\n\n`)
-        client.response.write(`data: ${JSON.stringify({ action: 'timersConfig', data: config})}\n\n`)
-
-    })
-    return response.json({ status: 'ok' })
-}
-
-// app.post('/getTimersConfig', shareTimersConfig);
-app.post('/getTimersConfig', () => {});
-
-app.post("/getScheduleConfig", async (_req: any, res) => {
-
-    const response = await ScheduleConfigController.getScheduleConfig()//ById(_req.scheduleConfigId);
-    return res.send(response);
-});
-app.post("/getSchedule", async (_req, res) => {
-    const controller = new ScheduleController()
-    const response = await controller.getSchedule(_req.body.id);
-    return res.send(response);
-});
-app.post("/getScheduleEvents", async (_req, res) => {
-    const response = await ScheduleEventController.getScheduleEventsByScheduleId(_req.body.id);
-    return res.send(response);
-});
-
-
-
 export function getClients () {
     return clients
-}
-
-export function setTimersConfig (request: Request, response: Response) {
-    timersConfig = request.body
-    clients.forEach(client => {
-        client.response.write(`id: ${getNextEventId.next().value}\n\n`)
-        client.response.write(`data: ${JSON.stringify({ action: 'timersConfig', data: timersConfig})}\n\n`)
-    })
-    return response.json({ status: 'ok' })
-}
-
-export function setTimersConfig2 (timersConfig: ITimerConfig[]) {
-    clients.forEach(client => {
-        client.response.write(`id: timersConfig\n\n`)
-        client.response.write(`data: ${JSON.stringify({ action: 'timersConfig', data: timersConfig})}\n\n`)
-
-    })
-}
-function initTimersConfig () {
-    let config =
-        {
-            sessionId: 1,
-            sessionLength: 25,
-            sessionRestLength: 5,
-            sessionName: 'work'
-        }
-    timersConfig = [config]
-    return [config]
-}
-
-function minutesToSeconds (minutes: number) {
-    return minutes * 60
-}
-
-app.get("/test", async (_req, res) => {
-    const testCase = _req.query.case ?? '1'
-    const controller = new TestController(testCase);
-    const response = await controller.handle();
-    return res.send(response);
-  });
-  
-app.post('/scheduleConfig/:action',async (req, res) => {
-    const action = req.params.action;
-    let response = null
-
-    if (action === 'activate') {
-        response = await ScheduleConfigController.activateScheduleConfig(req.body.scheduleConfigId)
-    }
-    if (action === 'playEvent') {
-        response = await ScheduleConfigController.playScheduleEvent(req.body.scheduleConfigId, req.body.scheduleEventId, req.body.scheduleId)
-    }
-    if (action === 'pauseEvent') {
-        response = await ScheduleConfigController.pauseScheduleEvent(req.body.scheduleConfigId, req.body.scheduleEventId, req.body.scheduleId)
-    }
-    if (action === 'resumeEvent') {
-        response = await ScheduleConfigController.resumeScheduleEvent(req.body.scheduleConfigId, req.body.scheduleEventId, req.body.scheduleId)
-    }
-    if (action === 'stopEvent') {
-        response = await ScheduleConfigController.stopScheduleEvent(req.body.scheduleConfigId, req.body.scheduleEventId, req.body.scheduleId)
-    }
-    if (action === 'changePlayingEvent') {
-        response = await ScheduleConfigController.changePlayingEvent(req.body.scheduleConfigId, req.body.scheduleEventId, req.body.scheduleId)
-    }
-    return res.send(response);
-})
-
-app.post('/scheduleEvent/:action',async (req, res) => {
-    try {
-        const action = req.params.action;
-        let response = null
-
-        if (action === 'create') {
-            response = await ScheduleEventController.createScheduleEvent(req.body)
-        }
-        if (action === 'delete') {
-            response = await ScheduleEventController.deleteScheduleEvent(req.body)
-        }
-        if (action === 'createAndPlay') {
-            response = await ScheduleEventController.createDefaultEventsAndPlay(req.body)
-        }
-        /**
-         * + save as current shcedule
-         */
-        if (action === 'batchCreate') {
-            response = await ScheduleEventController.createScheduleWithEvents(req.body)
-        }
-
-        return res.send(response);   
-    } catch (err) {
-        return res.status(400).send(handleError(err));
-    }
-})
-
-function handleError(error: unknown): { error: string } {
-    let errorText = ''
-    if (error instanceof Error) {
-        errorText = error.message
-    }
-    errorText = String(error)
-    
-    const result = {
-        error: errorText.replace(/\n/g, ' ')
-    }
-    return result
 }

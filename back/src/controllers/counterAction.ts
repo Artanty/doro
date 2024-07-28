@@ -9,7 +9,6 @@ import {
     getNextEventId,
     getTimerId,
     setCounter,
-    setState,
     setTimerId
 } from "../index";
 import * as e from "express";

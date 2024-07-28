@@ -1,10 +1,13 @@
-import express from "express";
+import express, { Router } from "express";
 import PingController from "../controllers/ping";
-import SetTimersConfigController from "../controllers/timersConfig";
 import EventsController from "../controllers/events";
 import StatusController from "../controllers/status";
-import CounterActionController from "../controllers/counterAction";
-import { dd } from "../utils";
+import scheduleEvent from "./scheduleEvent";
+import scheduleConfig from './scheduleConfig';
+import ScheduleController from "../controllers/schedule";
+import ScheduleConfigController from "../controllers/scheduleConfigController";
+import ScheduleEventController from "../controllers/scheduleEvent";
+
 
 const router = express.Router();
 
@@ -19,18 +22,46 @@ router.get("/ping", async (_req, res) => {
     return res.send(response);
 });
 
-router.post("/setTimersConfig2", async (_req, res) => {
-    const controller = new SetTimersConfigController();
-    const response = await controller.setTimersConfig(_req.body);
-    return res.send(response);
-});
-
 router.get("/status", async (_req, res) => {
     const controller = new StatusController();
     const response = await controller.getMessage();
     return res.send(response);
 });
 
+router.post('/getTimersConfig', () => {});
+
+router.post("/getScheduleConfig", async (_req: any, res) => {
+
+    const response = await ScheduleConfigController.getScheduleConfig()//ById(_req.scheduleConfigId);
+    return res.send(response);
+});
+router.post("/getSchedule", async (_req, res) => {
+    const controller = new ScheduleController()
+    const response = await controller.getSchedule(_req.body.id);
+    return res.send(response);
+});
+router.post("/getScheduleEvents", async (_req, res) => {
+    const response = await ScheduleEventController.getScheduleEventsByScheduleId(_req.body.id);
+    return res.send(response);
+});
+
+router.get("/ping", async (_req, res) => {
+    res.send({
+        message: "hello",
+    });
+});
+router.get("/", async (_req, res) => {
+    res.send({
+        message: "hello",
+    });
+});
+
+const routes = [ scheduleEvent, scheduleConfig ]
+export function collectRoutes (app: express.Application): void {
+    routes.forEach((route: Router) => {
+        app.use(route);
+    })
+}
 
 
 export default router;
