@@ -1,0 +1,73 @@
+#!/usr/bin/env node
+
+const fs = require('fs');
+const axios = require('axios');
+const dotenv = require('dotenv');
+
+// Load environment variables from .env file
+dotenv.config();
+
+// Check if the commit message file path is provided as a command-line argument
+if (process.argv.length < 3) {
+  console.error("Usage: node commit-msg.js <commit_msg_file>");
+  process.exit(1);
+}
+
+// Read the commit message file from the arguments
+const commitMsgFile = process.argv[2];
+
+// Read the current commit message from the file
+let commitMsg;
+try {
+  commitMsg = fs.readFileSync(commitMsgFile, 'utf8').trim();
+} catch (err) {
+  console.error(`Error: The file ${commitMsgFile} does not exist.`);
+  process.exit(1);
+}
+
+// Default to dev environment
+const planUrl = process.env.PLAN_URL;
+const externalServiceName = process.env.PLAN_EXTERNAL_SERVICE_NAME;
+
+// Construct the JSON payload
+const jsonPayload = {
+  message: commitMsg,
+  externalServiceName: externalServiceName
+};
+
+// Function to handle errors and save them to a log file
+function handleError(errorMessage) {
+  const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
+  fs.appendFileSync('downloads/error.log', `${timestamp} - ${errorMessage}\n`);
+  process.exit(1);
+}
+
+// Save the request payload to a log file with the timestamp
+const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
+fs.appendFileSync('downloads/request.log', `${timestamp} - ${JSON.stringify(jsonPayload)}\n`);
+
+// Make a POST request to the server and get the response
+axios.post(
+  `${planUrl}/tasks/find-or-create`,
+  jsonPayload,
+  { headers: { 'Content-Type': 'application/json' } }
+)
+.then(response => {
+  let newCommitMsg;
+  if (response.headers['content-type'].includes('text/plain')) {
+    newCommitMsg = response.data;
+  } else {
+    const responseJson = response.data;
+    if (responseJson.error) {
+      handleError(responseJson.message || 'No error message provided');
+    } else {
+      newCommitMsg = responseJson.message || commitMsg;
+    }
+  }
+
+  // Replace the commit message with the new one
+  fs.writeFileSync(commitMsgFile, newCommitMsg);
+})
+.catch(error => {
+  handleError(`Request failed: ${error.message}`);
+});

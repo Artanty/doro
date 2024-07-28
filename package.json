@@ -6,7 +6,9 @@
   "scripts": {
     "tagpush": "cmd /c .build\\tagpush.bat",
     "setenv": "cmd /c .build\\web\\ver2env.bat",
-    "deploy": "cmd /c .build\\deploy-all.bat"
+    "deploy": "cmd /c .build\\deploy-all.bat",
+    "setup:git-hooks": "git config core.hooksPath .build/git-hooks",
+    "postinstall": "npm run setup:git-hooks"
   },
   "repository": {
     "type": "git",
