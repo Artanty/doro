@@ -12,7 +12,6 @@ import {stopScheduleEvent} from "../dbActions/stopScheduleEvent";
 import {changePayingScheduleEvent} from "../dbActions/changePlayingEvent";
 import { getActiveScheduleConfig } from "../dbActions/getActiveScheduleConfig";
 import {getNextScheduleEventAfter} from "../dbActions/getNextScheduleEventAfter";
-import { dd } from "../utils";
 
 export default class ScheduleConfigController {
 

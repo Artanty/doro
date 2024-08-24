@@ -28,13 +28,12 @@ router.get("/status", async (_req, res) => {
     return res.send(response);
 });
 
-router.post('/getTimersConfig', () => {});
-
 router.post("/getScheduleConfig", async (_req: any, res) => {
 
     const response = await ScheduleConfigController.getScheduleConfig()//ById(_req.scheduleConfigId);
     return res.send(response);
 });
+
 router.post("/getSchedule", async (_req, res) => {
     const controller = new ScheduleController()
     const response = await controller.getSchedule(_req.body.id);

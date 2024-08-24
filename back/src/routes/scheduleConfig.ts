@@ -24,6 +24,9 @@ router.post('/scheduleConfig/:action',async (req, res) => {
   if (action === 'changePlayingEvent') {
       response = await ScheduleConfigController.changePlayingEvent(req.body.scheduleConfigId, req.body.scheduleEventId, req.body.scheduleId)
   }
+  if (action === 'get') {
+      response = await ScheduleConfigController.getScheduleConfig()
+  }
   return res.send(response);
 })
 
