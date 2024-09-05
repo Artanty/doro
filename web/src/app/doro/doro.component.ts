@@ -1,9 +1,5 @@
-import {
-  animate,
-  style,
-  transition,
-  trigger
-} from '@angular/animations';
+import { loadRemoteModule } from '@angular-architects/module-federation';
+import { animate, style, transition, trigger } from '@angular/animations';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -12,23 +8,14 @@ import {
   Injector,
   OnInit,
   ViewChild,
-  ViewContainerRef
+  ViewContainerRef,
 } from '@angular/core';
-import {
-  BehaviorSubject,
-  combineLatestWith,
-  map,
-  Observable,
-  tap
-} from 'rxjs';
-import {StoreService} from './services/store.service';
-import {SseService} from "./services/sse.service";
-import {
-  TConnectionState,
-  TTab
-} from "./models/app.model";
-import { loadRemoteModule } from '@angular-architects/module-federation';
-import { EVENT_BUS, PRODUCT_NAME, IAuthDto } from 'typlib'
+import { BehaviorSubject, combineLatestWith, map, Observable, tap } from 'rxjs';
+import { EVENT_BUS, IAuthDto, PRODUCT_NAME } from 'typlib';
+import { LoadingComponent } from './components/loading/loading.component';
+import { TConnectionState, TTab } from './models/app.model';
+import { SseService } from './services/sse.service';
+import { StoreService } from './services/store.service';
 
 export const authProps: IAuthDto = {
   productName: 'doro',
@@ -36,10 +23,10 @@ export const authProps: IAuthDto = {
   payload: {
     checkBackendUrl: 'https://cs99850.tmweb.ru/login',
     signInByDataUrl: 'https://cs99850.tmweb.ru/login',
-    signInByTokenUrl: 'https://cs99850.tmweb.ru/loginByToken'
+    signInByTokenUrl: 'https://cs99850.tmweb.ru/loginByToken',
   },
   from: 'product',
-  status: 'init'
+  status: 'init',
 };
 
 @Component({
@@ -51,92 +38,97 @@ export const authProps: IAuthDto = {
     trigger('animationTriggerName', [
       transition(':enter', [
         style({ transform: 'translateX(-100%)', opacity: 0 }),
-        animate('300ms ease', style({ transform: 'translateX(0)', opacity: 1 }))
+        animate(
+          '300ms ease',
+          style({ transform: 'translateX(0)', opacity: 1 })
+        ),
       ]),
       transition(':leave', [
         style({ opacity: 1 }),
         animate('0.3s', style({ opacity: 0 })),
       ]),
     ]),
-    ]
+  ],
 })
-export class DoroComponent implements OnInit{
-
-  public connectionState$: Observable<TConnectionState>
-  public viewState$: Observable<TTab | null>
-  connectionState: TConnectionState = 'LOADING'
+export class DoroComponent implements OnInit {
+  public connectionState$: Observable<TConnectionState>;
+  public viewState$: Observable<TTab | null>;
+  connectionState: TConnectionState = 'LOADING';
   @ViewChild('placeHolder', { read: ViewContainerRef })
   viewContainer!: ViewContainerRef;
-  authEventBus$!: BehaviorSubject<IAuthDto>
-  isEventSourceCreated: boolean = false
+  authEventBus$!: BehaviorSubject<IAuthDto>;
+  isEventSourceCreated: boolean = false;
 
-  constructor (
+  constructor(
     @Inject(StoreService) private StoreServ: StoreService,
     @Inject(SseService) private SseServ: SseService,
-    @Inject(ChangeDetectorRef) private cdr: ChangeDetectorRef,
+    @Inject(ChangeDetectorRef) private cdr: ChangeDetectorRef
   ) {
-    this.authEventBus$ = new BehaviorSubject(authProps)
-    this.authEventBus$.asObservable().subscribe(res  => {
+    this.authEventBus$ = new BehaviorSubject(authProps);
+    this.authEventBus$.asObservable().subscribe((res) => {
+      console.log('authEventBus$ in doro: ');
+      console.log('go');
+      console.log(res);
       if (res.status === 'ACCESS_GRANTED') {
-        this.createEventSourceOnce()
+        this.createEventSourceOnce();
       }
-    })
+    });
 
     this.connectionState$ = this.StoreServ.listenConnectionState().pipe(
       tap((res: any) => {
         if (res === 'AUTH') {
-          this.loadAuthComponent()
+          this.loadAuthComponent();
         }
-        this.connectionState = res
-        this.cdr.detectChanges()
+        this.connectionState = res;
+        this.cdr.detectChanges();
       })
-    )
+    );
     this.viewState$ = this.StoreServ.listenConnectionState().pipe(
       combineLatestWith(this.StoreServ.listenViewState()),
-      map(([connection, view])=> {
-        this.cdr.detectChanges()
-        return connection === 'READY'
-        ? view
-        : null
+      map(([connection, view]) => {
+        this.cdr.detectChanges();
+        return connection === 'READY' ? view : null;
       })
     );
   }
 
-  ngOnInit (): void {
+  ngOnInit(): void {}
 
-  }
-
-  createEventSourceOnce () {
+  createEventSourceOnce() {
     if (!this.isEventSourceCreated) {
-      this.SseServ.createEventSource()
-      this.isEventSourceCreated = true
+      this.SseServ.createEventSource();
+      this.isEventSourceCreated = true;
     }
   }
 
   reconnect() {
-    this.SseServ.createEventSource()
+    this.SseServ.createEventSource();
   }
 
   async loadAuthComponent(): Promise<void> {
-
     const m = await loadRemoteModule({
       remoteName: 'au',
-      remoteEntry: 'https://au2.vercel.app/remoteEntry.js',
+      // remoteEntry: 'https://au2.vercel.app/remoteEntry.js',
       // remoteEntry: 'http://localhost:4204/remoteEntry.js',
-      exposedModule: './Component'
+      remoteEntry: './assets/mfe/doro/assets/mfe/au/remoteEntry.js',
+      exposedModule: './Component',
     });
 
-    this.viewContainer.createComponent(
-      m.AuthComponent,
-      {
-        injector: Injector.create({
-          providers: [
-            { provide: EVENT_BUS, useValue: this.authEventBus$ },
-            { provide: PRODUCT_NAME, useValue: 'doro' },
-          ],
-        }),
-      }
-    );
+    this.viewContainer.createComponent(m.AuthComponent, {
+      injector: Injector.create({
+        providers: [
+          { provide: EVENT_BUS, useValue: this.authEventBus$ },
+          { provide: PRODUCT_NAME, useValue: 'doro' },
+          {
+            provide: 'components',
+            useValue: {
+              LoadingComponent,
+            },
+            multi: true,
+          },
+        ],
+      }),
+    });
   }
 
   test() {
@@ -146,12 +138,12 @@ export class DoroComponent implements OnInit{
       payload: {
         checkBackendUrl: 'https://1cs99850.tmweb.ru/login',
         signInByDataUrl: 'https://1cs99850.tmweb.ru/login',
-        signInByTokenUrl: 'https://1cs99850.tmweb.ru/loginByToken'
+        signInByTokenUrl: 'https://1cs99850.tmweb.ru/loginByToken',
       },
       from: 'product',
-      status: 'test'
+      status: 'test',
     };
-    this.authEventBus$.next(authProps)
+    this.authEventBus$.next(authProps);
   }
   test1() {
     const authProps: IAuthDto = {
@@ -160,11 +152,11 @@ export class DoroComponent implements OnInit{
       payload: {
         checkBackendUrl: 'https://1cs99850.tmweb.ru/login',
         signInByDataUrl: 'https://1cs99850.tmweb.ru/login',
-        signInByTokenUrl: 'https://1cs99850.tmweb.ru/loginByToken'
+        signInByTokenUrl: 'https://1cs99850.tmweb.ru/loginByToken',
       },
       from: 'product',
-      status: 'test1'
+      status: 'test1',
     };
-    this.authEventBus$.next(authProps)
+    this.authEventBus$.next(authProps);
   }
 }

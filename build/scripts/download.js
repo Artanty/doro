@@ -10,7 +10,7 @@ async function downloadFileFromBackend(fileId, destinationPath) {
     const destinationDir = path.dirname(destinationPath);
     if (!fs.existsSync(destinationDir)) {
       fs.mkdirSync(destinationDir, { recursive: true });
-      console.log('destinationDir is created: ' + destinationPath)
+      console.log('Download destinationDir is created: ' + destinationPath)
     }
 
     // Send a POST request to the backend server
@@ -47,28 +47,28 @@ async function downloadFileFromBackend(fileId, destinationPath) {
 async function download(fileId) {
 
   const args = process.argv.slice(2);
-  const distFolderPath = args.find(arg => arg.startsWith('--downloadAndUnzipTo'))?.split('=')[1]; // -> /web/dist/web-ext-ng-mfe/assets
+  const distFolderPath = args.find(arg => arg.startsWith('--downloadAndUnzipTo'))?.split('=')[1];
 
 
   if (!distFolderPath) {
-    console.error('File path not provided. Usage: npm run {scriptName} --downloadAndUnzipTo=/dist/web-ext-ng-mfe/assets');
+    console.error('File path not provided. Usage: npm run {scriptName} --downloadAndUnzipTo=/dist/counter/assets');
     process.exit(1);
   }
 
   const destinationPath = path.join(distFolderPath, fileId);
 
-  downloadFileFromBackend(fileId, destinationPath)
-    .then((filePath) => {
-      console.log(`File saved to: ${filePath}`);
+  try {
+    const filePath = await downloadFileFromBackend(fileId, destinationPath);
+    console.log(`File saved to: ${filePath}`);
 
-      const zipArchivePath = destinationPath;
-      const extractPath = distFolderPath;
+    const zipArchivePath = destinationPath;
+    const extractPath = distFolderPath;
 
-      unzip(zipArchivePath, extractPath);
-    })
-    .catch((err) => {
-      console.error('Failed to download file', err);
-    });
+    await unzip(zipArchivePath, extractPath);
+    console.log('Unzip completed successfully');
+  } catch (err) {
+    console.error('Failed to download or unzip file', err);
+  }
 
 }
 
@@ -78,7 +78,8 @@ async function isDiscAlive() {
     console.log(res.data.status)
     return true
   } catch (error) {
-    console.error('DISC service error: ', error.response ? error.response.data : error.message);
+    console.error('DISC service error: ')
+    throw new Error(error.response ? error.response.data : error.message)
   }
 }
 

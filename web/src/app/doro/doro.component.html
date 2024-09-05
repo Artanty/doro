@@ -10,39 +10,29 @@
       <app-loading></app-loading>
     </div>
     <div class="slide" *ngSwitchCase="'AUTH'">
-      <div class="mfeWrapper" #placeHolder>
-
-      </div>
+      <div class="mfeWrapper" #placeHolder></div>
     </div>
     <ng-container *ngSwitchDefault>
-      <ng-container *ngIf="(viewState$ | async) as view">
-        <div class="slide"
-          @animationTriggerName
-          *ngIf="view === 'COUNTER'">
+      <ng-container *ngIf="viewState$ | async as view">
+        <div class="slide" @animationTriggerName *ngIf="view === 'COUNTER'">
           <app-counter></app-counter>
         </div>
 
-        <div class="slide"
-            @animationTriggerName
-            *ngIf="view === 'EVENT_LIST'">
+        <div class="slide" @animationTriggerName *ngIf="view === 'EVENT_LIST'">
           <app-event-list></app-event-list>
         </div>
 
-        <div class="slide"
-            @animationTriggerName
-            *ngIf="view === 'COUNTER_CONFIG'">
+        <div
+          class="slide"
+          @animationTriggerName
+          *ngIf="view === 'COUNTER_CONFIG'"
+        >
           <app-counter-config></app-counter-config>
         </div>
-
       </ng-container>
     </ng-container>
     <div class="bottomRow backBottom">
       <app-navigation></app-navigation>
     </div>
   </div>
-
 </ng-container>
-
-
-
-

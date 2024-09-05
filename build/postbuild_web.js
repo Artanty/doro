@@ -9,6 +9,6 @@ const { getLatestBuildId } = require('./scripts/getLatestBuildId')
 
 getLatestBuildId().then(id => {
   download(id).then(() => {
-    copyFiles()
+    zip()
   })
 })
