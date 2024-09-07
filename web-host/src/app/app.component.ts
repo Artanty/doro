@@ -1,5 +1,12 @@
 import { loadRemoteModule } from "@angular-architects/module-federation"
-import { Component, ViewChild, ViewContainerRef } from "@angular/core"
+import {
+  Component,
+  Injector,
+  OnInit,
+  ViewChild,
+  ViewContainerRef,
+} from "@angular/core"
+import { delay, Observable } from "rxjs"
 // export const authProps: IAuthDto = {
 //   productName: "doro",
 //   authStrategy: "backend",
@@ -13,37 +20,42 @@ import { Component, ViewChild, ViewContainerRef } from "@angular/core"
 // }
 @Component({
   selector: "app-root",
-  template: `
-    <h1>Welcome to {{ title }}!</h1>
-    <div class="mfeWrapper" #placeHolder></div>
-    <router-outlet></router-outlet>
-  `,
-  styles: [],
+  templateUrl: "./app.component.html",
+  styleUrl: "./app.component.scss",
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   @ViewChild("placeHolder", { read: ViewContainerRef })
   viewContainer!: ViewContainerRef
   // authEventBus$!: BehaviorSubject<IAuthDto>
   title = "web-host"
+  myObservable: Observable<any> = new Observable<string>((observer) => {
+    observer.next("Hello")
+    observer.next("World")
+    observer.complete()
+  }).pipe(delay(1000))
 
-  constructor() {
+  constructor(private injector: Injector) {
     // this.authEventBus$ = new BehaviorSubject(authProps)
     this.loadComponent()
   }
 
+  ngOnInit(): void {}
   async loadComponent(): Promise<void> {
     const m = await loadRemoteModule({
       remoteName: "doro",
-      remoteEntry: "./assets/mfe/doro/remoteEntry.js",
-      // remoteEntry: "http://localhost:4201/remoteEntry.js",
+      // remoteEntry: "./assets/mfe/doro/remoteEntry.js",
+      remoteEntry: "http://localhost:4201/remoteEntry.js",
       exposedModule: "./Component",
     })
-    this.viewContainer.createComponent(m.DoroComponent)
+    // this.viewContainer.createComponent(m.DoroComponent)
+    this.viewContainer.createComponent(m.DoroComponent, {
+      injector: this.injector,
+    })
     // this.viewContainer.createComponent(m.DoroComponent, {
     //   injector: Injector.create({
     //     providers: [],
-    //     parent: this.injector
-    //   })
+    //     parent: this.injector,
+    //   }),
     // })
 
     // const m = await loadRemoteModule({

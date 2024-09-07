@@ -16,10 +16,12 @@
       <ng-container *ngIf="viewState$ | async as view">
         <div class="slide" @animationTriggerName *ngIf="view === 'COUNTER'">
           <app-counter></app-counter>
+          <!-- <app-event-list></app-event-list> -->
         </div>
 
         <div class="slide" @animationTriggerName *ngIf="view === 'EVENT_LIST'">
           <app-event-list></app-event-list>
+          <!-- <app-counter></app-counter> -->
         </div>
 
         <div

@@ -109,8 +109,8 @@ export class DoroComponent implements OnInit {
     const m = await loadRemoteModule({
       remoteName: 'au',
       // remoteEntry: 'https://au2.vercel.app/remoteEntry.js',
-      // remoteEntry: 'http://localhost:4204/remoteEntry.js',
-      remoteEntry: './assets/mfe/doro/assets/mfe/au/remoteEntry.js',
+      remoteEntry: 'http://localhost:4204/remoteEntry.js',
+      // remoteEntry: './assets/mfe/doro/assets/mfe/au/remoteEntry.js',
       exposedModule: './Component',
     });
 

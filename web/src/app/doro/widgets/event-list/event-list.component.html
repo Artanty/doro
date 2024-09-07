@@ -1,112 +1,174 @@
 <div class="container back">
-  <div class="scheduleName" *ngIf="(currentSchedule$ | async) as currentSchedule">{{ currentSchedule.name + ', id: ' + currentSchedule.id}}</div>
+  <div class="scheduleName" *ngIf="currentSchedule$ | async as currentSchedule">
+    {{ currentSchedule.name + ", id: " + currentSchedule.id }}
+  </div>
+  <!-- {{ scheduleEvents | json }} -->
   <ul class="eventList" appScroll>
-    <li *ngFor="let el of scheduleEvents; let i = index; trackBy: tracker"
-        (click)="handleSheduleEventClick(el)" #myElement>
-      <div class="listItemInner"
-           [class.ended]="el.isEnded"
-           [class.suggestedNext]="el.isSuggestedNext"
+    <li
+      *ngFor="let el of scheduleEvents; let i = index"
+      (click)="handleSheduleEventClick(el)"
+      #myElement
+    >
+      <div
+        class="listItemInner"
+        [class.ended]="el.isEnded"
+        [class.suggestedNext]="el.isSuggestedNext"
       >
         <div class="buttons">
-          <a *ngIf="!el.isPlaying" (click)="handlePlay(el)" [class.isPaused]="el.isActive">
-            <svg width="20px" height="20px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <a
+            *ngIf="!el.isPlaying"
+            (click)="handlePlay(el)"
+            [class.isPaused]="el.isActive"
+          >
+            <svg
+              width="20px"
+              height="20px"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
               <circle cx="12" cy="11" r="9" />
               <g>
-                <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM10.622 8.415l4.879 3.252a.4.4 0 0 1 0 .666l-4.88 3.252a.4.4 0 0 1-.621-.332V8.747a.4.4 0 0 1 .622-.332z"/>
+                <path
+                  d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM10.622 8.415l4.879 3.252a.4.4 0 0 1 0 .666l-4.88 3.252a.4.4 0 0 1-.621-.332V8.747a.4.4 0 0 1 .622-.332z"
+                />
               </g>
             </svg>
           </a>
-          <a *ngIf="el.isPlaying" (click)="handlePause(el.id)" class="isPlaying">
-            <svg width="20px" height="20px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <a
+            *ngIf="el.isPlaying"
+            (click)="handlePause(el.id)"
+            class="isPlaying"
+          >
+            <svg
+              width="20px"
+              height="20px"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
               <circle cx="12" cy="11" r="9" />
               <g>
-                <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM9 9h2v6H9V9zm4 0h2v6h-2V9z"/>
+                <path
+                  d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM9 9h2v6H9V9zm4 0h2v6h-2V9z"
+                />
               </g>
             </svg>
           </a>
         </div>
         <div class="nameWrapper">
-          <div class="name" (click)="stopPropagation($event)">{{ el.name }}</div>
+          <div class="name" (click)="stopPropagation($event)">
+            {{ el.name }}
+          </div>
         </div>
         <div class="details" (click)="stopPropagation($event)">
           <div class="timeFromAndTo">
-            <div class="timeFrom">{{ el.timeFrom | date: ' HH:mm' }}</div>
-            <div class="timeTo">{{ el.timeTo | date: ' HH:mm' }}</div>
+            <div class="timeFrom">{{ el.timeFrom | date : " HH:mm" }}</div>
+            <div class="timeTo">{{ el.timeTo | date : " HH:mm" }}</div>
           </div>
           <div class="timeLengthAndCount">
             <ng-container *ngIf="!el.isPlaying">
               <div class="time__data">
                 <span class="time__data__value">{{ el.timeLength }}</span>
-                <!-- <span class="time__data_suffix"> '</span> -->
               </div>
             </ng-container>
             <ng-container *ngIf="el.isPlaying">
               <div class="time__data">
-<!--                <span class="time__prefix">- </span>-->
                 <span class="time__data__value">{{ el.timeLeft }}</span>
-                <!-- <span class="time__data__suffix"> '</span> -->
               </div>
             </ng-container>
           </div>
           <div class="buttons">
             <a class="closeBtn" (click)="deleteScheduleEvent(el, i)">
-              <svg width="20px" height="20px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <svg
+                width="20px"
+                height="20px"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
                 <g>
                   <circle cx="12" cy="11" r="9" />
-                  <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-9.414l2.828-2.829 1.415 1.415L13.414 12l2.829 2.828-1.415 1.415L12 13.414l-2.828 2.829-1.415-1.415L10.586 12 7.757 9.172l1.415-1.415L12 10.586z"/>
+                  <path
+                    d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-9.414l2.828-2.829 1.415 1.415L13.414 12l2.829 2.828-1.415 1.415L12 13.414l-2.828 2.829-1.415-1.415L10.586 12 7.757 9.172l1.415-1.415L12 10.586z"
+                  />
                 </g>
               </svg>
             </a>
           </div>
         </div>
-        <!--      <button (click)="startEvent(el.id)">Начать</button>-->
-        <!--      <button (click)="pauseEvent(el.id)">Пауза</button>-->
-        <!--      <button (click)="resumeEvent(el.id)">Возобновить</button>-->
-        <!--      <button (click)="stopEvent(el.id)">Сбросить</button>-->
       </div>
     </li>
   </ul>
   <div class="controlsRow" [class.expanded]="isControlsExpanded">
     <div class="controlsInner">
       <div class="expandableRow">
-        <app-form-array [formData]="formData" (arrayAway)="updateEventTemplates($event)"></app-form-array>
-<!--        <a (click)="addEventTemplate()" class="addTemplateButton">Добавить шаблон</a>-->
+        <app-form-array
+          [formData]="formData"
+          (arrayAway)="updateEventTemplates($event)"
+        ></app-form-array>
       </div>
       <div class="visibleRow">
-        <a (click)="toggleControlsRow()" class="toggle__wrapper" >
-          <svg *ngIf="!isControlsExpanded"
-               class="templateConfigBtn" width="20px" height="20px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <a (click)="toggleControlsRow()" class="toggle__wrapper">
+          <svg
+            *ngIf="!isControlsExpanded"
+            class="templateConfigBtn"
+            width="20px"
+            height="20px"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
             <circle cx="12" cy="11" r="9" />
             <g>
-              <path fill="grey" d="M3.34 17a10.018 10.018 0 0 1-.978-2.326 3 3 0 0 0 .002-5.347A9.99 9.99 0 0 1 4.865 4.99a3 3 0 0 0 4.631-2.674 9.99 9.99 0 0 1 5.007.002 3 3 0 0 0 4.632 2.672c.579.59 1.093 1.261 1.525 2.01.433.749.757 1.53.978 2.326a3 3 0 0 0-.002 5.347 9.99 9.99 0 0 1-2.501 4.337 3 3 0 0 0-4.631 2.674 9.99 9.99 0 0 1-5.007-.002 3 3 0 0 0-4.632-2.672A10.018 10.018 0 0 1 3.34 17zm5.66.196a4.993 4.993 0 0 1 2.25 2.77c.499.047 1 .048 1.499.001A4.993 4.993 0 0 1 15 17.197a4.993 4.993 0 0 1 3.525-.565c.29-.408.54-.843.748-1.298A4.993 4.993 0 0 1 18 12c0-1.26.47-2.437 1.273-3.334a8.126 8.126 0 0 0-.75-1.298A4.993 4.993 0 0 1 15 6.804a4.993 4.993 0 0 1-2.25-2.77c-.499-.047-1-.048-1.499-.001A4.993 4.993 0 0 1 9 6.803a4.993 4.993 0 0 1-3.525.565 7.99 7.99 0 0 0-.748 1.298A4.993 4.993 0 0 1 6 12c0 1.26-.47 2.437-1.273 3.334a8.126 8.126 0 0 0 .75 1.298A4.993 4.993 0 0 1 9 17.196zM12 15a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0-2a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+              <path
+                fill="grey"
+                d="M3.34 17a10.018 10.018 0 0 1-.978-2.326 3 3 0 0 0 .002-5.347A9.99 9.99 0 0 1 4.865 4.99a3 3 0 0 0 4.631-2.674 9.99 9.99 0 0 1 5.007.002 3 3 0 0 0 4.632 2.672c.579.59 1.093 1.261 1.525 2.01.433.749.757 1.53.978 2.326a3 3 0 0 0-.002 5.347 9.99 9.99 0 0 1-2.501 4.337 3 3 0 0 0-4.631 2.674 9.99 9.99 0 0 1-5.007-.002 3 3 0 0 0-4.632-2.672A10.018 10.018 0 0 1 3.34 17zm5.66.196a4.993 4.993 0 0 1 2.25 2.77c.499.047 1 .048 1.499.001A4.993 4.993 0 0 1 15 17.197a4.993 4.993 0 0 1 3.525-.565c.29-.408.54-.843.748-1.298A4.993 4.993 0 0 1 18 12c0-1.26.47-2.437 1.273-3.334a8.126 8.126 0 0 0-.75-1.298A4.993 4.993 0 0 1 15 6.804a4.993 4.993 0 0 1-2.25-2.77c-.499-.047-1-.048-1.499-.001A4.993 4.993 0 0 1 9 6.803a4.993 4.993 0 0 1-3.525.565 7.99 7.99 0 0 0-.748 1.298A4.993 4.993 0 0 1 6 12c0 1.26-.47 2.437-1.273 3.334a8.126 8.126 0 0 0 .75 1.298A4.993 4.993 0 0 1 9 17.196zM12 15a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0-2a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"
+              />
             </g>
           </svg>
 
-          <svg *ngIf="isControlsExpanded"
-               width="20px" height="20px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <svg
+            *ngIf="isControlsExpanded"
+            width="20px"
+            height="20px"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
             <g>
-              <path d="M12 13.172l4.95-4.95 1.414 1.414L12 16 5.636 9.636 7.05 8.222z"/>
+              <path
+                d="M12 13.172l4.95-4.95 1.414 1.414L12 16 5.636 9.636 7.05 8.222z"
+              />
             </g>
           </svg>
         </a>
 
         <ng-container *ngFor="let item of eventTemplates">
-          <div *ngIf="item.visibility" class="eventTemplate" (click)="addNewScheduleEvent(item)">
-            <svg width="20px" height="20px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <div
+            *ngIf="item.visibility"
+            class="eventTemplate"
+            (click)="addNewScheduleEvent(item)"
+          >
+            <svg
+              width="20px"
+              height="20px"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
               <circle cx="12" cy="11" r="9" />
               <g>
-                <path d="M11 11V7h2v4h4v2h-4v4h-2v-4H7v-2h4zm1 11C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16z"/>
+                <path
+                  d="M11 11V7h2v4h4v2h-4v4h-2v-4H7v-2h4zm1 11C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16z"
+                />
               </g>
             </svg>
-            <div class="eventTemplate__name">{{ item.eventName?.length > 6 ? ((item.eventName | slice: 0 : 5) + '..') : item.eventName}}</div>
-            <div class="eventTemplate__length">{{item.eventLength}}</div>
+            <div class="eventTemplate__name">
+              {{
+                item.eventName?.length > 6
+                  ? (item.eventName | slice : 0 : 5) + ".."
+                  : item.eventName
+              }}
+            </div>
+            <div class="eventTemplate__length">{{ item.eventLength }}</div>
           </div>
         </ng-container>
       </div>
     </div>
   </div>
 </div>
-
-
-
-
