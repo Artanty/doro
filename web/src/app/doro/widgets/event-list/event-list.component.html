@@ -2,7 +2,7 @@
   <div class="scheduleName" *ngIf="currentSchedule$ | async as currentSchedule">
     {{ currentSchedule.name + ", id: " + currentSchedule.id }}
   </div>
-  <!-- {{ scheduleEvents | json }} -->
+
   <ul class="eventList" appScroll>
     <li
       *ngFor="let el of scheduleEvents; let i = index"

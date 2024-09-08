@@ -5,6 +5,7 @@ import {
   ChangeDetectorRef,
   Component,
   Inject,
+  InjectionToken,
   Injector,
   OnInit,
   ViewChild,
@@ -17,17 +18,10 @@ import { TConnectionState, TTab } from './models/app.model';
 import { SseService } from './services/sse.service';
 import { StoreService } from './services/store.service';
 
-export const authProps: IAuthDto = {
-  productName: 'doro',
-  authStrategy: 'backend',
-  payload: {
-    checkBackendUrl: 'https://cs99850.tmweb.ru/login',
-    signInByDataUrl: 'https://cs99850.tmweb.ru/login',
-    signInByTokenUrl: 'https://cs99850.tmweb.ru/loginByToken',
-  },
-  from: 'product',
-  status: 'init',
-};
+export const EVENT_BUS_LISTENER = new InjectionToken<Observable<any>>('');
+export const EVENT_BUS_PUSHER = new InjectionToken<(authDto: IAuthDto) => void>(
+  ''
+);
 
 @Component({
   selector: 'app-doro',
@@ -49,6 +43,28 @@ export const authProps: IAuthDto = {
       ]),
     ]),
   ],
+  providers: [
+    {
+      provide: EVENT_BUS_LISTENER,
+      useFactory: (eventBus$: BehaviorSubject<IAuthDto>) => {
+        return eventBus$
+          .asObservable()
+          .pipe
+          // filter((res) => res.from === 'product')
+          ();
+      },
+      deps: [EVENT_BUS],
+    },
+    {
+      provide: EVENT_BUS_PUSHER,
+      useFactory: (eventBus$: BehaviorSubject<IAuthDto>) => {
+        return (authDto: IAuthDto) => {
+          eventBus$.next(authDto);
+        };
+      },
+      deps: [EVENT_BUS],
+    },
+  ],
 })
 export class DoroComponent implements OnInit {
   public connectionState$: Observable<TConnectionState>;
@@ -62,12 +78,13 @@ export class DoroComponent implements OnInit {
   constructor(
     @Inject(StoreService) private StoreServ: StoreService,
     @Inject(SseService) private SseServ: SseService,
-    @Inject(ChangeDetectorRef) private cdr: ChangeDetectorRef
+    @Inject(ChangeDetectorRef) private cdr: ChangeDetectorRef,
+    private injector: Injector,
+    @Inject(EVENT_BUS_LISTENER)
+    private readonly eventBusListener$: Observable<IAuthDto>
   ) {
-    this.authEventBus$ = new BehaviorSubject(authProps);
-    this.authEventBus$.asObservable().subscribe((res) => {
-      console.log('authEventBus$ in doro: ');
-      console.log('go');
+    this.eventBusListener$.subscribe((res) => {
+      console.log('DORO BUS');
       console.log(res);
       if (res.status === 'ACCESS_GRANTED') {
         this.createEventSourceOnce();
@@ -92,7 +109,11 @@ export class DoroComponent implements OnInit {
     );
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    const inj = this.injector.get<any>(PRODUCT_NAME);
+    console.log('DoroComponent gets PRODUCT_NAME: ');
+    console.log(inj);
+  }
 
   createEventSourceOnce() {
     if (!this.isEventSourceCreated) {
@@ -117,8 +138,10 @@ export class DoroComponent implements OnInit {
     this.viewContainer.createComponent(m.AuthComponent, {
       injector: Injector.create({
         providers: [
-          { provide: EVENT_BUS, useValue: this.authEventBus$ },
-          { provide: PRODUCT_NAME, useValue: 'doro' },
+          /**
+           * Вытащить отсюда этот компонент
+           * и положить на уровень host'а
+           */
           {
             provide: 'components',
             useValue: {
@@ -129,34 +152,5 @@ export class DoroComponent implements OnInit {
         ],
       }),
     });
-  }
-
-  test() {
-    const authProps: IAuthDto = {
-      productName: 'doro',
-      authStrategy: 'backend',
-      payload: {
-        checkBackendUrl: 'https://1cs99850.tmweb.ru/login',
-        signInByDataUrl: 'https://1cs99850.tmweb.ru/login',
-        signInByTokenUrl: 'https://1cs99850.tmweb.ru/loginByToken',
-      },
-      from: 'product',
-      status: 'test',
-    };
-    this.authEventBus$.next(authProps);
-  }
-  test1() {
-    const authProps: IAuthDto = {
-      productName: 'doro',
-      authStrategy: 'backend',
-      payload: {
-        checkBackendUrl: 'https://1cs99850.tmweb.ru/login',
-        signInByDataUrl: 'https://1cs99850.tmweb.ru/login',
-        signInByTokenUrl: 'https://1cs99850.tmweb.ru/loginByToken',
-      },
-      from: 'product',
-      status: 'test1',
-    };
-    this.authEventBus$.next(authProps);
   }
 }

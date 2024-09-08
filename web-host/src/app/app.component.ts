@@ -6,7 +6,6 @@ import {
   ViewChild,
   ViewContainerRef,
 } from "@angular/core"
-import { delay, Observable } from "rxjs"
 // export const authProps: IAuthDto = {
 //   productName: "doro",
 //   authStrategy: "backend",
@@ -28,11 +27,6 @@ export class AppComponent implements OnInit {
   viewContainer!: ViewContainerRef
   // authEventBus$!: BehaviorSubject<IAuthDto>
   title = "web-host"
-  myObservable: Observable<any> = new Observable<string>((observer) => {
-    observer.next("Hello")
-    observer.next("World")
-    observer.complete()
-  }).pipe(delay(1000))
 
   constructor(private injector: Injector) {
     // this.authEventBus$ = new BehaviorSubject(authProps)
@@ -47,10 +41,10 @@ export class AppComponent implements OnInit {
       remoteEntry: "http://localhost:4201/remoteEntry.js",
       exposedModule: "./Component",
     })
-    // this.viewContainer.createComponent(m.DoroComponent)
-    this.viewContainer.createComponent(m.DoroComponent, {
-      injector: this.injector,
-    })
+    this.viewContainer.createComponent(m.DoroComponent)
+    // this.viewContainer.createComponent(m.DoroComponent, {
+    //   injector: this.injector,
+    // })
     // this.viewContainer.createComponent(m.DoroComponent, {
     //   injector: Injector.create({
     //     providers: [],

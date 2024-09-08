@@ -71,13 +71,6 @@ function initEventSource(sseServ: SseService) {
       deps: [CounterService],
       multi: true,
     },
-    {
-      provide: 'components',
-      useValue: {
-        LoadingComponent,
-      },
-      multi: true,
-    },
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
