@@ -4,24 +4,25 @@ import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject } from 'rxjs';
-import { EVENT_BUS, IAuthDto, PRODUCT_NAME } from 'typlib';
+import { BusEvent, EVENT_BUS, HOST_NAME } from 'typlib';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { DoroModule } from './doro/doro.module';
 
-export const authProps: IAuthDto = {
-  productName: 'DORO',
-  authStrategy: 'backend',
+export const authStrategyBusEvent: BusEvent = {
+  from: 'DORO',
+  to: 'AU',
+  event: 'authStrategy',
   payload: {
-    checkBackendUrl: 'https://cs99850.tmweb.ru/login',
-    signInByDataUrl: 'https://cs99850.tmweb.ru/login',
-    signInByTokenUrl: 'https://cs99850.tmweb.ru/loginByToken',
+    authStrategy: 'backend',
+    checkBackendUrl: 'http://localhost:3600/check',
+    signInByDataUrl: 'http://localhost:3600/login',
+    signInByTokenUrl: 'http://localhost:3600/loginByToken',
+    status: 'init',
   },
-  from: 'product',
-  status: 'init',
 };
 
-const authEventBus$ = new BehaviorSubject(authProps);
+const eventBus$ = new BehaviorSubject(authStrategyBusEvent);
 
 @NgModule({
   declarations: [AppComponent],
@@ -38,8 +39,8 @@ const authEventBus$ = new BehaviorSubject(authProps);
    * при mfe сборке будут работать провайдеры host'а.
    */
   providers: [
-    { provide: PRODUCT_NAME, useValue: 'DORO' },
-    { provide: EVENT_BUS, useValue: authEventBus$ },
+    { provide: EVENT_BUS, useValue: eventBus$ },
+    { provide: HOST_NAME, useValue: 'DORO' },
   ],
   bootstrap: [AppComponent],
   schemas: [],

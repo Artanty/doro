@@ -25,6 +25,11 @@ try {
   process.exit(1);
 }
 
+// if commit should not be checked
+if (commitMsg.includes('--')) {
+  process.exit(0)
+}
+
 // Default to dev environment
 const planUrl = process.env.PLAN_URL;
 const externalServiceName = process.env.PLAN_EXTERNAL_SERVICE_NAME;
@@ -52,22 +57,22 @@ axios.post(
   jsonPayload,
   { headers: { 'Content-Type': 'application/json' } }
 )
-.then(response => {
-  let newCommitMsg;
-  if (response.headers['content-type'].includes('text/plain')) {
-    newCommitMsg = response.data;
-  } else {
-    const responseJson = response.data;
-    if (responseJson.error) {
-      handleError(responseJson.message || 'No error message provided');
+  .then(response => {
+    let newCommitMsg;
+    if (response.headers['content-type'].includes('text/plain')) {
+      newCommitMsg = response.data;
     } else {
-      newCommitMsg = responseJson.message || commitMsg;
+      const responseJson = response.data;
+      if (responseJson.error) {
+        handleError(responseJson.message || 'No error message provided');
+      } else {
+        newCommitMsg = responseJson.message || commitMsg;
+      }
     }
-  }
 
-  // Replace the commit message with the new one
-  fs.writeFileSync(commitMsgFile, newCommitMsg);
-})
-.catch(error => {
-  handleError(`Request failed: ${error.message}`);
-});
+    // Replace the commit message with the new one
+    fs.writeFileSync(commitMsgFile, newCommitMsg);
+  })
+  .catch(error => {
+    handleError(`Request failed: ${error.message}`);
+  });

@@ -6,17 +6,7 @@ import {
   ViewChild,
   ViewContainerRef,
 } from "@angular/core"
-// export const authProps: IAuthDto = {
-//   productName: "doro",
-//   authStrategy: "backend",
-//   payload: {
-//     checkBackendUrl: "https://cs99850.tmweb.ru/login",
-//     signInByDataUrl: "https://cs99850.tmweb.ru/login",
-//     signInByTokenUrl: "https://cs99850.tmweb.ru/loginByToken",
-//   },
-//   from: "product",
-//   status: "init",
-// }
+
 @Component({
   selector: "app-root",
   templateUrl: "./app.component.html",
@@ -25,11 +15,10 @@ import {
 export class AppComponent implements OnInit {
   @ViewChild("placeHolder", { read: ViewContainerRef })
   viewContainer!: ViewContainerRef
-  // authEventBus$!: BehaviorSubject<IAuthDto>
+
   title = "web-host"
 
   constructor(private injector: Injector) {
-    // this.authEventBus$ = new BehaviorSubject(authProps)
     this.loadComponent()
   }
 

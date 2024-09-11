@@ -11,17 +11,24 @@ import {
   ViewChild,
   ViewContainerRef,
 } from '@angular/core';
-import { BehaviorSubject, combineLatestWith, map, Observable, tap } from 'rxjs';
-import { EVENT_BUS, IAuthDto, PRODUCT_NAME } from 'typlib';
+import {
+  BehaviorSubject,
+  combineLatestWith,
+  filter,
+  map,
+  Observable,
+  tap,
+} from 'rxjs';
+import { BusEvent, EVENT_BUS } from 'typlib';
 import { LoadingComponent } from './components/loading/loading.component';
 import { TConnectionState, TTab } from './models/app.model';
 import { SseService } from './services/sse.service';
 import { StoreService } from './services/store.service';
 
-export const EVENT_BUS_LISTENER = new InjectionToken<Observable<any>>('');
-export const EVENT_BUS_PUSHER = new InjectionToken<(authDto: IAuthDto) => void>(
-  ''
-);
+export const EVENT_BUS_LISTENER = new InjectionToken<Observable<BusEvent>>('');
+export const EVENT_BUS_PUSHER = new InjectionToken<
+  (busEvent: BusEvent) => void
+>('');
 
 @Component({
   selector: 'app-doro',
@@ -46,20 +53,18 @@ export const EVENT_BUS_PUSHER = new InjectionToken<(authDto: IAuthDto) => void>(
   providers: [
     {
       provide: EVENT_BUS_LISTENER,
-      useFactory: (eventBus$: BehaviorSubject<IAuthDto>) => {
+      useFactory: (eventBus$: BehaviorSubject<BusEvent>) => {
         return eventBus$
           .asObservable()
-          .pipe
-          // filter((res) => res.from === 'product')
-          ();
+          .pipe(filter((res) => res.to === process.env['APP']));
       },
       deps: [EVENT_BUS],
     },
     {
       provide: EVENT_BUS_PUSHER,
-      useFactory: (eventBus$: BehaviorSubject<IAuthDto>) => {
-        return (authDto: IAuthDto) => {
-          eventBus$.next(authDto);
+      useFactory: (eventBus$: BehaviorSubject<BusEvent>) => {
+        return (busEvent: BusEvent) => {
+          eventBus$.next(busEvent);
         };
       },
       deps: [EVENT_BUS],
@@ -72,7 +77,7 @@ export class DoroComponent implements OnInit {
   connectionState: TConnectionState = 'LOADING';
   @ViewChild('placeHolder', { read: ViewContainerRef })
   viewContainer!: ViewContainerRef;
-  authEventBus$!: BehaviorSubject<IAuthDto>;
+  eventBus$!: BehaviorSubject<BusEvent>;
   isEventSourceCreated: boolean = false;
 
   constructor(
@@ -81,10 +86,10 @@ export class DoroComponent implements OnInit {
     @Inject(ChangeDetectorRef) private cdr: ChangeDetectorRef,
     private injector: Injector,
     @Inject(EVENT_BUS_LISTENER)
-    private readonly eventBusListener$: Observable<IAuthDto>
+    private readonly eventBusListener$: Observable<BusEvent>
   ) {
-    this.eventBusListener$.subscribe((res) => {
-      console.log('DORO BUS');
+    this.eventBusListener$.subscribe((res: BusEvent) => {
+      console.log('DORO BUS LISTENER');
       console.log(res);
       if (res.status === 'ACCESS_GRANTED') {
         this.createEventSourceOnce();
@@ -109,11 +114,7 @@ export class DoroComponent implements OnInit {
     );
   }
 
-  ngOnInit(): void {
-    const inj = this.injector.get<any>(PRODUCT_NAME);
-    console.log('DoroComponent gets PRODUCT_NAME: ');
-    console.log(inj);
-  }
+  ngOnInit(): void {}
 
   createEventSourceOnce() {
     if (!this.isEventSourceCreated) {
