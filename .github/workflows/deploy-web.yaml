@@ -3,7 +3,7 @@ name: Web
 on:
   push:
     tags:
-      - '!*-back'
+      - '!**back'
 
 permissions:
   contents: write
