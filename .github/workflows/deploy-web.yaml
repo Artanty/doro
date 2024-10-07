@@ -25,16 +25,15 @@ jobs:
         run: |
           REPO_PART=${GITHUB_REPOSITORY##*/}
           echo "repo_part=$REPO_PART" >> $GITHUB_OUTPUT
-
-      - name: Send POST request
+        
+      - name: Run Custom Action
         id: send_post_request
-        run: |
-          RESPONSE=$(curl -s -X POST -H "Content-Type: application/json" \
-          --connect-timeout 20 --max-time 30 --retry 5 --retry-delay 5 \
-          -d "{\"projectId\":\"${{ steps.repo_name.outputs.repo_part }}@github\",\"namespace\":\"back\",\"stage\":\"DEPLOY\"}" \
-          "${{ secrets.SAFE_URL }}")
-          echo "Response: $RESPONSE"
-          echo "response=$RESPONSE" >> $GITHUB_OUTPUT
+        uses: Artanty/act2@master
+        with:
+          projectId: ${{ steps.repo_name.outputs.repo_part }}@github
+          namespace: "web"
+          commit: ${{ github.sha }}
+          stage: 'DEPLOY'
 
       - name: Remove .env from .gitignore
         run: |
