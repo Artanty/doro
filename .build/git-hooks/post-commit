@@ -1,0 +1,35 @@
+const { execSync } = require('child_process');
+const axios = require('axios');
+require('dotenv').config();
+
+// Get the list of pushed tags
+const pushedTags = execSync('git rev-parse --tags').toString().trim().split('\n');
+
+// Check each tag's message
+pushedTags.forEach(tag => {
+  const tagMessage = execSync(`git tag -l --format='%(contents)' ${tag}`).toString().trim();
+
+  // Check if the tag message contains "deploy-web"
+  if (tagMessage.includes('deploy-web')) {
+    // Load the GATE_URL from .env file
+    const GATE_URL = process.env.GATE_URL;
+
+    // Data to send in the POST request
+    const data = {
+      projectId: "doro@github",
+      namespace: "web",
+      stage: "DEPLOY"
+    };
+
+    // Make the POST request
+    axios.post(GATE_URL, data)
+      .then(response => {
+        console.log(`POST request successful for tag ${tag}:`, response.data);
+      })
+      .catch(error => {
+        console.error(`Error making POST request for tag ${tag}:`, error.message);
+      });
+  } else {
+    console.log(`Tag ${tag} message does not contain "deploy-web". Skipping deployment.`);
+  }
+});

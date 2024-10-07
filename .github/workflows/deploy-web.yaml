@@ -3,45 +3,74 @@ name: Node.js CI
 on:
   push:
     tags:
-      - '*'
+      - '**deploy-web**'
+
+permissions:
+  contents: write
+  actions: write
+  pull-requests: write
+  repository-projects: write
 
 jobs:
-  build-and-deploy:
+  deploy-web:
     runs-on: ubuntu-latest
-    permissions: #for Create release branch
-      contents: write
+    container: pandoc/latex
 
     steps:
-    - name: Set env
-      run: echo "TAG=$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
-    
-    - name: Checkout code
-      uses: actions/checkout@v2
-    - uses: actions/cache@v1
-      with:
-        path: ~/.npm
-        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-node-
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Create configuration file
-      run: |
-        echo "RECONNECT_TRIES=${{ secrets.RECONNECT_TRIES }} 
-        SERVER_URL=${{ secrets.SERVER_URL }}
-        VERCEL_TOKEN=${{ secrets.VERCEL_TOKEN }}
-        CURRENT_TAG=${{ env.TAG }}" > .env
-      working-directory: ./web
+      - name: Get repository name
+        id: repo_name
+        run: |
+          REPO_PART=${GITHUB_REPOSITORY##*/}
+          echo "repo_part=$REPO_PART" >> $GITHUB_OUTPUT
 
-    - name: Install Vercel CLI
-      run: npm install --global vercel@canary
-      working-directory: ./web
+      - name: Send POST request
+        id: send_post_request
+        run: |
+          RESPONSE=$(curl -s -X POST -H "Content-Type: application/json" \
+          --connect-timeout 20 --max-time 30 --retry 5 --retry-delay 5 \
+          -d "{\"projectId\":\"${{ steps.repo_name.outputs.repo_part }}@github\",\"namespace\":\"back\",\"stage\":\"DEPLOY\"}" \
+          "${{ secrets.SAFE_URL }}")
+          echo "Response: $RESPONSE"
+          echo "response=$RESPONSE" >> $GITHUB_OUTPUT
 
-    - name: Pull Vercel Environment Information
-      run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Remove .env from .gitignore
+        run: |
+          cd ./web
+          sed -i '/^\.env$/d' .gitignore
 
-    - name: Build Project Artifacts
-      run: |
-        vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Create configuration file
+        run: |
+          cd ./web
+          echo "SAFE_URL=${{ fromJson(steps.send_post_request.outputs.response).data.SAFE_URL }}" > .env          
 
-    - name: Deploy Project Artifacts to Vercel
-      run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Set environment variables and push to another repository
+        run: |
+          echo "GIT_PAT=${{ fromJson(steps.send_post_request.outputs.response).data.GIT_PAT }}" >> $GITHUB_ENV
+          echo "GIT_LOGIN=${{ fromJson(steps.send_post_request.outputs.response).data.GIT_LOGIN }}" >> $GITHUB_ENV
+          echo "GIT_REPO=${{ fromJson(steps.send_post_request.outputs.response).data.GIT_REPO }}" >> $GITHUB_ENV
+          echo "DEPLOY_HOOK=${{ fromJson(steps.send_post_request.outputs.response).data.DEPLOY_HOOK }}" >> $GITHUB_ENV
+
+      - name: Pushes to another repository
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          API_TOKEN_GITHUB: ${{ env.GIT_PAT }}
+        with:
+          source-directory: './web'
+          destination-github-username: ${{ env.GIT_LOGIN }}
+          destination-repository-name: ${{ env.GIT_REPO }}
+          target-branch: main
+          create-target-branch-if-needed: true
+
+      - name: RUN DEPLOY_HOOK
+        id: send_post_request2
+        continue-on-error: true
+        run: |
+          RESPONSE=$(curl -s -X GET \
+            --connect-timeout 20 --max-time 30 --retry 5 --retry-delay 5 \
+            "${{ env.DEPLOY_HOOK }}")
+          echo "response=$RESPONSE" >> $GITHUB_OUTPUT
+
+          
