@@ -3,7 +3,7 @@ name: Back
 on:
   push:
     tags:
-      - '!**web'
+      - '**!web'
 
 jobs:
   build-and-deploy-back:
