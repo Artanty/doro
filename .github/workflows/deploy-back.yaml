@@ -1,12 +1,12 @@
-name: Node.js CI
+name: Back
 
 on:
   push:
     tags:
-      - '**deploy-back**'
+      - '!**web'
 
 jobs:
-  back-build-and-deploy:
+  build-and-deploy-back:
     runs-on: ubuntu-latest
     permissions:  #for Create release branch
       contents: write

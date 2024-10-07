@@ -1,9 +1,9 @@
-name: Node.js CI
+name: Web
 
 on:
   push:
     tags:
-      - '*'
+      - '!**back'
 
 permissions:
   contents: write
