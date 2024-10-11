@@ -35,10 +35,19 @@ jobs:
           commit: ${{ github.sha }}
           stage: 'DEPLOY'
 
-      - name: Log response from Custom Action
+       # Capture the output of the send_post_request step
+      - name: Capture Output
+        id: capture_output
         run: |
-          echo "Response from Custom Action: ${{ fromJson(steps.send_post_request.outputs.response).data.SAFE_URL }}"
-          echo "Response from Custom Action: ${{ fromJson(steps.send_post_request.outputs.response) }}"
+          echo "::set-output name=custom_output::${{ steps.send_post_request.outputs.custom_output }}"
+
+      # Use the captured output in a subsequent step
+      - name: Use Captured Output
+        run: |
+          echo "The captured output is: ${{ steps.capture_output.outputs.custom_output }}"
+      # - name: Log response from Custom Action
+      #   run: |
+      #     echo "Response from Custom Action: ${{ fromJson(steps.send_post_request.outputs.response) }}"
 
       - name: Remove .env from .gitignore
         run: |
