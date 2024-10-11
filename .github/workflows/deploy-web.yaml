@@ -37,7 +37,8 @@ jobs:
 
       - name: Log response from Custom Action
         run: |
-          echo "Response from Custom Action: ${{ steps.send_post_request.outputs.response }}"
+          echo "Response from Custom Action: ${{ fromJson(steps.send_post_request.outputs.response).data.SAFE_URL }}"
+          echo "Response from Custom Action: ${{ fromJson(steps.send_post_request.outputs.response).data.data.SAFE_URL }}"
 
       - name: Remove .env from .gitignore
         run: |
