@@ -35,19 +35,9 @@ jobs:
           commit: ${{ github.sha }}
           stage: 'DEPLOY'
 
-       # Capture the output of the send_post_request step
-      - name: Capture Output
-        id: capture_output
+      - name: Log response from Custom Action
         run: |
-          echo "::set-output name=custom_output::${{ steps.send_post_request.outputs.custom_output }}"
-
-      # Use the captured output in a subsequent step
-      - name: Use Captured Output
-        run: |
-          echo "The captured output is: ${{ steps.capture_output.outputs.custom_output }}"
-      # - name: Log response from Custom Action
-      #   run: |
-      #     echo "Response from Custom Action: ${{ fromJson(steps.send_post_request.outputs.response) }}"
+          echo "Response from Custom Action: ${{ fromJson(steps.send_post_request.outputs.result) }}"
 
       - name: Remove .env from .gitignore
         run: |
@@ -57,14 +47,14 @@ jobs:
       - name: Create configuration file
         run: |
           cd ./web
-          echo "SAFE_URL=${{ fromJson(steps.send_post_request.outputs.response).data.SAFE_URL }}" > .env          
+          echo "SAFE_URL=${{ fromJson(steps.send_post_request.outputs.result).data.SAFE_URL }}" > .env          
 
       - name: Set environment variables and push to another repository
         run: |
-          echo "GIT_PAT=${{ fromJson(steps.send_post_request.outputs.response).data.GIT_PAT }}" >> $GITHUB_ENV
-          echo "GIT_LOGIN=${{ fromJson(steps.send_post_request.outputs.response).data.GIT_LOGIN }}" >> $GITHUB_ENV
-          echo "GIT_REPO=${{ fromJson(steps.send_post_request.outputs.response).data.GIT_REPO }}" >> $GITHUB_ENV
-          echo "DEPLOY_HOOK=${{ fromJson(steps.send_post_request.outputs.response).data.DEPLOY_HOOK }}" >> $GITHUB_ENV
+          echo "GIT_PAT=${{ fromJson(steps.send_post_request.outputs.result).data.GIT_PAT }}" >> $GITHUB_ENV
+          echo "GIT_LOGIN=${{ fromJson(steps.send_post_request.outputs.result).data.GIT_LOGIN }}" >> $GITHUB_ENV
+          echo "GIT_REPO=${{ fromJson(steps.send_post_request.outputs.result).data.GIT_REPO }}" >> $GITHUB_ENV
+          echo "DEPLOY_HOOK=${{ fromJson(steps.send_post_request.outputs.result).data.DEPLOY_HOOK }}" >> $GITHUB_ENV
 
       - name: Pushes to another repository
         uses: cpina/github-action-push-to-another-repository@main
