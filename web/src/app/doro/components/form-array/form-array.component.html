@@ -1,4 +1,4 @@
-<form [formGroup]="timersConfigForm">
+<!-- <form [formGroup]="timersConfigForm">
   <ng-container formArrayName="timersConfigFa">
 
     <div class="row" *ngFor="let group of timersConfigFa.controls; let i = index"
@@ -7,7 +7,6 @@
         <a (click)="saveNewItem(i)" class="saveNewItemButton"
         [class.valid]="group.get('eventName')?.value && group.get('eventType')?.value">
           <svg width="20px" height="20px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-<!--            <circle cx="12" cy="11" r="9" />-->
             <g>
               <path d="M11 11V7h2v4h4v2h-4v4h-2v-4H7v-2h4zm1 11C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16z"/>
             </g>
@@ -62,3 +61,4 @@
 
   </ng-container>
 </form>
+ -->

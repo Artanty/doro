@@ -1,4 +1,4 @@
-<div class="container back">
+<!-- <div class="container back">
   <div class="scheduleName" *ngIf="(currentSchedule$ | async) as currentSchedule">{{ currentSchedule.name + ', id: ' + currentSchedule.id}}</div>
   <ng-container *ngIf="!eventEndScreen">
     <form [formGroup]="timersConfigForm">
@@ -6,7 +6,6 @@
           <div class="row" class="settingsRow"
               *ngFor="let _ of timersConfigFa.controls; let i = index"
               [formGroupName]="i">
-  <!--          [color]="'#686bf2'"-->
             <my-custom-element [formControlName]="'sessionLength'"
                               [suffix]="'Работа'"
                               [step]="5"
@@ -14,7 +13,6 @@
                               [color]="'#ddd'"
             ></my-custom-element>
             <app-audio></app-audio>
-  <!--          [color]="'#20e6b7'"-->
             <my-custom-element [formControlName]="'sessionRestLength'"
                               [suffix]="'Отдых'"
                               [step]="1"
@@ -26,7 +24,6 @@
       </ng-container>
     </form>
     <div class="counterRow" #counterRow>
-  <!--    [color]="counterType === 'work' ? '#686bf2' : '#20e6b7'"-->
       <my-custom-element [(ngModel)]="counter"
                         [suffix]="counterSuffix"
                         [step]="5"
@@ -77,8 +74,6 @@
 
     <div class="timerButtons timerButtons--Row2">
       <div>
-        <!-- <div class="loops">{{loops}}/100</div>
-        <button class="button linkButton reset" (click)="resetTimer()">Сброс</button> -->
       </div>
       <div class="playNextWrapper" (click)="skip()" *ngIf="nextScheduleEvent">
         <div class="playNextName noselect">
@@ -98,26 +93,10 @@
                           (playFirstAway)="playFirst()"
     ></app-end-event-screen>
   </ng-container>
-
-<!--  <div class="buttons-mute">-->
-<!--    <a id="cmd-mute" class="btn btn-mute"><i class="fa fa-volume-up"></i></a>-->
-<!--    <a id="cmd-unmute" class="btn btn-mute hidden"><i class="fa fa-volume-off"></i></a>-->
-<!--  </div>-->
-
-
-<!--  <audio id="snd-endofbreak" preload="auto">-->
-<!--    <source src="http://owentosh.com/public/codepen/endofbreak.m4a">-->
-<!--    <source src="http://owentosh.com/public/codepen/endofbreak.wav">-->
-<!--  </audio>-->
-
-<!--  <audio id="snd-endofsession" preload="auto">-->
-<!--    <source src="http://owentosh.com/public/codepen/endofsession.m4a">-->
-<!--    <source src="http://owentosh.com/public/codepen/endofsession.wav">-->
-<!--  </audio>-->
-
 </div>
 
 
 
 
 
+ -->

@@ -5,6 +5,7 @@ import {
   ApplicationRef,
   CUSTOM_ELEMENTS_SCHEMA,
   DoBootstrap,
+  Inject,
   Injector,
   NgModule,
 } from '@angular/core';
@@ -25,28 +26,39 @@ import { SseService } from './services/sse.service';
 import { CounterConfigComponent } from './widgets/counter-config/counter-config.component';
 import { CounterComponent } from './widgets/counter/counter.component';
 import { EventListComponent } from './widgets/event-list/event-list.component';
+import { BusEvent, EVENT_BUS, EVENT_BUS_LISTENER, EVENT_BUS_PUSHER } from 'typlib';
+import { BehaviorSubject, filter, Observable } from 'rxjs';
+import { dd } from './helpers/dd';
 
-function initConfigActivator(counterServ: CounterService) {
-  return () => counterServ.scheduleConfigActivator();
-}
+// function initConfigActivator(counterServ: CounterService) {
+//   return () => counterServ.scheduleConfigActivator();
+// }
 
-function initEventSource(sseServ: SseService) {
-  return () => sseServ.createEventSource();
-}
+// function initEventSource(sseServ: SseService) {
+//   return () => sseServ.createEventSource();
+// }
+
+export const CHILD_ROUTES = [
+  {
+    path: 'faq', 
+    component: DoroComponent,
+    children: []
+  }, 
+]
 
 @NgModule({
   declarations: [
     DoroComponent,
-    CounterComponent,
-    MyCustomElementComponent,
-    EventListComponent,
-    NavigationComponent,
-    CounterConfigComponent,
-    NoiseComponent,
-    LoadingComponent,
-    FormArrayComponent,
-    EndEventScreenComponent,
-    ScrollDirective,
+    // CounterComponent,
+    // MyCustomElementComponent,
+    // EventListComponent,
+    // NavigationComponent,
+    // CounterConfigComponent,
+    // NoiseComponent,
+    // LoadingComponent,
+    // FormArrayComponent,
+    // EndEventScreenComponent,
+    // ScrollDirective,
   ],
   imports: [
     CommonModule,
@@ -55,35 +67,73 @@ function initEventSource(sseServ: SseService) {
     ReactiveFormsModule,
     FormsModule,
     AudioComponent,
-    RouterModule.forChild([
-      {
-        path: '',
-        component: DoroComponent,
-      },
-    ]),
+    RouterModule.forChild(CHILD_ROUTES),
     HttpClientModule,
   ],
-  exports: [DoroComponent, MyCustomElementComponent, LoadingComponent],
+  // exports: [DoroComponent, MyCustomElementComponent, LoadingComponent],
+  exports: [DoroComponent],
   providers: [
+    // {
+    //   provide: APP_INITIALIZER,
+    //   useFactory: initConfigActivator,
+    //   deps: [CounterService],
+    //   multi: true,
+    // },
     {
-      provide: APP_INITIALIZER,
-      useFactory: initConfigActivator,
-      deps: [CounterService],
-      multi: true,
+      provide: EVENT_BUS_LISTENER,
+      useFactory: (eventBus$: BehaviorSubject<BusEvent>) => {
+        return eventBus$
+          .asObservable()
+        // .pipe(filter((res) => res.to === process.env['APP']));
+      },
+      deps: [EVENT_BUS],
+    },
+    {
+      provide: EVENT_BUS_PUSHER,
+      useFactory: (eventBus$: BehaviorSubject<BusEvent>) => {
+        return (busEvent: BusEvent) => {
+          eventBus$.next(busEvent);
+        };
+      },
+      deps: [EVENT_BUS],
     },
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class DoroModule implements DoBootstrap {
-  constructor(private injector: Injector) {
+  constructor(
+    private injector: Injector,
+    @Inject(EVENT_BUS_LISTENER)
+    private readonly eventBusListener$: Observable<BusEvent>,
+    @Inject(EVENT_BUS_PUSHER)
+    private readonly eventBusPusher: (busEvent: BusEvent) => void,
+  ) {
     console.log('DoroModule');
+    this.eventBusListener$.subscribe((res: BusEvent) => {
+      console.log('DORO BUS LISTENER');
+      console.log(res);
+      
+    });
+    // this._sendAuthDoneEvent()
   }
   ngDoBootstrap(appRef: ApplicationRef) {
     console.log('DoroModule ngDoBootstrap');
-    const customElement = createCustomElement(MyCustomElementComponent, {
-      injector: this.injector,
-    });
-    customElements.define('my-custom-element', customElement);
-    appRef.bootstrap(CounterComponent);
+    // const customElement = createCustomElement(MyCustomElementComponent, {
+    //   injector: this.injector,
+    // });
+    // customElements.define('my-custom-element', customElement);
+    // appRef.bootstrap(CounterComponent);
+  }
+
+  private _sendAuthDoneEvent(): void {
+    const doneBusEvent: BusEvent = {
+      from: `${process.env['PROJECT_ID']}@${process.env['NAMESPACE']}`,
+      to: `${process.env['PROJECT_ID']}@${process.env['NAMESPACE']}`,
+      event: `ACCESS_GRANTED`,
+      payload: {},
+      status: `ACCESS_GRANTED`,
+    }
+    dd(9)
+    this.eventBusPusher(doneBusEvent)
   }
 }

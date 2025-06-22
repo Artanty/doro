@@ -1,6 +1,6 @@
-import {Inject, Injectable} from '@angular/core';
-import {getEntryFromSseResponse} from "../helpers/getEntryFromSseResponse";
-import {HttpClient} from "@angular/common/http";
+import { Inject, Injectable } from '@angular/core';
+import { getEntryFromSseResponse } from "../helpers/getEntryFromSseResponse";
+import { HttpClient } from "@angular/common/http";
 
 @Injectable({
   providedIn: 'root'
@@ -8,10 +8,10 @@ import {HttpClient} from "@angular/common/http";
 export class ClientService {
 
   constructor(
-    @Inject(HttpClient) private http: HttpClient,
-  ) { }
+    @Inject(HttpClient) private http: HttpClient, 
+  ) {}
 
-  setClientId (res: any) {
+  setClientId(res: any) {
     return new Promise((resolve, reject) => {
       const storedClientId = localStorage.getItem('clientId')
       console.log(storedClientId)
@@ -23,7 +23,7 @@ export class ClientService {
     })
   }
 
-  getClientId (): number | void {
+  getClientId(): number | void {
     try {
       const ls = localStorage.getItem('clientId')
       if (ls) {
@@ -35,12 +35,12 @@ export class ClientService {
     }
   }
 
-  checkClientId (clientId: number) {
-    const data = {clientId: clientId}//JSON.stringify({data: 'wwww'})
+  checkClientId(clientId: number) {
+    const data = { clientId: clientId }//JSON.stringify({data: 'wwww'})
     return this.http.post(`${process.env['SERVER_URL']}/checkClientId`, data)
   }
 
-  getClients(){
+  getClients() {
     this.http.get(`${process.env['SERVER_URL']}/status`).subscribe(res => console.log(res))
   }
 }

@@ -1,0 +1,19 @@
+{
+    "event_bus_hooks": [
+        {
+            "on": {
+                "event": "ASK_BACK_URLS"
+            },
+            "push": {
+                "type": "ANSWER",
+                "payload": {
+                    "project_id": "doro",
+                    "back_url": "http://localhost:3201"
+                }
+            },
+            "lives": 1
+        }
+    ],
+    "interceptors": [],
+}
+
