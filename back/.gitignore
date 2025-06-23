@@ -1,6 +1,7 @@
 .env_production
 /public/swagger.json
 /.env
+storage
 # Compiled output
 /dist
 /build

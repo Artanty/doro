@@ -7,7 +7,7 @@ import scheduleConfig from './scheduleConfig';
 import ScheduleController from "../controllers/schedule";
 import ScheduleConfigController from "../controllers/scheduleConfigController";
 import ScheduleEventController from "../controllers/scheduleEvent";
-
+import saveTempRoutes from "./saveTempRoutes";
 
 const router = express.Router();
 
@@ -55,12 +55,14 @@ router.get("/", async (_req, res) => {
     });
 });
 
-const routes = [ scheduleEvent, scheduleConfig ]
-export function collectRoutes (app: express.Application): void {
+const routes = [scheduleEvent, scheduleConfig]
+export function collectRoutes(app: express.Application): void {
     routes.forEach((route: Router) => {
         app.use(route);
     })
 }
+
+router.use('/save-temp', saveTempRoutes);
 
 
 export default router;
