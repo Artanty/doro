@@ -1,0 +1,25 @@
+<div class="list-wrapper">
+	<ul>
+		<li *ngFor="let event of events">
+			<div>
+				<!-- <div class="color-badge" [style.background]="hexColor(event.color)"></div> -->
+				<div class="name">
+					{{ event.event_name }}
+				</div>
+			</div>
+			<div class="action">
+				<i title="play" class="mu mu-play" (click)="playEvent(event.id)"></i>
+			  <!-- <i title="Изменение ключевого слова" class="mu mu-edit" (click)="goToEventEdit(event.id)"></i> -->
+		   	  <div gui type="dropdown"
+			   	  [inputs]="{
+			   	  	buttonIcon: 'mu mu-opts-v',
+			   	  	items: menuItems
+			   	  }"
+			   	  [outputs]="{
+					itemSelected: deleteEvent.bind(this, event.id)
+			   	  }"
+		   	  ></div>
+			</div>
+		</li>
+	</ul>	
+</div>

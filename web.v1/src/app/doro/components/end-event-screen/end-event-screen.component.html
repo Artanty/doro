@@ -1,0 +1,34 @@
+<div class="container interruptToRest">
+<h1>Время вышло</h1>
+<p>Событие {{ endedEvent?.name }} закончилось</p>
+<ng-container *ngIf="nextEvent">
+  <div class="button" (click)="playNextAway.emit()">
+    <a [class.isPaused]="true">
+      <svg width="20px" height="20px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="11" r="9" />
+        <g>
+          <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM10.622 8.415l4.879 3.252a.4.4 0 0 1 0 .666l-4.88 3.252a.4.4 0 0 1-.621-.332V8.747a.4.4 0 0 1 .622-.332z"/>
+        </g>
+      </svg>
+    </a>
+    Начать {{nextEvent?.name ?? 'следующее'}}
+  </div>
+</ng-container>
+
+<ng-container *ngIf="!nextEvent">
+  <p>Следующее событие не запланировано</p>
+  <div class="button" (click)="playFirstAway.emit()">
+    <a [class.isPaused]="true">
+      <svg width="20px" height="20px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="11" r="9" />
+        <g>
+          <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM10.622 8.415l4.879 3.252a.4.4 0 0 1 0 .666l-4.88 3.252a.4.4 0 0 1-.621-.332V8.747a.4.4 0 0 1 .622-.332z"/>
+        </g>
+      </svg>
+    </a>
+    Начать сначала
+  </div>
+</ng-container>
+
+
+</div>

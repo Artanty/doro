@@ -1,0 +1,26 @@
+<div class="container">
+  <router-outlet></router-outlet>
+</div>
+
+
+<div>
+  <button (click)="test(1, $event)">get config (current action)</button>
+  <button (click)="test(2, $event)">endCurrentEventAndSendNext</button>
+  <button (click)="test(3, $event)">test 3 delete all</button>
+  <button (click)="test(5, $event)">get counter (5)</button>
+
+  <button (click)="rem()">rem</button>
+</div>
+<div>
+  <button (click)="test2('COUNTER')">COUNTER</button>
+  <button (click)="test2('EVENT_LIST')">EVENT_LIST</button>
+  <button (click)="test2('COUNTER_CONFIG')">COUNTER_CONFIG</button>
+</div>
+<div>
+  <button (click)="custom()">CUSTOM</button>
+</div>
+<a routerLink="/au">au_prod</a>&nbsp;&nbsp;
+<button (click)="load()">Load!</button>
+<div class="window">
+  <div #placeHolder></div>
+</div>

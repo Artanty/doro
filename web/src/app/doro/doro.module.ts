@@ -25,10 +25,11 @@ import { CounterService } from './services/counter.service';
 import { SseService } from './services/sse.service';
 import { CounterConfigComponent } from './widgets/counter-config/counter-config.component';
 import { CounterComponent } from './widgets/counter/counter.component';
-import { EventListComponent } from './widgets/event-list/event-list.component';
+
 import { BusEvent, EVENT_BUS, EVENT_BUS_LISTENER, EVENT_BUS_PUSHER } from 'typlib';
 import { BehaviorSubject, filter, Observable } from 'rxjs';
 import { dd } from './helpers/dd';
+import { EventListComponent } from './components/event/event-list/event-list.component';
 
 // function initConfigActivator(counterServ: CounterService) {
 //   return () => counterServ.scheduleConfigActivator();
@@ -40,22 +41,26 @@ import { dd } from './helpers/dd';
 
 export const CHILD_ROUTES = [
   {
-    path: 'faq', 
+    path: '', 
     component: DoroComponent,
-    children: []
+    children: [
+      {
+        path: 'event-list', component: EventListComponent
+      },
+    ]
   }, 
 ]
 
 @NgModule({
   declarations: [
     DoroComponent,
-    // CounterComponent,
-    // MyCustomElementComponent,
+    CounterComponent,
+    MyCustomElementComponent,
     // EventListComponent,
     // NavigationComponent,
     // CounterConfigComponent,
     // NoiseComponent,
-    // LoadingComponent,
+    LoadingComponent,
     // FormArrayComponent,
     // EndEventScreenComponent,
     // ScrollDirective,
@@ -118,11 +123,11 @@ export class DoroModule implements DoBootstrap {
   }
   ngDoBootstrap(appRef: ApplicationRef) {
     console.log('DoroModule ngDoBootstrap');
-    // const customElement = createCustomElement(MyCustomElementComponent, {
-    //   injector: this.injector,
-    // });
-    // customElements.define('my-custom-element', customElement);
-    // appRef.bootstrap(CounterComponent);
+    const customElement = createCustomElement(MyCustomElementComponent, {
+      injector: this.injector,
+    });
+    customElements.define('my-custom-element', customElement);
+    appRef.bootstrap(CounterComponent);
   }
 
   private _sendAuthDoneEvent(): void {

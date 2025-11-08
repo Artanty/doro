@@ -1,0 +1,252 @@
+.container{
+  color: #fff;
+  font-family: "Manrope", sans-serif;
+  font-size: 12px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 250px;
+  align-items:stretch;
+}
+.eventList{
+  margin: 0px auto;
+  padding-left: 0;
+  height: 100%;
+  overflow: auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  & > li {
+    margin-bottom: 5px;
+    // background-color: #2c2c3e;
+    background-color: rgb(255 255 255 / 33%);
+    width: calc(100% - 36px);
+    height: 33px;
+    border-radius: 35px;
+    display: block;
+    opacity: 0;
+    transition: opacity 0.4s ease, height 0.7s ease, transform 0.5s ease, margin-bottom 0.5s ease;;/* Apply transition effect */
+
+    &.fade-in {
+      opacity: 1;
+    }
+    &.fade-out {
+      opacity: 0;
+      transform: translateX(-300px);
+      height: 0;
+      margin-bottom: 0;
+    }
+    & .listItemInner{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-right: 8px;
+      column-gap:4px;
+      border-radius: 35px;
+      &.ended{
+        background: rgb(235 235 235 / 21%);
+      }
+      &.suggestedNext{
+        background: rgb(7 88 67);
+      }
+    }
+    &  .nameWrapper{
+      flex-grow: 1;
+      & .name{
+        display: block;
+        // color: #cbcbcb;
+        color: #fff;
+        font-size: 13px;
+
+      }
+    }
+    & .details{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100px;
+      column-gap: 8px;
+      & .timeFromAndTo{
+
+      }
+      & .timeLengthAndCount{
+        &__prefix{
+          font-size: 9px;
+        }
+        &__suffix{
+          font-size: 9px;
+        }
+        &__data{
+
+          & span{
+            margin-left: 4px;
+          }
+        }
+      }
+
+    }
+    & .buttons{
+      display: flex;
+      justify-content: space-between;
+      column-gap: 5px;
+      align-items: center;
+      //margin-left: 8px;
+      a {
+        display: block;
+        line-height: 0;
+        & svg {
+          cursor:pointer;
+          width: 33px;
+          height: 33px;
+          & circle{
+            fill: transparent;
+          }
+          & g path{
+            fill: #f2f2f2
+          }
+        }
+        &:hover{
+          & svg g path{
+            fill: #fff
+          }
+        }
+      }
+      a.isPlaying{
+        & svg {
+          & circle{
+            fill: rgb(104, 13, 13);
+          }
+        }
+      }
+      a.isPaused{
+        & svg {
+          & circle{
+            fill: rgb(7, 88, 67);
+          }
+        }
+      }
+      a.closeBtn svg{
+        width: 20px;
+        height: 20px;
+      }
+    }
+  }
+}
+
+.controlsRow{
+  border-radius: 35px;
+  transition: min-height 0.5s linear;
+  display: flex;
+  justify-content: space-between;
+  & .expandableRow {
+    overflow: hidden;
+    height: 0;
+    transition: height 0.2s linear, transform 0.2s linear;
+    transform: translateY(30px);
+  }
+  &.expanded .expandableRow{
+    //height: 140px;
+    height: 100%;
+    transform: translateY(0px);
+  }
+  & .toggle__wrapper{
+    & a {
+      & svg g path {
+        fill: grey;
+      }
+      transition: transform 0.2s linear;
+      transform: rotate(0deg);
+    }
+  }
+  &.expanded .toggle__wrapper a {
+    transform: rotate(-180deg);
+  }
+  & .controlsInner{
+    padding: 3px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  & a:not(.addTemplateButton) {
+    display: block;
+    width: 22px;
+    height: 22px;
+    & svg  {
+      cursor: pointer;
+      width: 22px;
+      height: 22px;
+      & circle{
+        fill: transparent;
+      }
+      & g path{
+        fill: #fff
+      }
+    }
+  }
+  & a.addTemplateButton{
+    border-radius: 25px;
+    padding: 5px 11px;
+
+    border: 1px solid grey;
+  }
+}
+
+.eventTemplate{
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  column-gap: 2px;
+  background: rgb(0 0 0 / 38%);
+  border-radius: 12px;
+  padding: 0px 4px 0px 0px;
+  border: 1px solid #9b9b9b;
+  &:hover{
+    border-color: #fff;
+  }
+    & svg {
+
+      width: 22px;
+      height: 22px;
+
+      & circle {
+        fill: transparent;
+      }
+
+      & g path {
+        fill: #fff
+      }
+
+  }
+}
+
+.visibleRow{
+  display: flex;
+  /* align-items: center; */
+  column-gap: 3px;
+  padding-top: 5px;
+}
+
+svg.templateConfigBtn {
+    width: 22px;
+    height: 22px;
+    & g path {
+      fill: #fff;
+    }
+  }
+
+.expandableRow{
+  padding-top: 0px;
+  padding-bottom: 0px;
+  padding-left: 2px;
+  padding-right: 2px;
+}
+.expanded .expandableRow{
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+.scheduleName{
+  padding: 10px;
+}

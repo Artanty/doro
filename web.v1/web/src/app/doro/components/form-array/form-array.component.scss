@@ -1,0 +1,44 @@
+.row{
+  display: flex;
+  column-gap: 7px;
+  align-items: center;
+}
+.control {
+  background: transparent;
+  border: 1px solid grey;
+  border-radius: 25px;
+  color: #fff;
+  font-size: 11px;
+  height: 22px;
+}
+option {
+  color: #000;
+}
+.delete{
+  cursor: pointer;
+  fill: grey;
+  & circle{
+    fill: transparent;
+  }
+  &:hover{
+    fill: #fff;
+    //& circle{
+    //  fill: red;
+    //}
+  }
+}
+input{
+  padding-left: 6px;
+}
+.saveNewItemButton{
+  & svg g path{
+    fill: grey;
+  }
+  &.valid{
+    & svg g path{
+      fill: #fff;
+    }
+  }
+}
+
+

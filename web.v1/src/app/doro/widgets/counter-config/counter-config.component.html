@@ -1,0 +1,54 @@
+<!-- <div class="container back">
+  <form [formGroup]="counterConfigForm">
+    <ng-container formArrayName="counterConfigFa">
+
+      <div class="form"
+           *ngFor="let _ of counterConfigFa.controls; let i = index"
+           [formGroupName]="i">
+        <div class="formControl double">
+          <div class="formControl__prepend">Период</div>
+          <input class="formControl__control double" type="text" [formControlName]="'periodStart'">
+          <div class="formControl__append">-</div>
+          <input class="formControl__control double" type="text" [formControlName]="'periodEnd'">
+        </div>
+
+        <div class="formControl">
+          <div class="formControl__prepend">Работа</div>
+          <input class="formControl__control" type="number" [formControlName]="'workLength'">
+          <div class="formControl__append">мин.</div>
+        </div>
+        <div class="formControl">
+          <div class="formControl__prepend">Отдых</div>
+          <input class="formControl__control" type="number" [formControlName]="'restLength'">
+          <div class="formControl__append">мин.</div>
+        </div>
+
+        <div class="formControl">
+          <div class="formControl__prepend">Большой отдых</div>
+          <input class="formControl__control" type="number" [formControlName]="'bigRestLength'">
+          <div class="formControl__append">мин.</div>
+        </div>
+
+        <div class="formControl">
+          <div class="formControl__prepend">каждый</div>
+          <input class="formControl__control" type="number" [formControlName]="'bigRestRate'">
+          <div class="formControl__append">цикл</div>
+        </div>
+
+        <input type="hidden" [formControlName]="'scheduleName'">
+        <input type="hidden" [formControlName]="'scheduleType'">
+        <input type="hidden" [formControlName]="'workName'">
+        <input type="hidden" [formControlName]="'restName'">
+
+
+      </div>
+
+    </ng-container>
+  </form>
+  <div class="buttonRow">
+    <div class="buttonWrapper">
+      <a (click)="handleCreate()">Сохранить</a>
+    </div>
+  </div>
+</div>
+ -->

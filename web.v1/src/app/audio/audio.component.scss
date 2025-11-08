@@ -1,0 +1,49 @@
+.timerButtons{
+  padding: 15px 15px 0 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  //margin-top: 15px;
+  & a {
+    cursor:pointer;
+    border-color: #fff;
+    color:#fff;
+    width: 106px;
+    height: 40px;
+    //border-width: 2px;
+    //border-style: solid;
+    //border-radius: 25px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    & svg {
+      width: 15px;
+      height: 15px;
+      margin-right: 10px;
+      & g rect{
+        fill: #fff;
+      }
+      & path{
+        fill: #fff;
+      }
+    }
+  }
+  &--Row2{
+    justify-content: space-between;
+    & a {
+      border: none;
+      width: 30px;
+      height: 30px;
+      & svg {
+        width: 15px;
+        height: 15px;
+        & polygon {
+          fill: #ddd;
+        }
+      }
+    }
+  }
+}
+span{
+  font-size: 14px;
+}
