@@ -9,14 +9,34 @@ export interface DoroEvent {
 }
 export interface EventWithState {
 	"id": number
-    "eventId": number
-    "connectionId": string
-    "userHandler": string
-    "state": number
-    "created_at": string
-    "updated_at": string
-    "event_name": string
-    "length": number
-    "type": number
-    "event_type_name": string
+	"eventId": number
+	"connectionId": string
+	"userHandler": string
+	"state": number
+	"created_at": string
+	"updated_at": string
+	"event_name": string
+	"length": number
+	"type": number
+	"event_type_name": string
+}
+
+export interface EventState {
+	"eventId": number,
+	"connectionId": string
+	"state": number,
+	"userHandler": string
+	"created": boolean
+	"updated": boolean
+}
+
+
+export interface EventStateRes {
+	"eventState": EventState
+}
+
+export interface EventStateReq {
+	"eventId": number, 
+	"connectionId": string, 
+	"state": number
 }

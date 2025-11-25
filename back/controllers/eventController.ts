@@ -19,7 +19,14 @@ export class EventController {
 			await connection.execute(
 				'INSERT INTO eventToUser (event_id, user_handler, access_level) VALUES (?, ?, ?)',
 				[eventId, userHandle, 'owner']
-			);		
+			);
+
+			await connection.execute(
+				`INSERT INTO eventState (eventId, state) 
+                 VALUES (?, ?) 
+                 ON DUPLICATE KEY UPDATE eventId = ?, updated_at = CURRENT_TIMESTAMP`,
+				[eventId, "2", eventId]
+			);
 
 			await connection.commit();
 			return eventId;

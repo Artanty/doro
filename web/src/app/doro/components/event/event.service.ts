@@ -1,9 +1,24 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, distinctUntilChanged, filter, map, Observable, throwError } from 'rxjs';
-import { DoroEvent, EventWithState } from './event.model';
+import { BehaviorSubject, distinctUntilChanged, filter, map, Observable, of, throwError, catchError, switchMap, tap, Subject } from 'rxjs';
+import { DoroEvent, EventState, EventStateReq, EventStateRes, EventWithState } from './event.model';
 import { dd } from '../../helpers/dd';
 // import { validateShareKeyword } from './edit-keyword/edit-keyword.validation';
+
+
+export interface EventData {
+  formattedTime: string,
+  minutes: number,
+  raw: {
+    config: string,
+    globalTime: number
+    poolId: string,
+    value: number, 
+  },
+  seconds: number,
+  totalSeconds: number,
+  state: string
+}
 
 @Injectable({
   providedIn: 'root'
@@ -11,8 +26,10 @@ import { dd } from '../../helpers/dd';
 export class EventService {
   private doroBaseUrl = `${process.env['DORO_BACK_URL']}`;
   private tikBaseUrl = `${process.env['TIK_BACK_URL']}`;
-  
 
+  private eventStreams$ = new BehaviorSubject<Map<string, EventData>>(new Map());
+  
+  // public eventList$ = new BehaviorSubject<EventWithState[]>([]);
   constructor(private http: HttpClient) {}
 
   // Get all entries for current user from events db
@@ -25,60 +42,125 @@ export class EventService {
     return this.http.post<EventWithState[]>(`${this.doroBaseUrl}/event-state/list-by-user`, null);
   }
 
-  // poolId - project + namespace + feature + entryId:
-  // doro@web_events_1
-  public playEvent(id: number) {
-    dd('playEvent')
-    const poolId = 'doro@web_events_1'
-    const connId = 'user1'
-    this.listenConnectionState(connId).subscribe(res => {
-      dd('UEAH!!!')
-      dd(res)
-    })
-    
-    this._connectToTikPool(poolId, connId)
-    
-    // set-event-state
-    // this.http.post<EventWithState[]>(`${this.baseUrl}/list-by-user`, null);
+  setEventStateApi(data: EventStateReq): Observable<EventState> {
+    return this.http.post<EventStateRes>(`${this.doroBaseUrl}/event-state/set-event-state`, data)
+      .pipe(
+        map(res => res.eventState)
+      );
   }
+
+  //   // сначала сделать запрос на свой бэк. +
+  //   // обновить стейт. +
+  //   // оповестить всех пользователей, которые имеют доступ к этому событию 
+  //   // (создать новый хэш, чтобы при сравнении стало понятно, что нужно подтянуть изменения)
+  public playEvent(eventId: number, isGuiEvent: boolean = false): void {
+    dd('eventService.playEvent');
+  
+    const poolId = `doro@web_events_${eventId}`;
+    const connId = 'doro';
+  
+    const doroBackUpdate$ = isGuiEvent 
+      ? this.setEventStateApi({ "eventId": eventId, "connectionId": "", "state": 1 })
+      : of(null);
+  
+    doroBackUpdate$.pipe(
+      // @ts-ignore
+      tap((res: any) => {
+        this._connectToTikPool(poolId, connId)
+      }),
+      catchError(error => {
+        console.error('Failed to play event:', error);
+        return throwError(() => new Error(`Failed to play event ${eventId}: ${error.message}`));
+      })
+      // @ts-ignore
+    ).subscribe((res: any) => {})   
+  }
+
+  public pauseEvent(eventId: number) {
+    const poolId = `doro@web_events_${eventId}`
+    const connId = 'doro'
+    return this.setEventStateApi({
+      "eventId": eventId, 
+      "connectionId": "", 
+      "state": 2
+    })
+  }
+
+
 
   private _connectionsState = new BehaviorSubject<Map<string, any>>(new Map());
 
-  private setConnectionState(connId: string, connValue: any) {
+  private setConnectionState(connId: string, connValue: any): void {
     const conns = this._connectionsState.getValue()
     conns.set(connId, connValue)
     this._connectionsState.next(conns)
   }
-  public listenConnectionState(connId: string): Observable<any> {
+
+  public listenConnectionState(connId: string): Observable<string> {
     return this._connectionsState.asObservable().pipe(
+      tap(console.log),
       map(connectionsMap => connectionsMap.get(connId)),
       distinctUntilChanged(),
       filter(value => value !== undefined)
     );
   }
- 
-  //connId is not reqiured
-  private _connectToTikPool(poolId: string, connId: any) {
-    dd(this.tikBaseUrl)
-    dd(`${process.env['TIK_BACK_URL']}`)
-    const eventSource = new EventSource(`${this.tikBaseUrl}/sse/${poolId}/${connId}`);
-    
-    eventSource.onmessage = (e) => {
-      const data = JSON.parse(e.data);
-      // console.log(data)
-      // console.log(`Pool ${poolId} time:`, data.value);
-      
-      // Convert to MM:SS
-      const mins = Math.floor(data.value / 60);
-      const secs = data.value % 60;
-      // document.getElementById('timer').textContent = 
-      //   `${mins}:${secs.toString().padStart(2, '0')}`;
-      dd(`${mins}:${secs.toString().padStart(2, '0')}`)
+  
+  public listenEventState(eventId: number): Observable<EventData> {
+    const poolId = `doro@web_events_${eventId}`;
+    return this.eventStreams$.asObservable().pipe(
+      map(data => data.get(poolId)!), // catch and mock
+      distinctUntilChanged(),
+      filter(value => value !== undefined)
+    );
+  }
 
-      if (data.type && data.type === 'init') {
-        this.setConnectionState(connId, data.type)
+  // для идентификации пользователя в tik@ используется fingerprint,
+  // потому что один пользователь может сидеть с разных устройств одновременно.
+  // poolId - doro@web_events_1 (по сути eventId)
+  private _connectToTikPool(poolId: string, connId: any): void {
+ 
+    const eventSource = new EventSource(`${this.tikBaseUrl}/sse/${poolId}`);
+  
+    eventSource.onmessage = (e) => {
+      try {
+        const data = JSON.parse(e.data);
+        const mins = Math.floor(data.value / 60);
+        const secs = data.value % 60;
+        const formattedTime = `${mins}:${secs.toString().padStart(2, '0')}`;
+      
+        const eventValue: EventData = {
+          raw: data,
+          formattedTime: formattedTime,
+          minutes: mins,
+          seconds: secs,
+          totalSeconds: data.value,
+          state: 'isRunning' // replace to tik back?
+        }
+
+        const streams = this.eventStreams$.getValue()
+        streams.set(poolId, eventValue)
+        this.eventStreams$.next(streams)
+
+        if (data.type && data.type === 'init') {
+          this.setConnectionState(connId, data.type);
+        }
+      } catch (error) {
+        console.error(error);
       }
     };
+  
+    eventSource.onerror = (error) => {
+      console.error(error);
+
+      const streams = this.eventStreams$.getValue()
+      streams.delete(poolId);
+      this.eventStreams$.next(streams)
+
+      
+      eventSource.close();
+    };
+  
+    
   }
 
   // // Get single keyword

@@ -12,7 +12,7 @@ router.post('/set-event-state', async (req, res) => {
     const { eventId, connectionId, state } = req.body;
     const user = getUserFromRequest(req);
     const itemId = await EventStateController.createOrUpdateEventState(
-      eventId, connectionId, state, user
+      eventId, state, user
     );
     res.status(201).json({ eventState: itemId });
   } catch (error: unknown) {

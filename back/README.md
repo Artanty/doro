@@ -27,21 +27,28 @@ CREATE TABLE eventToUser (
     INDEX idx_event_user (event_id, user_handler)
 );
 
--- eventState table with proper primary key for nullable connectionId
 CREATE TABLE eventState (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    eventId INT NOT NULL,
-    connectionId VARCHAR(255) NULL COMMENT 'External connection identifier',
-    userHandler VARCHAR(255) NOT NULL COMMENT 'User who owns this connection',
+    eventId INT NOT NULL UNIQUE,
     state INT NOT NULL COMMENT 'State number (0=inactive, 1=active, 2=paused, etc.)',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE KEY unique_event_connection (eventId, connectionId), -- Composite unique key (allows one NULL per event)
-    UNIQUE KEY unique_connection (connectionId), -- Enforce one-to-one relationship when connectionId is not null
     FOREIGN KEY (eventId) REFERENCES events(id) ON DELETE CASCADE,
-    INDEX idx_user_handler (userHandler),
-    INDEX idx_connection_id (connectionId),
     INDEX idx_state (state),
-    INDEX idx_event_state (eventId, state),
-    INDEX idx_user_state (userHandler, state)
+    INDEX idx_event_state (eventId, state)
 );
+
+
+todo:
+1
+change
+"poolId": "doro@web_events_2",
+"config": "default",
+to
+"poolId": "userHandler",
+"config": "{ doro@web: hash }",
+
+
+tik@ может быть использован как синхронизатор стейта разных приложений.
+
+при входе подключаемся (создаем если нет) к стриму (пул = юзер)

@@ -1,0 +1,25 @@
+@if (eventData$ | async; as eventData) {
+  <li>
+    <div>
+      <div class="name">
+        {{ event.event_name }}
+      </div>
+      <div *ngIf="eventData.state === 'isRunning'" class="timer">
+        <pre>{{ eventData.formattedTime }}</pre>
+      </div>
+    </div>
+    <div class="action">
+      <i *ngIf="eventData.state === 'isRunning'" title="pause" class="mu mu-pause" (click)="pauseEvent()"></i>
+      <i *ngIf="eventData.state !== 'isRunning'" title="play" class="mu mu-play" (click)="playEvent()"></i>
+      <div gui type="dropdown"
+        [inputs]="{
+          buttonIcon: 'mu mu-opts-v',
+          items: menuItems
+        }"
+        [outputs]="{
+          itemSelected: deleteEvent.bind(this, event.id)
+        }"
+      ></div>
+    </div>
+  </li>  
+}

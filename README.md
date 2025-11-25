@@ -5,7 +5,17 @@ how works:
 - has db of timer events
 - on start subscribes to pool from tik@back
 - to stop - apdate pool config
-- pool name = app@ + feature + id
+- pool ID = app@ + feature + id
+
+получение состояния.
+лист-компонент:
+на старте идет запрос в свою дб event-state/list-by-user
+который забирает конфиги событий пользователя.
+Если есть события, таймер которых тикает,
+0=inactive, 1=active, 2=paused -> т е "1"
+то подписываемся на эти события.
+В doro@ у пользователя в один момент активно одно событие.
+плюс шаредные события. v2.1 при появлении более обного активного события у одного пользователя - нужно их смержить в единую подписку.
 
 todo:
 - remove build logic

@@ -115,14 +115,14 @@ export class DoroModule implements DoBootstrap {
   ) {
     console.log('DoroModule');
     this.eventBusListener$.subscribe((res: BusEvent) => {
-      console.log('DORO BUS LISTENER');
-      console.log(res);
+      // console.log('DORO BUS LISTENER');
+      // console.log(res);
       
     });
     // this._sendAuthDoneEvent()
   }
   ngDoBootstrap(appRef: ApplicationRef) {
-    console.log('DoroModule ngDoBootstrap');
+    // console.log('DoroModule ngDoBootstrap');
     const customElement = createCustomElement(MyCustomElementComponent, {
       injector: this.injector,
     });
