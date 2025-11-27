@@ -1,28 +1,25 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, distinctUntilChanged, filter, map, Observable, of, throwError, catchError, switchMap, tap, Subject } from 'rxjs';
 import { DoroEvent, EventState, EventStateReq, EventStateRes, EventWithState } from './event.model';
 import { dd } from '../../helpers/dd';
+import { devPoolId } from '../../constants';
+import { BusEvent, EVENT_BUS_LISTENER, EVENT_BUS_PUSHER } from 'typlib';
+import { filterSseDataEvents } from '../../helpers/filterSseDataEvents';
 // import { validateShareKeyword } from './edit-keyword/edit-keyword.validation';
 
 
 export interface EventData {
-  formattedTime: string,
-  minutes: number,
-  raw: {
-    config: string,
-    globalTime: number
-    poolId: string,
-    value: number, 
-  },
-  seconds: number,
-  totalSeconds: number,
+  data: any
   state: string
+  initialEvent: EventWithState
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable(
+  // {
+  //   providedIn: 'root'
+  // }
+)
 export class EventService {
   private doroBaseUrl = `${process.env['DORO_BACK_URL']}`;
   private tikBaseUrl = `${process.env['TIK_BACK_URL']}`;
@@ -30,7 +27,13 @@ export class EventService {
   private eventStreams$ = new BehaviorSubject<Map<string, EventData>>(new Map());
   
   // public eventList$ = new BehaviorSubject<EventWithState[]>([]);
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    @Inject(EVENT_BUS_LISTENER)
+    private readonly eventBusListener$: Observable<BusEvent>,
+  ) {
+    this.eventBusListener$.subscribe(res => dd(res))
+  }
 
   // Get all entries for current user from events db
   // get current connections
@@ -38,7 +41,7 @@ export class EventService {
     return this.http.post<DoroEvent[]>(`${this.doroBaseUrl}/event-state/list`, null);
   }
 
-  getUserEventsWithState(): Observable<EventWithState[]> {
+  getUserEventsWithStateApi(): Observable<EventWithState[]> {
     return this.http.post<EventWithState[]>(`${this.doroBaseUrl}/event-state/list-by-user`, null);
   }
 
@@ -56,8 +59,8 @@ export class EventService {
   public playEvent(eventId: number, isGuiEvent: boolean = false): void {
     dd('eventService.playEvent');
   
-    const poolId = `doro@web_events_${eventId}`;
-    const connId = 'doro';
+    const tikEventId = `event__${eventId}`;
+    const tikProjectId = 'doro';
   
     const doroBackUpdate$ = isGuiEvent 
       ? this.setEventStateApi({ "eventId": eventId, "connectionId": "", "state": 1 })
@@ -66,7 +69,7 @@ export class EventService {
     doroBackUpdate$.pipe(
       // @ts-ignore
       tap((res: any) => {
-        this._connectToTikPool(poolId, connId)
+        this._connectToTikPool(tikProjectId, tikEventId)
       }),
       catchError(error => {
         console.error('Failed to play event:', error);
@@ -105,13 +108,23 @@ export class EventService {
     );
   }
   
-  public listenEventState(eventId: number): Observable<EventData> {
-    const poolId = `doro@web_events_${eventId}`;
-    return this.eventStreams$.asObservable().pipe(
-      map(data => data.get(poolId)!), // catch and mock
-      distinctUntilChanged(),
-      filter(value => value !== undefined)
-    );
+  public listenEventState(eventId: number): Observable<EventData | any> {
+    return this.eventBusListener$.pipe(
+      filter(filterSseDataEvents),
+      tap(res => dd(res))
+    )
+    // const poolId = devPoolId;
+
+    // return this.eventStreams$.asObservable().pipe(
+    //   map(data => data.get(poolId)!), // catch and mock
+    //   distinctUntilChanged(),
+    //   filter(value => value !== undefined)
+    // );
+
+    // return of({
+    //   data: 'any',
+    //   state: 'string',
+    // })
   }
 
   // для идентификации пользователя в tik@ используется fingerprint,
@@ -128,17 +141,17 @@ export class EventService {
         const secs = data.value % 60;
         const formattedTime = `${mins}:${secs.toString().padStart(2, '0')}`;
       
-        const eventValue: EventData = {
-          raw: data,
-          formattedTime: formattedTime,
-          minutes: mins,
-          seconds: secs,
-          totalSeconds: data.value,
-          state: 'isRunning' // replace to tik back?
-        }
+        // const eventValue: EventData = {
+        //   raw: data,
+        //   formattedTime: formattedTime,
+        //   minutes: mins,
+        //   seconds: secs,
+        //   totalSeconds: data.value,
+        //   state: 'isRunning' // replace to tik back?
+        // }
 
         const streams = this.eventStreams$.getValue()
-        streams.set(poolId, eventValue)
+        // streams.set(poolId, eventValue)
         this.eventStreams$.next(streams)
 
         if (data.type && data.type === 'init') {

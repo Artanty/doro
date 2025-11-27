@@ -30,6 +30,7 @@ import { BusEvent, EVENT_BUS, EVENT_BUS_LISTENER, EVENT_BUS_PUSHER } from 'typli
 import { BehaviorSubject, filter, Observable } from 'rxjs';
 import { dd } from './helpers/dd';
 import { EventListComponent } from './components/event/event-list/event-list.component';
+import { EventService } from './components/event/event.service';
 
 // function initConfigActivator(counterServ: CounterService) {
 //   return () => counterServ.scheduleConfigActivator();
@@ -102,6 +103,7 @@ export const CHILD_ROUTES = [
       },
       deps: [EVENT_BUS],
     },
+    EventService
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
@@ -117,7 +119,6 @@ export class DoroModule implements DoBootstrap {
     this.eventBusListener$.subscribe((res: BusEvent) => {
       // console.log('DORO BUS LISTENER');
       // console.log(res);
-      
     });
     // this._sendAuthDoneEvent()
   }
@@ -130,7 +131,7 @@ export class DoroModule implements DoBootstrap {
     appRef.bootstrap(CounterComponent);
   }
 
-  private _sendAuthDoneEvent(): void {
+  private _sendAuthDoneEvent(): void { 
     const doneBusEvent: BusEvent = {
       from: `${process.env['PROJECT_ID']}@${process.env['NAMESPACE']}`,
       to: `${process.env['PROJECT_ID']}@${process.env['NAMESPACE']}`,
@@ -138,7 +139,6 @@ export class DoroModule implements DoBootstrap {
       payload: {},
       status: `ACCESS_GRANTED`,
     }
-    dd(9)
     this.eventBusPusher(doneBusEvent)
   }
 }

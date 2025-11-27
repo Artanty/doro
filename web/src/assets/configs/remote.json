@@ -12,6 +12,19 @@
                 }
             },
             "lives": 1
+        },
+        {
+            "on": {
+                "event": "ASK_SSE_PAYLOAD"
+            },
+            "push": {
+                "type": "ANSWER",
+                "payload": {
+                    "project_id": "doro",
+                    "back_url": "http://localhost:3201"
+                }
+            },
+            "lives": 1
         }
     ],
     "interceptors": [
@@ -41,4 +54,3 @@
     ],
     "todo": "добавить сборку этой секции при serve/build"
 }
-

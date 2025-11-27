@@ -5,7 +5,7 @@
         {{ event.event_name }}
       </div>
       <div *ngIf="eventData.state === 'isRunning'" class="timer">
-        <pre>{{ eventData.formattedTime }}</pre>
+        <pre>{{ eventData.data.formattedTime }}</pre>
       </div>
     </div>
     <div class="action">

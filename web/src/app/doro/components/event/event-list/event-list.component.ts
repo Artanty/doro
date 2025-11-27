@@ -92,7 +92,7 @@ export class EventListComponent implements OnInit {
   // }
 
   private _loadEvents(): void {
-    this.eventService.getUserEventsWithState().subscribe({
+    this.eventService.getUserEventsWithStateApi().subscribe({
       next: (events) => {
         this.events$.next(events)
         this.cdr.detectChanges()

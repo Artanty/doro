@@ -35,21 +35,36 @@ export class EventListEventComponent implements OnInit, OnDestroy, OnChanges {
   ) {}
   
   ngOnInit() {
-    const connId = 'doro';
-    const connectionState$ = this.eventService.listenConnectionState(connId).pipe(
-      takeUntil(this.destroy$),
-      distinctUntilChanged()
-    );
+
+    // const connId = 'doro';
+    // const connectionState$ = this.eventService.listenConnectionState(connId).pipe(
+    //   takeUntil(this.destroy$),
+    //   distinctUntilChanged()
+    // );
     this.eventData$ = this.eventService.listenEventState(this.event.eventId)
       .pipe(
-        withLatestFrom(connectionState$),
+        tap((res: any) => {
+          dd(res)
+        }),
+        // withLatestFrom(connectionState$),
         takeUntil(this.destroy$),
         tap((res: any) => {
           this.cdr.detectChanges()
         }),
-        map((res: [EventData, string]) => {
-          console.log(res)
-          return res[0]
+        // map((res: [EventData, string]) => {
+        //   console.log(res)
+        //   return res[0]
+        // })
+        map((res: any) => {
+          const result: EventData = {
+            data: {
+              formattedTime: '12:34'
+            },
+            state: 'isRunning',
+            initialEvent: this.event
+          }
+          console.log(result)
+          return result;
         })
       );
 
@@ -57,7 +72,7 @@ export class EventListEventComponent implements OnInit, OnDestroy, OnChanges {
     // this.listenConnectionState()
     // this.listenEventState()
     // dd('ngOnInit triggered in ChildComponent');
-    // dd(this.event.state)
+    dd(this.event)
     // this.eventState = this.event.state;
     
     if (this.event.state === 1) {

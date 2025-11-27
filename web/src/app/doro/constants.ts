@@ -1,0 +1,1 @@
+export const devPoolId = 'current_user_id'

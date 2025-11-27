@@ -21,3 +21,5 @@ icons:
 https://www.svgrepo.com/collection/remix-line-interface-icons/16
 https://www.svgrepo.com/svg/347261/pause-circle
 https://www.svgrepo.com/svg/347287/play-circle
+
+
