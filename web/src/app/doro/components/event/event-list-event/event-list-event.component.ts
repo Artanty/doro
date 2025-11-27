@@ -83,7 +83,6 @@ export class EventListEventComponent implements OnInit, OnDestroy, OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     // dd('ngOnChanges triggered in ChildComponent');
     // if (changes['message']) {
-
     // }
 
     // dd(changes)

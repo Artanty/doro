@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import {
   APP_INITIALIZER,
   ApplicationRef,
@@ -74,11 +74,14 @@ export const CHILD_ROUTES = [
     FormsModule,
     AudioComponent,
     RouterModule.forChild(CHILD_ROUTES),
-    HttpClientModule,
+    // HttpClientModule,
   ],
   // exports: [DoroComponent, MyCustomElementComponent, LoadingComponent],
   exports: [DoroComponent],
   providers: [
+    // provideHttpClient(
+    //   withInterceptorsFromDi() // Enable DI-based interceptors
+    // ),
     // {
     //   provide: APP_INITIALIZER,
     //   useFactory: initConfigActivator,

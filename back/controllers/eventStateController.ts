@@ -2,8 +2,8 @@ import createPool from '../core/db_connection';
 
 export class EventStateController {
     /**
-     * Create or update event state (one-to-one relationship)
-     */
+ * Create or update event state and add history entry
+ */
     static async createOrUpdateEventState(eventId: any, state: any, userHandler: any) {
         const pool = createPool();
         const connection = await pool.getConnection();
@@ -13,38 +13,197 @@ export class EventStateController {
             // Check if event exists and user has access
             const [eventAccess] = await connection.execute(
                 `SELECT e.id FROM events e 
-                 INNER JOIN eventToUser etu ON e.id = etu.event_id 
-                 WHERE e.id = ? AND etu.user_handler = ?`,
+             INNER JOIN eventToUser etu ON e.id = etu.event_id 
+             WHERE e.id = ? AND etu.user_handler = ?`,
                 [eventId, userHandler]
             );
 
             if (eventAccess.length === 0) {
                 throw new Error('Event not found or access denied');
             }
-            
-            const [result] = await connection.execute(
-                `INSERT INTO eventState (eventId, state) 
+
+            // Get current state before update for history comparison
+            const [currentState] = await connection.execute(
+                `SELECT state FROM eventState WHERE eventId = ?`,
+                [eventId]
+            );
+
+            const previousState = currentState.length > 0 ? currentState[0].state : null;
+        
+            // Only proceed if state is actually changing
+            if (previousState !== state) {
+                // Update or insert current state
+                const [result] = await connection.execute(
+                    `INSERT INTO eventState (eventId, state) 
                  VALUES (?, ?) 
                  ON DUPLICATE KEY UPDATE 
-                     state = ?, 
+                     state = VALUES(state), 
                      updated_at = CURRENT_TIMESTAMP`,
-                [eventId, state, state])
+                    [eventId, state]
+                );
 
-            await connection.commit();
+                // Add entry to history table
+                await connection.execute(
+                    `INSERT INTO eventStateHistory (eventId, state) 
+                 VALUES (?, ?)`,
+                    [eventId, state]
+                );
+
+                await connection.commit();
             
-            return {
-                eventId,
-                state,
-                userHandler,
-                created: result.affectedRows === 1,
-                updated: result.affectedRows === 2
-            };
+                return {
+                    eventId,
+                    state,
+                    userHandler,
+                    created: result.affectedRows === 1,
+                    updated: result.affectedRows === 2,
+                    stateChanged: true
+                };
+            } else {
+                await connection.commit();
+                return {
+                    eventId,
+                    state,
+                    userHandler,
+                    created: false,
+                    updated: false,
+                    stateChanged: false
+                };
+            }
         } catch (error) {
             await connection.rollback();
             throw error;
         } finally {
             connection.release();
         }
+    }
+
+    /**
+ * Get events with current status and elapsed seconds
+ */
+    static async getEventsWithStatus(userHandler: any) {
+        const pool = createPool();
+        const connection = await pool.getConnection();
+        try {
+            const [events] = await connection.execute(
+                `SELECT 
+                e.id,
+                e.name,
+                e.length,
+                et.name as event_type,
+                es.state as current_state,
+                es.updated_at as last_state_change,
+                etu.access_level
+             FROM events e
+             INNER JOIN eventToUser etu ON e.id = etu.event_id
+             INNER JOIN eventTypes et ON e.type = et.id
+             LEFT JOIN eventState es ON e.id = es.eventId
+             WHERE etu.user_handler = ?
+             ORDER BY e.created_at DESC`,
+                [userHandler]
+            );
+
+            // Process each event to determine status and current seconds
+            const eventsWithStatus = await Promise.all(
+                events.map(async (event) => {
+                    const eventStatus = await this._calculateEventStatus(connection, event);
+                    return { ...event, ...eventStatus };
+                })
+            );
+
+            return eventsWithStatus;
+        } catch (error) {
+            throw error;
+        } finally {
+            connection.release();
+        }
+    }
+
+    /**
+     * Calculate event status and current seconds based on state and history
+     */
+    static async _calculateEventStatus(connection, event) {
+        const eventId = event.id;
+        const eventLengthSeconds = event.length * 60; // Convert minutes to seconds
+        const currentState = event.current_state;
+
+        // If event is stopped/inactive
+        if (currentState === 0 || currentState === null) {
+            return {
+                status: 'stopped',
+                currentSeconds: 0,
+                progressPercentage: 0
+            };
+        }
+
+        // Get all state history for this event
+        const [history] = await connection.execute(
+            `SELECT state, created_at 
+         FROM eventStateHistory 
+         WHERE eventId = ? 
+         ORDER BY created_at ASC`,
+            [eventId]
+        );
+
+        if (history.length === 0) {
+            return {
+                status: 'stopped',
+                currentSeconds: 0,
+                progressPercentage: 0
+            };
+        }
+
+        let totalActiveSeconds = 0;
+        let activeStartTime: Date | null = null;
+
+        // Calculate total active time from history
+        for (const record of history) {
+            if (record.state === 1 && activeStartTime === null) {
+                // Start of active period
+                activeStartTime = new Date(record.created_at);
+            } else if ((record.state === 0 || record.state === 2) && activeStartTime !== null) {
+                // End of active period - calculate duration
+                const activeEndTime = new Date(record.created_at);
+                // @ts-ignore
+                const diff = activeEndTime - activeStartTime
+                const durationSeconds = Math.floor(diff / 1000);
+                totalActiveSeconds += durationSeconds;
+                activeStartTime = null;
+            }
+        }
+
+        // If currently active and we have an open active period
+        if (currentState === 1 && activeStartTime !== null) {
+            const currentTime = new Date();
+            // @ts-ignore
+            const diff = currentTime - activeStartTime
+            const currentActiveSeconds = Math.floor(diff / 1000);
+            totalActiveSeconds += currentActiveSeconds;
+        }
+
+        // Cap at event length
+        const currentSeconds = Math.min(totalActiveSeconds, eventLengthSeconds);
+        const progressPercentage = (currentSeconds / eventLengthSeconds) * 100;
+
+        if (currentState === 1) {
+            return {
+                status: currentSeconds >= eventLengthSeconds ? 'completed' : 'playing',
+                currentSeconds: currentSeconds,
+                progressPercentage: progressPercentage
+            };
+        } else if (currentState === 2) {
+            return {
+                status: 'paused',
+                currentSeconds: currentSeconds,
+                progressPercentage: progressPercentage
+            };
+        }
+
+        return {
+            status: 'stopped',
+            currentSeconds: 0,
+            progressPercentage: 0
+        };
     }
 
     /**

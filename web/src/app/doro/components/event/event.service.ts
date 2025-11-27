@@ -111,7 +111,7 @@ export class EventService {
   public listenEventState(eventId: number): Observable<EventData | any> {
     return this.eventBusListener$.pipe(
       filter(filterSseDataEvents),
-      tap(res => dd(res))
+      // tap(res => dd(res))
     )
     // const poolId = devPoolId;
 
