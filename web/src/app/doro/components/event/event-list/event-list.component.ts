@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 // import { hexColor } from '../../../utilites/hex-color';
 import { CommonModule } from '@angular/common';
-import { DoroEvent, EventWithState } from '../event.model';
+import { EventProps, EventWithState } from '../event.model';
 import { EventService } from '../event.service';
 import { Router } from '@angular/router';
 import { GuiDirective } from '../../_remote/web-component-wrapper/gui.directive';
@@ -17,7 +17,7 @@ import { dd } from 'src/app/doro/helpers/dd';
   styleUrl: './event-list.component.scss'
 })
 export class EventListComponent implements OnInit {
-  public events$ = new BehaviorSubject<EventWithState[]>([]);
+  public events$ = new BehaviorSubject<EventProps[]>([]);
  
   constructor(
     private eventService: EventService,
@@ -96,6 +96,7 @@ export class EventListComponent implements OnInit {
       next: (events) => {
         this.events$.next(events)
         this.cdr.detectChanges()
+        dd(events)
       },
       error: (err) => console.error('Error loading events:', err)
     });

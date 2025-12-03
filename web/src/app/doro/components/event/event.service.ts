@@ -1,11 +1,12 @@
 import { Inject, Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, distinctUntilChanged, filter, map, Observable, of, throwError, catchError, switchMap, tap, Subject } from 'rxjs';
-import { DoroEvent, EventState, EventStateReq, EventStateRes, EventWithState } from './event.model';
+import { EventProps, EventState, EventStateReq, EventStateRes, EventWithState } from './event.model';
 import { dd } from '../../helpers/dd';
 import { devPoolId } from '../../constants';
 import { BusEvent, EVENT_BUS_LISTENER, EVENT_BUS_PUSHER } from 'typlib';
-import { filterSseDataEvents } from '../../helpers/filterSseDataEvents';
+
+import { filterStreamDataEvents } from '../../helpers/filterStreamDataEvents';
 // import { validateShareKeyword } from './edit-keyword/edit-keyword.validation';
 
 
@@ -37,12 +38,12 @@ export class EventService {
 
   // Get all entries for current user from events db
   // get current connections
-  getAllEvents(): Observable<DoroEvent[]> {
-    return this.http.post<DoroEvent[]>(`${this.doroBaseUrl}/event-state/list`, null);
+  getAllEvents(): Observable<EventProps[]> {
+    return this.http.post<EventProps[]>(`${this.doroBaseUrl}/event-state/list`, null);
   }
 
-  getUserEventsWithStateApi(): Observable<EventWithState[]> {
-    return this.http.post<EventWithState[]>(`${this.doroBaseUrl}/event-state/list-by-user`, null);
+  getUserEventsWithStateApi(): Observable<EventProps[]> {
+    return this.http.post<EventProps[]>(`${this.doroBaseUrl}/event-state/list-by-user`, null);
   }
 
   setEventStateApi(data: EventStateReq): Observable<EventState> {
@@ -69,7 +70,7 @@ export class EventService {
     doroBackUpdate$.pipe(
       // @ts-ignore
       tap((res: any) => {
-        this._connectToTikPool(tikProjectId, tikEventId)
+        // this._connectToTikPool(tikProjectId, tikEventId)
       }),
       catchError(error => {
         console.error('Failed to play event:', error);
@@ -110,8 +111,9 @@ export class EventService {
   
   public listenEventState(eventId: number): Observable<EventData | any> {
     return this.eventBusListener$.pipe(
-      filter(filterSseDataEvents),
-      // tap(res => dd(res))
+      tap(res => dd(res),
+        filter(filterStreamDataEvents),
+      )
     )
     // const poolId = devPoolId;
 
@@ -127,52 +129,7 @@ export class EventService {
     // })
   }
 
-  // для идентификации пользователя в tik@ используется fingerprint,
-  // потому что один пользователь может сидеть с разных устройств одновременно.
-  // poolId - doro@web_events_1 (по сути eventId)
-  private _connectToTikPool(poolId: string, connId: any): void {
- 
-    const eventSource = new EventSource(`${this.tikBaseUrl}/sse/${poolId}`);
-  
-    eventSource.onmessage = (e) => {
-      try {
-        const data = JSON.parse(e.data);
-        const mins = Math.floor(data.value / 60);
-        const secs = data.value % 60;
-        const formattedTime = `${mins}:${secs.toString().padStart(2, '0')}`;
-      
-        // const eventValue: EventData = {
-        //   raw: data,
-        //   formattedTime: formattedTime,
-        //   minutes: mins,
-        //   seconds: secs,
-        //   totalSeconds: data.value,
-        //   state: 'isRunning' // replace to tik back?
-        // }
-
-        const streams = this.eventStreams$.getValue()
-        // streams.set(poolId, eventValue)
-        this.eventStreams$.next(streams)
-
-        if (data.type && data.type === 'init') {
-          this.setConnectionState(connId, data.type);
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-  
-    eventSource.onerror = (error) => {
-      console.error(error);
-
-      const streams = this.eventStreams$.getValue()
-      streams.delete(poolId);
-      this.eventStreams$.next(streams)
-
-      
-      eventSource.close();
-    };
-  
+  private _connectToTikPool() {
     
   }
 

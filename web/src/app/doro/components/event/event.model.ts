@@ -1,13 +1,23 @@
-export interface DoroEvent {
+export interface EventViewState<T = null> {
+	viewState: string,
+	eventState: string
+	data?: T,
+	error?: any
+}
+
+export interface EventProps {
 	"id": number
-	"name": string
+	"eventId": number
+	"state": number
+	"created_at": string
+	"updated_at": string
+	"event_name": string
 	"length": number
 	"type": number
-	"created_at": string
-	"type_name": string
+	"event_type_name": string
 	"access_level": string
 }
-export interface EventWithState {
+export interface EventWithState { // todo rename
 	"id": number
 	"eventId": number
 	"connectionId": string

@@ -26,7 +26,7 @@
   <ul>
     <app-event-list-event
       *ngFor="let event of events$ | async;"
-      [event]="event"
+      [eventProps]="event"
       (actionAway)="handleEventAction($event)"
       (deleteEvent)="deleteEvent($event)">
     </app-event-list-event>

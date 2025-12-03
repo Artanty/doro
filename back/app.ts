@@ -8,6 +8,8 @@ import cors from 'cors'
 import checkDBConnection from './core/db_check_connection'
 import { validateUserAccessToken } from './middlewares/validateUserAccessToken'
 import eventStateRoutes from './routes/eventStateRoutes'
+import shareEventStateRoute from './routes/service/shareEventState.route'
+import { validateApiKey } from './middlewares/validateApiKey'
 
 dotenv.config();
 
@@ -23,6 +25,7 @@ app.use('/eventType', eventTypeRoutes);
 app.use('/event', validateUserAccessToken, eventRoutes);
 app.use('/event-state', validateUserAccessToken, eventStateRoutes);
 app.use('/save-temp', saveTempRoutes);
+app.use('/service', [validateApiKey, validateUserAccessToken], shareEventStateRoute);
 
 app.get('/get-updates', async (req, res) => {
   res.json({

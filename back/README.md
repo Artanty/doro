@@ -9,7 +9,7 @@ CREATE TABLE eventTypes (
 CREATE TABLE events (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL,
-    length INT NOT NULL COMMENT 'Duration in minutes',
+    length INT NOT NULL COMMENT 'Duration in seconds,
     type INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (type) REFERENCES eventTypes(id) ON DELETE RESTRICT

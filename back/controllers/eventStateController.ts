@@ -124,7 +124,8 @@ export class EventStateController {
      */
     static async _calculateEventStatus(connection, event) {
         const eventId = event.id;
-        const eventLengthSeconds = event.length * 60; // Convert minutes to seconds
+        // const eventLengthSeconds = event.length * 60; // Convert minutes to seconds
+        const eventLengthSeconds = event.length;
         const currentState = event.current_state;
 
         // If event is stopped/inactive
