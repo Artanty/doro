@@ -46,7 +46,7 @@ export class EventListEventComponent implements OnInit, OnDestroy, OnChanges {
     }
     this.eventState$ = this.eventService.listenEventState(this.eventProps.eventId)
       .pipe(
-        startWith(initalState),
+        
         tap((res: any) => {
           dd(res);
           this.cdr.detectChanges()
@@ -82,6 +82,7 @@ export class EventListEventComponent implements OnInit, OnDestroy, OnChanges {
           // console.log(result)
           // return result;
         }),
+        startWith(initalState),
         tap((res: any) => {
           this.cdr.detectChanges()
         }),

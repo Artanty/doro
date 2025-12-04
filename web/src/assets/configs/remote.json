@@ -43,7 +43,7 @@
                 },
                 {
                     "target": "headers",
-                    "key": "X-Requester-URL",
+                    "key": "X-Web-Host-URL",
                     "valueHandler": {
                         "source": "window",
                         "prop": "location.origin"

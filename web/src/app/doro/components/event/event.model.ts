@@ -1,6 +1,6 @@
 export interface EventViewState<T = null> {
 	viewState: string,
-	eventState: string
+	eventState?: string
 	data?: T,
 	error?: any
 }

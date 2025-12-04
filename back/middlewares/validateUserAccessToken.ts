@@ -8,6 +8,7 @@ import { sanitizePath } from '../utils/sanitizePath';
 import { createShortHash } from '../utils/createHash';
 const STORAGE_ROOT = path.join(__dirname, '..', 'storage');
 
+//* back: validateUserAccessToken v2. rename x-requester-url -> x-web-host-url;
 export async function validateUserAccessToken(req: Request, res: Response, next: NextFunction) {
   dd('validateUserAccessToken START');
   
@@ -19,13 +20,13 @@ export async function validateUserAccessToken(req: Request, res: Response, next:
 
   const accessToken = authHeader.split(' ')[1];
   
-  const hostOrigin = String(req.headers['x-requester-url']);
+  const hostOrigin = String(req.headers['x-web-host-url']);
   dd('hostOrigin: ' + hostOrigin)
   if (!accessToken || !hostOrigin) {
     dd('Missing required parameters');
     return res.status(400).json({ 
       error: 'Missing parameters',
-      requires: ['authorization: Bearer <token>', 'x-requester-url']
+      requires: ['authorization: Bearer <token>', 'x-web-host-url']
     });
   }
 

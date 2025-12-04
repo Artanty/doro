@@ -1,4 +1,31 @@
 import createPool from '../core/db_connection';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+export interface EventStatus {
+    status: string
+    currentSeconds: number
+    progressPercentage: number
+}
+
+export interface EventProps {
+    "id": number
+    "name": string
+    "length": number
+    "event_type": string
+    "current_state": number // wtf? dbl EventStatus.status
+    "last_state_change": string
+    "access_level": string
+}
+
+export interface EventStateResItem {
+    id: string,
+    cur: number,
+    len: number,
+    prc: number,
+    stt: string
+}
 
 export class EventStateController {
     /**
@@ -105,9 +132,19 @@ export class EventStateController {
 
             // Process each event to determine status and current seconds
             const eventsWithStatus = await Promise.all(
-                events.map(async (event) => {
-                    const eventStatus = await this._calculateEventStatus(connection, event);
-                    return { ...event, ...eventStatus };
+                events.map(async (eventProps: EventProps) => {
+                    const eventStatus = await this._calculateEventStatus(connection, eventProps);
+                    const res: EventStateResItem = {
+                        // id: `${process.env.PROJECT}__e_${eventProps.id}`,
+                        id: `e_${eventProps.id}`,
+                        cur: eventStatus.currentSeconds,
+                        len: eventProps.length,
+                        prc: eventStatus.progressPercentage,
+                        stt: eventStatus.status
+                    }
+
+                    // return { ...eventProps, ...eventStatus };
+                    return res;
                 })
             );
 
@@ -122,7 +159,7 @@ export class EventStateController {
     /**
      * Calculate event status and current seconds based on state and history
      */
-    static async _calculateEventStatus(connection, event) {
+    static async _calculateEventStatus(connection, event): Promise<EventStatus> {
         const eventId = event.id;
         // const eventLengthSeconds = event.length * 60; // Convert minutes to seconds
         const eventLengthSeconds = event.length;
