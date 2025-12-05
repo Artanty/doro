@@ -3,12 +3,19 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, distinctUntilChanged, filter, map, Observable, of, throwError, catchError, switchMap, tap, Subject } from 'rxjs';
 import { EventProps, EventState, EventStateReq, EventStateRes, EventWithState } from './event.model';
 import { dd } from '../../helpers/dd';
-import { devPoolId } from '../../constants';
+import { basicEventTypePrefix, devPoolId, EventProgressType } from '../../constants';
 import { BusEvent, EVENT_BUS_LISTENER, EVENT_BUS_PUSHER } from 'typlib';
 
 import { filterStreamDataEvents } from '../../helpers/filterStreamDataEvents';
 // import { validateShareKeyword } from './edit-keyword/edit-keyword.validation';
 
+export interface EventStateResItem {
+  id: string,
+  cur: number,
+  len: number,
+  prc: number,
+  stt: EventProgressType
+}
 
 export interface EventData {
   data: any
@@ -109,9 +116,18 @@ export class EventService {
     );
   }
   
-  public listenEventState(eventId: number): Observable<EventData | any> {
+  public listenEventState(eventId: number): Observable<EventStateResItem> {
     return this.eventBusListener$.pipe(
-      filter(filterStreamDataEvents)
+      filter(filterStreamDataEvents),
+      map((busEvent: BusEvent<EventStateResItem[]>): EventStateResItem => {
+        const receivedEventId = `${basicEventTypePrefix}_${eventId}`
+        const foundEvent = busEvent.payload.find(event => event.id === receivedEventId)
+        if (!foundEvent) {
+          throw new Error(`Event ${receivedEventId} not found.`)
+        }
+        return foundEvent;
+      }),
+      filter(Boolean)
     )
     
     // const poolId = devPoolId;

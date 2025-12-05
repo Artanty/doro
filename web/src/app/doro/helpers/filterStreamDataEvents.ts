@@ -1,5 +1,6 @@
 import { BusEvent } from "typlib"
+import { dd } from "./dd";
 
 export const filterStreamDataEvents = (busEvent: BusEvent) => {
-	return busEvent.event === 'STREAM_DATA'
+	return busEvent.event === 'SSE_DATA'
 };

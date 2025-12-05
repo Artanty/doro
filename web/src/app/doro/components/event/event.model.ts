@@ -1,6 +1,8 @@
+import { EventStatesType } from "../../constants"
+
 export interface EventViewState<T = null> {
 	viewState: string,
-	eventState?: string
+	eventState?: EventStatesType
 	data?: T,
 	error?: any
 }

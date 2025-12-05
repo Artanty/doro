@@ -3,42 +3,47 @@
   <li>
     <div>
       <div class="name">
-        {{ eventProps.event_name }} {{ eventState.eventState }} 
+        {{ eventProps.event_name }} | {{ eventState.eventState }} 
       </div>
       <ng-container *ngIf="eventState.viewState === 'READY_VIEW_STATE'">
-        <div *ngIf="eventState.eventState === 'inactive'" class="timer">
-          <pre>inactive</pre>
+        <div *ngIf="eventState.eventState === EventStates.COMPLETED" class="timer">
+          <i title="play" class="mu mu-play" (click)="playEvent()"></i>   
         </div>
-        <div *ngIf="eventState.eventState === 'isRunning'" class="timer">
+        <div *ngIf="eventState.eventState === EventStates.PLAYING" class="timer">
           <pre>{{ eventState.data }}</pre>
         </div>
-        <div *ngIf="eventState.eventState === 'isPaused'" class="timer">
+        <div *ngIf="eventState.eventState === EventStates.PAUSED" class="timer">
           <pre>isPaused</pre>
         </div>
-        <div *ngIf="eventState.eventState === 'ERROR_VIEW_STATE'" class="timer">
-          <pre>ERROR</pre>
+        <div *ngIf="eventState.eventState === EventStates.STOPPED" class="timer">
+          <pre>isStopped</pre>
         </div>
-        <div *ngIf="eventState.eventState === 'PENDING'" class="timer">
+        
+        <div *ngIf="eventState.eventState === EventStates.PENDING" class="timer">
           <pre>PENDING</pre>
         </div>
       </ng-container>
 
       <ng-container *ngIf="eventState.viewState === 'LOADING_VIEW_STATE'">
-        <div *ngIf="eventState.eventState === 'PENDING'" class="timer">
+        <div *ngIf="eventState.eventState === EventStates.PENDING" class="timer">
           <pre>PENDING</pre>
         </div>
       </ng-container>
     </div>
     <div class="action">
 
-      <div *ngIf="(eventState.viewState === 'READY_VIEW_STATE') && (eventState.eventState !== 'ERROR_VIEW_STATE') && (eventState.eventState !== 'PENDING')">
+     <!--  <div *ngIf="(eventState.viewState === 'READY_VIEW_STATE') && (eventState.eventState !== 'ERROR_VIEW_STATE') && (eventState.eventState !== 'PENDING')">
           <ng-container *ngIf="eventState.eventState === 'isRunning'" >
             <i title="pause" class="mu mu-pause" (click)="pauseEvent()"></i>    
           </ng-container>
           <ng-container *ngIf="(eventState.eventState === 'isPaused') || eventState.eventState === 'inactive'" >
             <i title="play" class="mu mu-play" (click)="playEvent()"></i>    
           </ng-container>
-      </div>
+      </div> -->
+
+      <div *ngIf="eventState.viewState === 'ERROR_VIEW_STATE'" class="timer">
+          <pre>ERROR</pre>
+        </div>
 
       <div gui type="dropdown"
         [inputs]="{

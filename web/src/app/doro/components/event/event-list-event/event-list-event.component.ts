@@ -1,11 +1,13 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { Observable, Subject, takeUntil, filter, startWith, distinctUntilChanged, map, tap, withLatestFrom, catchError, EMPTY } from 'rxjs';
 import { EventProps, EventState, EventViewState, EventWithState } from '../event.model';
-import { EventData, EventService } from '../event.service';
+import { EventData, EventService, EventStateResItem } from '../event.service';
 import { CommonModule } from '@angular/common';
 import { GuiDirective } from '../../_remote/web-component-wrapper/gui.directive';
 import { dd } from 'src/app/doro/helpers/dd';
+import { EventStates } from 'src/app/doro/constants';
 
+export type EventStateResItemStateless = Omit<EventStateResItem, 'stt'>
 @Component({
   selector: 'app-event-list-event',
   standalone: true,
@@ -26,7 +28,8 @@ export class EventListEventComponent implements OnInit, OnDestroy, OnChanges {
     { id: 'DELETE', name: 'Удалить' },
   ];
   connectionState$!: Observable<string>;
-  eventState$!: Observable<EventViewState<EventState>>;
+  eventState$!: Observable<EventViewState<EventStateResItem>>;
+  public EventStates = EventStates
   private destroy$ = new Subject<void>();
   
   constructor(
@@ -40,9 +43,9 @@ export class EventListEventComponent implements OnInit, OnDestroy, OnChanges {
    * EventWithState = { eventProps, eventState }
    * */
   ngOnInit() {
-    const initalState: EventViewState<EventState> = {
+    const initalState: EventViewState<EventStateResItemStateless> = {
       viewState: 'LOADING_VIEW_STATE',
-      eventState: 'PENDING'
+      eventState: -1 // pending
     }
     this.eventState$ = this.eventService.listenEventState(this.eventProps.eventId)
       .pipe(
@@ -59,16 +62,20 @@ export class EventListEventComponent implements OnInit, OnDestroy, OnChanges {
         //   return res[0]
         // })
         // 0=inactive, 1=active, 2=paused, etc.
-        map((res: EventState) => {
-          const eventState: any = {
-            '0': 'inactive',
-            '1': 'isRunning',
-            '2': 'isPaused'
-          }
-          const readyState: EventViewState<EventState> = {
+        map((res: EventStateResItem) => {
+          // export interface EventStateResItem {
+          //   id: string,
+          //   cur: number,
+          //   len: number,
+          //   prc: number,
+          //   stt: number
+          // }
+
+          const { stt, ...rest } = res;
+          const readyState: EventViewState<EventStateResItemStateless> = {
             viewState: 'READY_VIEW_STATE',
-            eventState: eventState[String(res.state)],
-            data: res
+            eventState: stt,
+            data: rest
           };
 
           return readyState;
@@ -91,7 +98,7 @@ export class EventListEventComponent implements OnInit, OnDestroy, OnChanges {
           
           const errorState: EventViewState<EventState> = {
             viewState: 'READY_VIEW_STATE',
-            eventState: 'ERROR_VIEW_STATE',
+            eventState: EventStates.ERROR,
             error: error.message
           };
 
@@ -122,7 +129,7 @@ export class EventListEventComponent implements OnInit, OnDestroy, OnChanges {
   
 
   playEvent(isGuiEvent = true): void {
-    // this.eventService.playEvent(this.event.eventId, isGuiEvent)
+    this.eventService.playEvent(this.eventProps.eventId, isGuiEvent)
   }
 
   pauseEvent() {

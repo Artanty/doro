@@ -1,10 +1,11 @@
+import { eventProgress } from '../core/constants';
 import createPool from '../core/db_connection';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
 export interface EventStatus {
-    status: string
+    status: number
     currentSeconds: number
     progressPercentage: number
 }
@@ -14,7 +15,6 @@ export interface EventProps {
     "name": string
     "length": number
     "event_type": string
-    "current_state": number // wtf? dbl EventStatus.status
     "last_state_change": string
     "access_level": string
 }
@@ -24,13 +24,13 @@ export interface EventStateResItem {
     cur: number,
     len: number,
     prc: number,
-    stt: string
+    stt: number
 }
 
 export class EventStateController {
     /**
- * Create or update event state and add history entry
- */
+     * Create or update event state and add history entry
+     */
     static async createOrUpdateEventState(eventId: any, state: any, userHandler: any) {
         const pool = createPool();
         const connection = await pool.getConnection();
@@ -106,8 +106,8 @@ export class EventStateController {
     }
 
     /**
- * Get events with current status and elapsed seconds
- */
+     * Get events with current status and elapsed seconds
+     */
     static async getEventsWithStatus(userHandler: any) {
         const pool = createPool();
         const connection = await pool.getConnection();
@@ -135,7 +135,6 @@ export class EventStateController {
                 events.map(async (eventProps: EventProps) => {
                     const eventStatus = await this._calculateEventStatus(connection, eventProps);
                     const res: EventStateResItem = {
-                        // id: `${process.env.PROJECT}__e_${eventProps.id}`,
                         id: `e_${eventProps.id}`,
                         cur: eventStatus.currentSeconds,
                         len: eventProps.length,
@@ -143,7 +142,6 @@ export class EventStateController {
                         stt: eventStatus.status
                     }
 
-                    // return { ...eventProps, ...eventStatus };
                     return res;
                 })
             );
@@ -161,14 +159,20 @@ export class EventStateController {
      */
     static async _calculateEventStatus(connection, event): Promise<EventStatus> {
         const eventId = event.id;
-        // const eventLengthSeconds = event.length * 60; // Convert minutes to seconds
         const eventLengthSeconds = event.length;
-        const currentState = event.current_state;
+        
+        // Get current state from eventState table (not from events table)
+        const [currentStateResult] = await connection.execute(
+            `SELECT state FROM eventState WHERE eventId = ?`,
+            [eventId]
+        );
+        
+        const currentState = currentStateResult.length > 0 ? currentStateResult[0].state : null;
 
         // If event is stopped/inactive
         if (currentState === 0 || currentState === null) {
             return {
-                status: 'stopped',
+                status: eventProgress.STOPPED,
                 currentSeconds: 0,
                 progressPercentage: 0
             };
@@ -185,7 +189,7 @@ export class EventStateController {
 
         if (history.length === 0) {
             return {
-                status: 'stopped',
+                status: eventProgress.STOPPED,
                 currentSeconds: 0,
                 progressPercentage: 0
             };
@@ -202,8 +206,7 @@ export class EventStateController {
             } else if ((record.state === 0 || record.state === 2) && activeStartTime !== null) {
                 // End of active period - calculate duration
                 const activeEndTime = new Date(record.created_at);
-                // @ts-ignore
-                const diff = activeEndTime - activeStartTime
+                const diff = activeEndTime.getTime() - activeStartTime.getTime();
                 const durationSeconds = Math.floor(diff / 1000);
                 totalActiveSeconds += durationSeconds;
                 activeStartTime = null;
@@ -213,8 +216,7 @@ export class EventStateController {
         // If currently active and we have an open active period
         if (currentState === 1 && activeStartTime !== null) {
             const currentTime = new Date();
-            // @ts-ignore
-            const diff = currentTime - activeStartTime
+            const diff = currentTime.getTime() - activeStartTime.getTime();
             const currentActiveSeconds = Math.floor(diff / 1000);
             totalActiveSeconds += currentActiveSeconds;
         }
@@ -225,20 +227,20 @@ export class EventStateController {
 
         if (currentState === 1) {
             return {
-                status: currentSeconds >= eventLengthSeconds ? 'completed' : 'playing',
+                status: currentSeconds >= eventLengthSeconds ? eventProgress.COMPLETED : eventProgress.PLAYING,
                 currentSeconds: currentSeconds,
                 progressPercentage: progressPercentage
             };
         } else if (currentState === 2) {
             return {
-                status: 'paused',
+                status: eventProgress.PAUSED,
                 currentSeconds: currentSeconds,
                 progressPercentage: progressPercentage
             };
         }
 
         return {
-            status: 'stopped',
+            status: eventProgress.STOPPED,
             currentSeconds: 0,
             progressPercentage: 0
         };
@@ -284,11 +286,10 @@ export class EventStateController {
         }
     }
 
-
     /**
-     * Get event state by eventId and connectionId
+     * Get event state by eventId
      */
-    static async getEventState(eventId: any, connectionId: any) {
+    static async getEventState(eventId: any) {
         const pool = createPool();
         const connection = await pool.getConnection();
         try {
@@ -296,8 +297,8 @@ export class EventStateController {
                 `SELECT es.*, e.name as event_name 
                  FROM eventState es 
                  INNER JOIN events e ON es.eventId = e.id 
-                 WHERE es.eventId = ? AND es.connectionId = ?`,
-                [eventId, connectionId]
+                 WHERE es.eventId = ?`,
+                [eventId]
             );
 
             if (rows.length === 0) {
@@ -312,34 +313,6 @@ export class EventStateController {
         }
     }
 
-    /**
-     * Get event state by connectionId (one-to-one lookup)
-     */
-    static async getEventStateByConnection(connectionId: any) {
-        const pool = createPool();
-        const connection = await pool.getConnection();
-        try {
-            const [rows] = await connection.execute(
-                `SELECT es.*, e.name as event_name, e.length, e.type 
-                 FROM eventState es 
-                 INNER JOIN events e ON es.eventId = e.id 
-                 WHERE es.connectionId = ?`,
-                [connectionId]
-            );
-
-            if (rows.length === 0) {
-                return null;
-            }
-
-            return rows[0];
-        } catch (error) {
-            throw error;
-        } finally {
-            connection.release();
-        }
-    }
-
-    
     /**
      * Get all event states for a specific event
      */
@@ -364,29 +337,6 @@ export class EventStateController {
         }
     }
 
-    // /**
-    //  * Get event states by user handler
-    //  */
-    // static async getEventStatesByUser(userHandler: any) {
-    //     const pool = createPool();
-    //     const connection = await pool.getConnection();
-    //     try {
-    //         const [rows] = await connection.execute(
-    //             `SELECT es.*, e.name as event_name, e.length, e.type 
-    //              FROM eventState es 
-    //              INNER JOIN events e ON es.eventId = e.id 
-    //              WHERE es.userHandler = ? 
-    //              ORDER BY es.updated_at DESC`,
-    //             [userHandler]
-    //         );
-
-    //         return rows;
-    //     } catch (error) {
-    //         throw error;
-    //     } finally {
-    //         connection.release();
-    //     }
-    // }
     /**
      * Get event states by user handler
      */
@@ -416,6 +366,7 @@ export class EventStateController {
             connection.release();
         }
     }
+    
     /**
      * Get event states by state value
      */
@@ -440,20 +391,18 @@ export class EventStateController {
         }
     }
 
-    
-
     /**
      * Delete event state
      */
-    static async deleteEventState(eventId: any, connectionId: any) {
+    static async deleteEventState(eventId: any) {
         const pool = createPool();
         const connection = await pool.getConnection();
         try {
             await connection.beginTransaction();
 
             const [result] = await connection.execute(
-                'DELETE FROM eventState WHERE eventId = ? AND connectionId = ?',
-                [eventId, connectionId]
+                'DELETE FROM eventState WHERE eventId = ?',
+                [eventId]
             );
 
             if (result.affectedRows === 0) {
@@ -464,7 +413,6 @@ export class EventStateController {
 
             return {
                 eventId,
-                connectionId,
                 deleted: true
             };
         } catch (error) {
@@ -484,17 +432,44 @@ export class EventStateController {
         try {
             const [rows] = await connection.execute(
                 `SELECT 
-                    state, 
+                    es.state, 
                     COUNT(*) as count,
-                    MAX(updated_at) as last_updated
-                 FROM eventState 
-                 WHERE userHandler = ? 
-                 GROUP BY state 
-                 ORDER BY state`,
+                    MAX(es.updated_at) as last_updated
+                 FROM eventState es
+                 INNER JOIN eventToUser etu ON es.eventId = etu.event_id
+                 WHERE etu.user_handler = ? 
+                 GROUP BY es.state 
+                 ORDER BY es.state`,
                 [userHandler]
             );
 
             return rows;
+        } catch (error) {
+            throw error;
+        } finally {
+            connection.release();
+        }
+    }
+    
+    /**
+     * Get last event state change for an event
+     */
+    static async getLastEventStateChange(eventId: any) {
+        const pool = createPool();
+        const connection = await pool.getConnection();
+        try {
+            const [rows] = await connection.execute(
+                `SELECT state, updated_at 
+                 FROM eventState 
+                 WHERE eventId = ?`,
+                [eventId]
+            );
+
+            if (rows.length === 0) {
+                return null;
+            }
+
+            return rows[0];
         } catch (error) {
             throw error;
         } finally {

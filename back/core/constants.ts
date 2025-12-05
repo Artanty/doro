@@ -11,3 +11,12 @@ export const MS_TIME = {
   WEEK: 604800000,
   MONTH: 2592000000
 }
+
+export enum eventProgress {
+  'STOPPED' = 0,
+  'PLAYING' = 1,
+  'PAUSED' = 2,
+  'COMPLETED' = 3
+}
+
+export const basicEventTypePrefix = 'e';
