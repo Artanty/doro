@@ -51,7 +51,7 @@ export class EventListEventComponent implements OnInit, OnDestroy, OnChanges {
       .pipe(
         
         tap((res: any) => {
-          dd(res);
+          // dd(res);
           this.cdr.detectChanges()
         }),
         // withLatestFrom(connectionState$),
@@ -144,6 +144,7 @@ export class EventListEventComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   ngOnDestroy() {
+    dd('list item destroyed')
     this.destroy$.next();
     this.destroy$.complete();
   }

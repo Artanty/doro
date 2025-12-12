@@ -38,6 +38,9 @@
         </div>
       </ng-container>
 
+      <div class="percent">
+        {{ eventState.data?.prc }}%
+      </div>
       <ng-container *ngIf="eventState.viewState === 'LOADING_VIEW_STATE'">
         <div *ngIf="eventState.eventState === EventStates.PENDING" class="timer">
           <pre>PENDING</pre>

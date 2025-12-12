@@ -7,6 +7,7 @@ import { basicEventTypePrefix, devPoolId, EventProgressType, EventStates } from 
 import { BusEvent, EVENT_BUS_LISTENER, EVENT_BUS_PUSHER } from 'typlib';
 
 import { filterStreamDataEvents } from '../../helpers/filterStreamDataEvents';
+import { thisProjectResProp } from '../../utilites/thisProjectResProp';
 // import { validateShareKeyword } from './edit-keyword/edit-keyword.validation';
 
 export interface EventStateResItem {
@@ -43,7 +44,9 @@ export class EventService {
     @Inject(EVENT_BUS_LISTENER)
     private readonly eventBusListener$: Observable<BusEvent>,
   ) {
-    this.eventBusListener$.subscribe(res => dd(res))
+    this.eventBusListener$.subscribe(res => {
+      // dd(res)
+    })
   }
 
   // Get all entries for current user from events db
@@ -76,10 +79,16 @@ export class EventService {
       );
   }
 
-  deleteEventStateApi(data: { id: number }): Observable<any> {
-    return this.http.post<EventStateRes>(`${this.doroBaseUrl}/event/delete`, data)
+  deleteEventApi(data: { id: number }): Observable<number[]> {
+    return this.http.post<any>(`${this.doroBaseUrl}/event/delete`, data)
       .pipe(
-        map(res => res.eventState)
+        map(res => {
+          if (res.data?.[thisProjectResProp()]?.success && res.data?.[thisProjectResProp()]?.ids) {
+            return res.data[thisProjectResProp()].ids
+          } else {
+            throw new Error('deleteEventApi wrong response')
+          }
+        })
       );
   }
 
@@ -114,12 +123,17 @@ export class EventService {
   }
 
   public deleteEvent(id: number) {
-    return this.deleteEventStateApi({ id: id }).pipe(
+    return this.deleteEventApi({ id: id }).pipe(
       catchError(error => {
         console.error('Failed to delete event:', error);
         return throwError(() => new Error(`Failed to delete event ${id}: ${error.message}`));
+      }),
+      tap((idsToDelete: number[]) => {
+        let eventsToUpdate = this.events$.getValue();
+        eventsToUpdate = eventsToUpdate.filter((e: EventProps) => !idsToDelete.includes(e.id));
+        this.events$.next(eventsToUpdate);
       })
-    )  
+    )
   }
 
   public pauseEvent(eventId: number) {
@@ -150,32 +164,31 @@ export class EventService {
     );
   }
   
+  // public listenEventState(eventId: number): Observable<EventStateResItem> {
+  //   return this.eventBusListener$.pipe(
+  //     filter(filterStreamDataEvents),
+  //     map((busEvent: BusEvent<EventStateResItem[]>): EventStateResItem => {
+  //       const receivedEventId = `${basicEventTypePrefix}_${eventId}`
+  //       const foundEvent = busEvent.payload.find(event => event.id === receivedEventId)
+  //       if (!foundEvent) {
+  //         return null;
+  //       }
+  //       return foundEvent;
+  //     }),
+  //     filter(Boolean)
+  //   )
+  // }
   public listenEventState(eventId: number): Observable<EventStateResItem> {
+    const receivedEventId = `${basicEventTypePrefix}_${eventId}`;
+  
     return this.eventBusListener$.pipe(
       filter(filterStreamDataEvents),
-      map((busEvent: BusEvent<EventStateResItem[]>): EventStateResItem => {
-        const receivedEventId = `${basicEventTypePrefix}_${eventId}`
-        const foundEvent = busEvent.payload.find(event => event.id === receivedEventId)
-        if (!foundEvent) {
-          throw new Error(`Event ${receivedEventId} not found.`)
-        }
-        return foundEvent;
+      map((busEvent: BusEvent<EventStateResItem[]>): EventStateResItem | null => {
+        const foundEvent = busEvent.payload.find(event => event.id === receivedEventId);
+        return foundEvent || null;
       }),
-      filter(Boolean)
-    )
-    
-    // const poolId = devPoolId;
-
-    // return this.eventStreams$.asObservable().pipe(
-    //   map(data => data.get(poolId)!), // catch and mock
-    //   distinctUntilChanged(),
-    //   filter(value => value !== undefined)
-    // );
-
-    // return of({
-    //   data: 'any',
-    //   state: 'string',
-    // })
+      filter((event): event is EventStateResItem => event !== null),
+    );
   }
 
   private _connectToTikPool() {

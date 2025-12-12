@@ -4,6 +4,9 @@ import dotenv from 'dotenv';
 import { dd } from '../utils/dd';
 import { ensureArray } from '../utils/ensureArray';
 import { EventStateController } from './eventStateController';
+import { buildOuterEntityId } from '../utils/buildOuterEntityId';
+import { parseServerResponse } from '../utils/parseServerResponse';
+import { thisProjectResProp } from '../utils/thisProjectResProp';
 
 dotenv.config();
 
@@ -154,7 +157,8 @@ export class EventController {
 
 			await connection.commit();
 
-			const minimalEventForTikAction = { id: eventId };
+
+			const minimalEventForTikAction = { id: buildOuterEntityId('event', eventId) };
 			const updateEventsStatePayloadData = EventStateController.addTikActionForEvents(minimalEventForTikAction, 'delete');
 			// request to tik@back
 			let tikResponse;
@@ -185,8 +189,11 @@ export class EventController {
 
 
 			return {
-				doroRes: result.affectedRows > 0,
-				tikRes: tikResponse,
+				[thisProjectResProp()]: {
+					success: result.affectedRows > 0,
+					ids: [eventId]
+				},
+				tikRes: parseServerResponse(tikResponse),
 			}
 		} catch (error) { 
 			console.log(error)

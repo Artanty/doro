@@ -6,6 +6,7 @@ import { EventController } from './eventController';
 import { dd } from '../utils/dd';
 import { ensureArray } from '../utils/ensureArray';
 import { parseServerResponse } from '../utils/parseServerResponse';
+import { buildOuterEntityId } from '../utils/buildOuterEntityId';
 
 dotenv.config();
 
@@ -653,7 +654,7 @@ export class EventStateController {
             events.map(async (eventProps: MinimalEventProps) => {
                 const eventStatus = await this.calculateEventStatus(connection, eventProps);
                 const res: EventStateResItem = {
-                    id: `e_${eventProps.id}`,
+                    id: buildOuterEntityId('event', eventProps.id),
                     cur: eventStatus.currentSeconds,
                     len: eventProps.length,
                     prc: eventStatus.progressPercentage,

@@ -5,7 +5,7 @@ import { EventProps, EventWithState } from '../event.model';
 import { EventService } from '../event.service';
 import { Router } from '@angular/router';
 import { GuiDirective } from '../../_remote/web-component-wrapper/gui.directive';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { EventListEventComponent } from '../event-list-event/event-list-event.component';
 import { dd } from 'src/app/doro/helpers/dd';
 
@@ -24,7 +24,10 @@ export class EventListComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private router: Router
   ) {
-    this.events$ = this.eventService.events$.asObservable()
+    this.events$ = this.eventService.events$.asObservable().pipe(tap(res => {
+      dd(res);
+      this.cdr.detectChanges();
+    }))
   }
 
   menuItems = [
@@ -82,7 +85,7 @@ export class EventListComponent implements OnInit {
     // [id, event]: [number, Event]
     const [id, event]: [number, Event] = data;
     event.stopPropagation();
-    console.log('delete clicked')
+    // console.log('delete clicked')
     // this.eventService.deleteEvent(id).subscribe({
     //   next: () => this._loadEvents(),
     //   error: (err) => console.error('Error deleting keyword:', err)
@@ -98,7 +101,7 @@ export class EventListComponent implements OnInit {
       next: (events) => {
         // this.events$.next(events)
         this.cdr.detectChanges()
-        dd(events)
+        // dd(events)
       },
       error: (err) => console.error('Error loading events:', err)
     });
