@@ -9,16 +9,14 @@ export interface EventViewState<T = null> {
 
 export interface EventProps {
 	"id": number
-	"eventId": number
-	"state": number
-	"created_at": string
-	"updated_at": string
-	"event_name": string
+	"name": string
 	"length": number
 	"type": number
-	"event_type_name": string
+	"created_at": string
+	"type_name": string
 	"access_level": string
 }
+
 export interface EventWithState { // todo rename
 	"id": number
 	"eventId": number
@@ -49,6 +47,10 @@ export interface EventStateRes {
 
 export interface EventStateReq {
 	"eventId": number, 
-	"connectionId": string, 
 	"state": number
+}
+
+
+export interface SetPlayEventStateReq {
+	"eventId": number
 }

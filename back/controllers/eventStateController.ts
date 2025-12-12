@@ -1,6 +1,11 @@
-import { eventProgress } from '../core/constants';
+import { EVENT_TIK_ACTION_PROP, eventProgress } from '../core/constants';
 import createPool from '../core/db_connection';
+import axios from 'axios';
 import dotenv from 'dotenv';
+import { EventController } from './eventController';
+import { dd } from '../utils/dd';
+import { ensureArray } from '../utils/ensureArray';
+import { parseServerResponse } from '../utils/parseServerResponse';
 
 dotenv.config();
 
@@ -19,6 +24,19 @@ export interface EventProps {
     "access_level": string
 }
 
+export interface MinimalEventProps {
+    id: number,
+    length: number
+}
+
+export interface EventPropsPure {
+    "id": number
+    "name": string
+    "length": number
+    "type": string
+    "created_at": string
+}
+
 export interface EventStateResItem {
     id: string,
     cur: number,
@@ -31,62 +49,35 @@ export class EventStateController {
     /**
      * Create or update event state and add history entry
      */
-    static async createOrUpdateEventState(eventId: any, state: any, userHandler: any) {
+    static async createOrUpdateEventState(userHandler: any, eventId: any, state: any): Promise<any> {
         const pool = createPool();
         const connection = await pool.getConnection();
+        
         try {
             await connection.beginTransaction();
 
             // Check if event exists and user has access
             const [eventAccess] = await connection.execute(
                 `SELECT e.id FROM events e 
-             INNER JOIN eventToUser etu ON e.id = etu.event_id 
-             WHERE e.id = ? AND etu.user_handler = ?`,
+                 INNER JOIN eventToUser etu ON e.id = etu.event_id 
+                 WHERE e.id = ? AND etu.user_handler = ?`,
                 [eventId, userHandler]
             );
 
             if (eventAccess.length === 0) {
                 throw new Error('Event not found or access denied');
-            }
-
+            } 
+            
+            // Only proceed if state is actually changing
             // Get current state before update for history comparison
+
             const [currentState] = await connection.execute(
                 `SELECT state FROM eventState WHERE eventId = ?`,
                 [eventId]
             );
 
             const previousState = currentState.length > 0 ? currentState[0].state : null;
-        
-            // Only proceed if state is actually changing
-            if (previousState !== state) {
-                // Update or insert current state
-                const [result] = await connection.execute(
-                    `INSERT INTO eventState (eventId, state) 
-                 VALUES (?, ?) 
-                 ON DUPLICATE KEY UPDATE 
-                     state = VALUES(state), 
-                     updated_at = CURRENT_TIMESTAMP`,
-                    [eventId, state]
-                );
-
-                // Add entry to history table
-                await connection.execute(
-                    `INSERT INTO eventStateHistory (eventId, state) 
-                 VALUES (?, ?)`,
-                    [eventId, state]
-                );
-
-                await connection.commit();
-            
-                return {
-                    eventId,
-                    state,
-                    userHandler,
-                    created: result.affectedRows === 1,
-                    updated: result.affectedRows === 2,
-                    stateChanged: true
-                };
-            } else {
+            if (previousState === state) {
                 await connection.commit();
                 return {
                     eventId,
@@ -97,6 +88,60 @@ export class EventStateController {
                     stateChanged: false
                 };
             }
+
+            // Update or insert current state
+            const [result] = await connection.execute(
+                `INSERT INTO eventState (eventId, state) 
+             VALUES (?, ?) 
+             ON DUPLICATE KEY UPDATE 
+                 state = VALUES(state), 
+                 updated_at = CURRENT_TIMESTAMP`,
+                [eventId, state]
+            );
+
+            // Add entry to history table
+            await connection.execute(
+                `INSERT INTO eventStateHistory (eventId, state) 
+             VALUES (?, ?)`,
+                [eventId, state]
+            );
+
+            await connection.commit();
+            
+            // request to tik@back
+            // try {
+            //     const response = await axios.post(`${process.env['TIK_BACK_URL']}/updateEventsState`,
+            //         {
+            //             poolId: 'current_user_id',
+            //             data: [updatedEventStatus],
+            //             projectId: 'doro@web',
+
+            //             // requesterProject,
+            //             // requesterApiKey: apiKeyHeader,
+            //             // requesterUrl
+            //         }
+            //         // ,
+            //         //  {
+            //         //   headers: {
+            //         //     'X-Project-Id': process.env.PROJECT_ID,
+            //         //     'X-Project-Domain-Name': `${req.protocol}://${req.get('host')}`,
+            //         //     'X-Api-Key': process.env.BASE_KEY
+            //         //   }
+            //         // }
+            //     );
+            // } catch (error: any) {
+            //     console.error('process.env[TIK_BACK_URL]/updateEventsState error:', error.message);
+            //     throw new Error(error);
+            // }
+        
+            return {
+                eventId,
+                state,
+                userHandler,
+                created: result.affectedRows === 1,
+                updated: result.affectedRows === 2,
+                stateChanged: true
+            };
         } catch (error) {
             await connection.rollback();
             throw error;
@@ -131,24 +176,150 @@ export class EventStateController {
             );
 
             // Process each event to determine status and current seconds
-            const eventsWithStatus = await Promise.all(
-                events.map(async (eventProps: EventProps) => {
-                    const eventStatus = await this._calculateEventStatus(connection, eventProps);
-                    const res: EventStateResItem = {
-                        id: `e_${eventProps.id}`,
-                        cur: eventStatus.currentSeconds,
-                        len: eventProps.length,
-                        prc: eventStatus.progressPercentage,
-                        stt: eventStatus.status
-                    }
+            const eventsWithStatus = await this.calculateEventsStatus(connection, events);
 
-                    return res;
-                })
-            );
+            const eventsWithTikAction = this.addTikActionForEvents(eventsWithStatus, 'add');
 
-            return eventsWithStatus;
+            console.log(eventsWithTikAction)
+            return eventsWithTikAction;
         } catch (error) {
             throw error;
+        } finally {
+            connection.release();
+        }
+    }
+
+    static addTikActionForEvents<T = any>(events: T | T[], action: string): T[] {
+        events = ensureArray(events)
+        return events.map(el => {
+            el = { ...el, [EVENT_TIK_ACTION_PROP]: action } //todo pass propName?
+            return el;
+        })
+    }
+
+    /**
+     * play event if it is not completed (states: 'STOPPED': 0,'PAUSED': 2)
+     * if completed ('COMPLETED': 3) - duplicate event, then createOrUpdateEventState(1)
+     * */
+    static async playOrDuplicateEvent(userHandler: any, eventId: any) {
+        const state = eventProgress.PLAYING; // 1
+        const pool = createPool();
+        const connection = await pool.getConnection();
+        let createdEventId;
+        try {
+            await connection.beginTransaction();
+            /** check that user has permissions and return event entry
+             * */
+            const [rows] = await connection.execute(
+                `SELECT e.*
+                    FROM events e
+                    INNER JOIN eventToUser etu ON e.id = etu.event_id
+                    WHERE e.id = ?  -- target event ID
+                      AND etu.user_handler = ?  -- user identifier
+                    LIMIT 1`,
+                [eventId, userHandler]
+            );
+            if (rows.length < 1) {
+                throw new Error('no event entry found')
+            }
+            
+            const eventProps: EventPropsPure = rows[0];
+            const eventStatus: EventStatus = await this.calculateEventStatus(connection, eventProps);
+
+            if (eventStatus.status === eventProgress.STOPPED || eventStatus.status === eventProgress.PAUSED) {
+                dd('CHANGING STATE OF EXISTING EVENT')
+                const [result] = await connection.execute(
+                    `INSERT INTO eventState (eventId, state) 
+                 VALUES (?, ?) 
+                 ON DUPLICATE KEY UPDATE 
+                     state = VALUES(state), 
+                     updated_at = CURRENT_TIMESTAMP`,
+                    [eventId, state]
+                );
+
+                // Add entry to history table
+                await connection.execute(
+                    `INSERT INTO eventStateHistory (eventId, state) 
+                 VALUES (?, ?)`,
+                    [eventId, state]
+                );
+
+            } else if (eventStatus.status === eventProgress.COMPLETED) {
+                dd('DUPLICATING EVENT')
+                const name = eventProps.name;
+                const length = eventProps.length;
+                const type = eventProps.type;
+                const accessLevel = 'owner';
+
+                const [eventResult] = await connection.execute(
+                    'INSERT INTO events (name, length, type) VALUES (?, ?, ?)',
+                    [name, length, type]
+                );
+                createdEventId = eventResult.insertId;
+
+                // Create owner relationship in eventToUser
+                await connection.execute(
+                    'INSERT INTO eventToUser (event_id, user_handler, access_level) VALUES (?, ?, ?)',
+                    [createdEventId, userHandler, accessLevel]
+                );
+
+                const [result] = await connection.execute(
+                    `INSERT INTO eventState (eventId, state) 
+                     VALUES (?, ?)`,
+                    [createdEventId, eventProgress.PLAYING]
+                );
+
+                // Add entry to history table
+                await connection.execute(
+                    `INSERT INTO eventStateHistory (eventId, state) 
+                 VALUES (?, ?)`,
+                    [createdEventId, state]
+                );
+            } else {
+                throw new Error('wrong state of event')
+            }
+            
+            // eventProgress.COMPLETED - add event copy
+            const eventPropsForCalc = { id: eventProgress.COMPLETED ? createdEventId : eventId, length: eventProps.length }
+            // build event for tik
+            const updatedEventStatus: EventStateResItem[] = await EventStateController.calculateEventsStatus(connection, ensureArray(eventPropsForCalc));
+            await connection.commit();
+            dd(updatedEventStatus)
+            const tikAction = eventProgress.COMPLETED ? 'add' : 'update';
+            const updatedEventStatusWithTikAction = this.addTikActionForEvents(updatedEventStatus, tikAction);
+            dd(updatedEventStatusWithTikAction)
+            // request to tik@back
+            let tikResponse;
+            tikResponse = await axios.post(`${process.env['TIK_BACK_URL']}/updateEventsState`,
+                {
+                    poolId: 'current_user_id',
+                    data: updatedEventStatusWithTikAction,
+                    projectId: 'doro@web',
+
+                    // requesterProject,
+                    // requesterApiKey: apiKeyHeader,
+                    // requesterUrl
+                }
+                // ,
+                //  {
+                //   headers: {
+                //     'X-Project-Id': process.env.PROJECT_ID,
+                //     'X-Project-Domain-Name': `${req.protocol}://${req.get('host')}`,
+                //     'X-Api-Key': process.env.BASE_KEY
+                //   }
+                // }
+            );
+            dd(tikResponse)
+            return { 
+                success: true, 
+                isDuplicate: eventStatus.status === eventProgress.COMPLETED,
+                actualEventId: eventProgress.COMPLETED ? createdEventId : eventId,
+                tik_updateEventsState_res: parseServerResponse(tikResponse)
+            };
+        } catch (error: any) { 
+            console.log(error)
+            await connection.rollback();
+            throw new Error('playOrDuplicateEvent error: ' + (error?.message ?? error));
         } finally {
             connection.release();
         }
@@ -157,7 +328,7 @@ export class EventStateController {
     /**
      * Calculate event status and current seconds based on state and history
      */
-    static async _calculateEventStatus(connection, event): Promise<EventStatus> {
+    static async calculateEventStatus(connection, event: MinimalEventProps): Promise<EventStatus> {
         const eventId = event.id;
         const eventLengthSeconds = event.length;
         
@@ -475,5 +646,24 @@ export class EventStateController {
         } finally {
             connection.release();
         }
+    }
+
+    static async calculateEventsStatus(connection, events: MinimalEventProps[]): Promise<EventStateResItem[]> {
+        const eventsWithStatus = await Promise.all(
+            events.map(async (eventProps: MinimalEventProps) => {
+                const eventStatus = await this.calculateEventStatus(connection, eventProps);
+                const res: EventStateResItem = {
+                    id: `e_${eventProps.id}`,
+                    cur: eventStatus.currentSeconds,
+                    len: eventProps.length,
+                    prc: eventStatus.progressPercentage,
+                    stt: eventStatus.status
+                }
+
+                return res;
+            })
+        );
+
+        return eventsWithStatus;
     }
 }

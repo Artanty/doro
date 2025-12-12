@@ -1,26 +1,40 @@
 @if (eventState$ | async; as eventState) {
-  <pre>{{eventState|json}}</pre>
+  
+  <!-- <pre>{{eventState|json}}</pre> -->
   <li>
+    
     <div>
       <div class="name">
-        {{ eventProps.event_name }} | {{ eventState.eventState }} 
+  {{eventProps?.id}} | {{ eventProps.name }} | {{ eventState.eventState }} 
       </div>
       <ng-container *ngIf="eventState.viewState === 'READY_VIEW_STATE'">
         <div *ngIf="eventState.eventState === EventStates.COMPLETED" class="timer">
-          <i title="play" class="mu mu-play" (click)="playEvent()"></i>   
+          COMPLETED
+          <i title="play" class="mu mu-play" (click)="playEvent()"></i>
+          <br>
+          <i title="delete" class="mu mu-i-cross" (click)="deleteEvent()"></i>   
         </div>
         <div *ngIf="eventState.eventState === EventStates.PLAYING" class="timer">
-          <pre>{{ eventState.data }}</pre>
+          PLAYING
+          <pre>{{ eventState.data?.cur }}</pre>
+          <br>
+          <i title="delete" class="mu mu-i-cross" (click)="deleteEvent()"></i>   
         </div>
         <div *ngIf="eventState.eventState === EventStates.PAUSED" class="timer">
           <pre>isPaused</pre>
+          <br>
+          <i title="delete" class="mu mu-i-cross" (click)="deleteEvent()"></i>   
         </div>
         <div *ngIf="eventState.eventState === EventStates.STOPPED" class="timer">
           <pre>isStopped</pre>
+          <br>
+          <i title="delete" class="mu mu-i-cross" (click)="deleteEvent()"></i>   
         </div>
         
         <div *ngIf="eventState.eventState === EventStates.PENDING" class="timer">
           <pre>PENDING</pre>
+          <br>
+          <i title="delete" class="mu mu-i-cross" (click)="deleteEvent()"></i>   
         </div>
       </ng-container>
 
@@ -31,6 +45,8 @@
       </ng-container>
     </div>
     <div class="action">
+
+
 
      <!--  <div *ngIf="(eventState.viewState === 'READY_VIEW_STATE') && (eventState.eventState !== 'ERROR_VIEW_STATE') && (eventState.eventState !== 'PENDING')">
           <ng-container *ngIf="eventState.eventState === 'isRunning'" >
@@ -51,7 +67,7 @@
           items: menuItems
         }"
         [outputs]="{
-          itemSelected: deleteEvent.bind(this, eventProps.eventId)
+          itemSelected: deleteEvent.bind(this)
         }"
       ></div>
     </div>

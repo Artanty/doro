@@ -1,9 +1,9 @@
 import { Inject, Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, distinctUntilChanged, filter, map, Observable, of, throwError, catchError, switchMap, tap, Subject } from 'rxjs';
-import { EventProps, EventState, EventStateReq, EventStateRes, EventWithState } from './event.model';
+import { EventProps, EventState, EventStateReq, EventStateRes, EventWithState, SetPlayEventStateReq } from './event.model';
 import { dd } from '../../helpers/dd';
-import { basicEventTypePrefix, devPoolId, EventProgressType } from '../../constants';
+import { basicEventTypePrefix, devPoolId, EventProgressType, EventStates } from '../../constants';
 import { BusEvent, EVENT_BUS_LISTENER, EVENT_BUS_PUSHER } from 'typlib';
 
 import { filterStreamDataEvents } from '../../helpers/filterStreamDataEvents';
@@ -23,6 +23,7 @@ export interface EventData {
   initialEvent: EventWithState
 }
 
+
 @Injectable(
   // {
   //   providedIn: 'root'
@@ -31,6 +32,8 @@ export interface EventData {
 export class EventService {
   private doroBaseUrl = `${process.env['DORO_BACK_URL']}`;
   private tikBaseUrl = `${process.env['TIK_BACK_URL']}`;
+
+  public events$ = new BehaviorSubject<EventProps[]>([]);
 
   private eventStreams$ = new BehaviorSubject<Map<string, EventData>>(new Map());
   
@@ -49,9 +52,15 @@ export class EventService {
     return this.http.post<EventProps[]>(`${this.doroBaseUrl}/event-state/list`, null);
   }
 
-  getUserEventsWithStateApi(): Observable<EventProps[]> {
-    return this.http.post<EventProps[]>(`${this.doroBaseUrl}/event-state/list-by-user`, null);
+  // getUserEventsWithStateApi(): Observable<EventProps[]> {
+  //   return this.http.post<EventProps[]>(`${this.doroBaseUrl}/event-state/list-by-user`, null);
+  // }
+
+  getUserEventsApi(): Observable<EventProps[]> {
+    return this.http.post<EventProps[]>(`${this.doroBaseUrl}/event/list`, null);
   }
+
+  
 
   setEventStateApi(data: EventStateReq): Observable<EventState> {
     return this.http.post<EventStateRes>(`${this.doroBaseUrl}/event-state/set-event-state`, data)
@@ -60,21 +69,36 @@ export class EventService {
       );
   }
 
+  setPlayEventStateApi(data: SetPlayEventStateReq): Observable<any> {
+    return this.http.post<EventStateRes>(`${this.doroBaseUrl}/event-state/play`, data)
+      .pipe(
+        map(res => res.eventState)
+      );
+  }
+
+  deleteEventStateApi(data: { id: number }): Observable<any> {
+    return this.http.post<EventStateRes>(`${this.doroBaseUrl}/event/delete`, data)
+      .pipe(
+        map(res => res.eventState)
+      );
+  }
+
+  loadEvents() {
+    return this.getUserEventsApi()
+      .pipe(
+        tap((res: EventProps[]) => this.events$.next(res))
+      )
+  }
+
+  // flow: doro@web -> doro@back -> tik@back -> tik@web -> doro@web
   //   // сначала сделать запрос на свой бэк. +
   //   // обновить стейт. +
   //   // оповестить всех пользователей, которые имеют доступ к этому событию 
   //   // (создать новый хэш, чтобы при сравнении стало понятно, что нужно подтянуть изменения)
-  public playEvent(eventId: number, isGuiEvent: boolean = false): void {
+  public playEvent(eventId: number, isGuiEvent: boolean): void {
     dd('eventService.playEvent');
   
-    const tikEventId = `event__${eventId}`;
-    const tikProjectId = 'doro';
-  
-    const doroBackUpdate$ = isGuiEvent 
-      ? this.setEventStateApi({ "eventId": eventId, "connectionId": "", "state": 1 })
-      : of(null);
-  
-    doroBackUpdate$.pipe(
+    this.setPlayEventStateApi({ "eventId": eventId }).pipe(
       // @ts-ignore
       tap((res: any) => {
         // this._connectToTikPool(tikProjectId, tikEventId)
@@ -84,7 +108,18 @@ export class EventService {
         return throwError(() => new Error(`Failed to play event ${eventId}: ${error.message}`));
       })
       // @ts-ignore
-    ).subscribe((res: any) => {})   
+    ).subscribe((res: any) => {
+      console.log(res)
+    })   
+  }
+
+  public deleteEvent(id: number) {
+    return this.deleteEventStateApi({ id: id }).pipe(
+      catchError(error => {
+        console.error('Failed to delete event:', error);
+        return throwError(() => new Error(`Failed to delete event ${id}: ${error.message}`));
+      })
+    )  
   }
 
   public pauseEvent(eventId: number) {
@@ -92,7 +127,6 @@ export class EventService {
     const connId = 'doro'
     return this.setEventStateApi({
       "eventId": eventId, 
-      "connectionId": "", 
       "state": 2
     })
   }
@@ -167,10 +201,7 @@ export class EventService {
   //   return this.http.post<Keyword>(`${this.baseUrl}/update`, data);
   // }
 
-  deleteEvent(id: number): Observable<any> {
-    const data = { id: id }
-    return this.http.post<any>(`${this.doroBaseUrl}/event/delete`, data);
-  }
+
 
   // // get list of users that have access to keyword
   // public getKeywordUsers(keywordId: number): Observable<KeywordUser[]> {

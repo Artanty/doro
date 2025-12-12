@@ -9,7 +9,7 @@ const router = express.Router();
 
 router.post('/set-event-state', async (req, res) => {
   try {
-    const { eventId, connectionId, state } = req.body;
+    const { eventId, state } = req.body;
     const user = getUserFromRequest(req);
     const itemId = await EventStateController.createOrUpdateEventState(
       eventId, state, user
@@ -40,11 +40,22 @@ router.post('/list-by-user-with-status', async (req, res) => {
   }
 });
 
+router.post('/play', async (req, res) => {
+  try {
+    const user = getUserFromRequest(req);
+    const { eventId } = req.body;
+    const data = await EventStateController.playOrDuplicateEvent(user, eventId);
+    res.json(data);
+  } catch (error) {
+    handleError(res as unknown as Response, error) 
+  }
+});
+
 // router.post('/get-one', async (req, res) => {
 //   try {
 //     const { id } = req.body;
 //     const user = getUserFromRequest(req);
-//     const data = await EventController.getEventById(id, user);
+//     const data = await EventController.getEventById(user, id);
 //     res.json(data);
 //   } catch (error) {
 //     handleError(res as unknown as Response, error) 

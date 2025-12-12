@@ -1,4 +1,11 @@
 import createPool from '../core/db_connection';
+import axios from 'axios';
+import dotenv from 'dotenv';
+import { dd } from '../utils/dd';
+import { ensureArray } from '../utils/ensureArray';
+import { EventStateController } from './eventStateController';
+
+dotenv.config();
 
 export class EventController {
 	// Create event and assign owner access
@@ -63,7 +70,7 @@ export class EventController {
 	}
 
 	// Get specific event by ID (with access check)
-	static async getEventById(eventId: number, userHandle: string) {
+	static async getEventById(userHandler: string, eventId: number) {
 		const pool = createPool();
 		const connection = await pool.getConnection();
 		try {
@@ -73,7 +80,7 @@ export class EventController {
 				 INNER JOIN eventTypes et ON e.type = et.id
 				 INNER JOIN eventToUser etu ON e.id = etu.event_id
 				 WHERE e.id = ? AND etu.user_handler = ?`,
-				[eventId, userHandle]
+				[eventId, userHandler]
 			);
 			return rows.length > 0 ? rows[0] : null;
 		} catch (error) { 
@@ -146,7 +153,41 @@ export class EventController {
 			);
 
 			await connection.commit();
-			return result.affectedRows > 0;
+
+			const minimalEventForTikAction = { id: eventId };
+			const updateEventsStatePayloadData = EventStateController.addTikActionForEvents(minimalEventForTikAction, 'delete');
+			// request to tik@back
+			let tikResponse;
+			try {
+				tikResponse = await axios.post(`${process.env['TIK_BACK_URL']}/updateEventsState`,
+					{
+						poolId: 'current_user_id',
+						data: updateEventsStatePayloadData,
+						projectId: 'doro@web',
+
+						// requesterProject,
+						// requesterApiKey: apiKeyHeader,
+						// requesterUrl
+					}
+					// ,
+					//  {
+					//   headers: {
+					//     'X-Project-Id': process.env.PROJECT_ID,
+					//     'X-Project-Domain-Name': `${req.protocol}://${req.get('host')}`,
+					//     'X-Api-Key': process.env.BASE_KEY
+					//   }
+					// }
+				);
+			} catch (error: any) {
+				console.error('process.env[TIK_BACK_URL]/updateEventsState error:', error.message);
+				throw new Error(error);
+			}
+
+
+			return {
+				doroRes: result.affectedRows > 0,
+				tikRes: tikResponse,
+			}
 		} catch (error) { 
 			console.log(error)
 			await connection.rollback();

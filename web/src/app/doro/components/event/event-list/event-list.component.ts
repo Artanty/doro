@@ -17,13 +17,15 @@ import { dd } from 'src/app/doro/helpers/dd';
   styleUrl: './event-list.component.scss'
 })
 export class EventListComponent implements OnInit {
-  public events$ = new BehaviorSubject<EventProps[]>([]);
+  public events$: Observable<EventProps[]>;
  
   constructor(
     private eventService: EventService,
     private cdr: ChangeDetectorRef,
     private router: Router
-  ) {}
+  ) {
+    this.events$ = this.eventService.events$.asObservable()
+  }
 
   menuItems = [
     { id: 'DELETE', name: 'Удалить' },
@@ -81,10 +83,10 @@ export class EventListComponent implements OnInit {
     const [id, event]: [number, Event] = data;
     event.stopPropagation();
     console.log('delete clicked')
-    this.eventService.deleteEvent(id).subscribe({
-      next: () => this._loadEvents(),
-      error: (err) => console.error('Error deleting keyword:', err)
-    });
+    // this.eventService.deleteEvent(id).subscribe({
+    //   next: () => this._loadEvents(),
+    //   error: (err) => console.error('Error deleting keyword:', err)
+    // });
   }
 
   // public goToKeywordEdit(id: number) {
@@ -92,9 +94,9 @@ export class EventListComponent implements OnInit {
   // }
 
   private _loadEvents(): void {
-    this.eventService.getUserEventsWithStateApi().subscribe({
+    this.eventService.loadEvents().subscribe({
       next: (events) => {
-        this.events$.next(events)
+        // this.events$.next(events)
         this.cdr.detectChanges()
         dd(events)
       },

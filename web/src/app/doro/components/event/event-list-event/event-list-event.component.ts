@@ -47,7 +47,7 @@ export class EventListEventComponent implements OnInit, OnDestroy, OnChanges {
       viewState: 'LOADING_VIEW_STATE',
       eventState: -1 // pending
     }
-    this.eventState$ = this.eventService.listenEventState(this.eventProps.eventId)
+    this.eventState$ = this.eventService.listenEventState(this.eventProps.id)
       .pipe(
         
         tap((res: any) => {
@@ -129,8 +129,9 @@ export class EventListEventComponent implements OnInit, OnDestroy, OnChanges {
   
 
   playEvent(isGuiEvent = true): void {
-    this.eventService.playEvent(this.eventProps.eventId, isGuiEvent)
+    this.eventService.playEvent(this.eventProps.id, isGuiEvent)
   }
+
 
   pauseEvent() {
     // this.eventService.pauseEvent(this.event.eventId).subscribe(res => {
@@ -147,8 +148,12 @@ export class EventListEventComponent implements OnInit, OnDestroy, OnChanges {
     this.destroy$.complete();
   }
 
-  deleteEvent(eventId: number, event: Event) {
-    this.deleteEventAway.emit([eventId, event])  
+  deleteEvent() {
+    this.eventService.deleteEvent(this.eventProps.id)
+      .subscribe({
+        next: () => console.log('delete success'),
+        error: (err) => console.error('Error deleting keyword:', err)
+      });
   }
 }
 

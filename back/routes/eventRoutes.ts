@@ -33,7 +33,7 @@ router.post('/get-one', async (req, res) => {
   try {
     const { id } = req.body;
     const user = getUserFromRequest(req);
-    const data = await EventController.getEventById(id, user);
+    const data = await EventController.getEventById(user, id);
     res.json(data);
   } catch (error) {
     handleError(res as unknown as Response, error) 
