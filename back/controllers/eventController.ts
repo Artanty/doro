@@ -199,11 +199,17 @@ export class EventController {
 
 
 			return {
-				[thisProjectResProp()]: {
+				data: {
 					success: result.affectedRows > 0,
 					ids: [eventId]
 				},
-				[tikResProp()]: parseServerResponse(tikResponse),
+				debug: {
+					[thisProjectResProp()]: {
+						success: result.affectedRows > 0,
+						ids: [eventId]
+					},
+					[tikResProp()]: parseServerResponse(tikResponse),
+				}
 			}
 		} catch (error) { 
 			console.log(error)

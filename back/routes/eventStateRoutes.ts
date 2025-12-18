@@ -45,10 +45,10 @@ router.post('/play', async (req, res) => {
     const user = getUserFromRequest(req);
     const { eventId } = req.body;
     const result = await EventStateController.playOrDuplicateEvent(user, eventId);
-    // res.json(data);
-    res.json({ 
-      data: result
-    });
+    res.json(result);
+    // res.json({ 
+    //   data: result
+    // });
   } catch (error) {
     handleError(res as unknown as Response, error) 
   }

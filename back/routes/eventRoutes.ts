@@ -61,10 +61,8 @@ router.post('/delete', async (req, res) => {
     const result = await EventController.deleteEvent(
       id, user
     );
-    // dd(result)
-    res.json({ 
-      data: result
-    });
+
+    res.json(result);
   } catch (error) {
     handleError(res as unknown as Response, error) 
   }

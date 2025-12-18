@@ -7,7 +7,6 @@ import { basicEventTypePrefix, devPoolId, EventProgressType, EventStates } from 
 import { BusEvent, EVENT_BUS_LISTENER, EVENT_BUS_PUSHER } from 'typlib';
 
 import { filterStreamDataEvents } from '../../helpers/filterStreamDataEvents';
-import { thisProjectResProp } from '../../utilites/thisProjectResProp';
 // import { validateShareKeyword } from './edit-keyword/edit-keyword.validation';
 
 export interface EventStateResItem {
@@ -76,8 +75,8 @@ export class EventService {
     return this.http.post<any>(`${this.doroBaseUrl}/event-state/play`, data)
       .pipe(
         map(res => {
-          if (res.data?.[thisProjectResProp()]?.success) {
-            return res.data[thisProjectResProp()];
+          if (res.data.success) {
+            return res.data;
           } else {
             throw new Error('playEventApi wrong response')
           }
@@ -89,8 +88,8 @@ export class EventService {
     return this.http.post<any>(`${this.doroBaseUrl}/event/delete`, data)
       .pipe(
         map(res => {
-          if (res.data?.[thisProjectResProp()]?.success && res.data?.[thisProjectResProp()]?.ids) {
-            return res.data[thisProjectResProp()].ids
+          if (res.data.success && res.data.ids) {
+            return res.data.ids
           } else {
             throw new Error('deleteEventApi wrong response')
           }
@@ -115,22 +114,6 @@ export class EventService {
     dd('eventService.playEvent');
   
     this.playEventApi({ "eventId": eventId }).pipe(
-      // @ts-ignore
-      tap((res: any) => {
-        
-        // this._connectToTikPool(tikProjectId, tikEventId)
-        // "success": true,
-        //         "isDuplicate": true,
-        //         "actualEventId": 49,
-        //         "addedEvents": [
-        //             {
-        //                 "id": 49,
-        //                 "name": "Morning Focus 2",
-        //                 "length": 25,
-        //                 "access_level": "owner"
-        //             }
-        //         ]
-      }),
       catchError(error => {
         console.error('Failed to play event:', error);
         return throwError(() => new Error(`Failed to play event ${eventId}: ${error.message}`));

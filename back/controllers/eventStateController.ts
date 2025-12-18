@@ -315,18 +315,18 @@ export class EventStateController {
             
             // eventProgress.COMPLETED - add event copy
             const eventPropsForCalc = { id: eventStatus.status === eventProgress.COMPLETED ? createdEventId : eventId, length: eventProps.length }
-            dd(eventPropsForCalc)
-            dd(eventProgress.COMPLETED)
-            dd(eventProgress.COMPLETED ? createdEventId : eventId)
-            dd(createdEventId)
-            dd(eventId)
+            // dd(eventPropsForCalc)
+            // dd(eventProgress.COMPLETED)
+            // dd(eventProgress.COMPLETED ? createdEventId : eventId)
+            // dd(createdEventId)
+            // dd(eventId)
             // build event for tik
             const updatedEventsStatus: EventStateResItem[] = await EventStateController.buildTikEvents(connection, eventPropsForCalc);
             await connection.commit();
-            dd(updatedEventsStatus)
+            // dd(updatedEventsStatus)
             const tikAction = eventProgress.COMPLETED ? 'add' : 'update';
             const updatedEventStatusWithTikAction = this.addTikActionForEvents(updatedEventsStatus, tikAction);
-            dd(updatedEventStatusWithTikAction)
+            // dd(updatedEventStatusWithTikAction)
             // request to tik@back
             let tikResponse;
             tikResponse = await axios.post(`${process.env['TIK_BACK_URL']}/updateEventsState`,
@@ -350,7 +350,7 @@ export class EventStateController {
             );
             
             return {
-                [thisProjectResProp()]: {
+                data: {
                     success: true,
                     isDuplicate: eventStatus.status === eventProgress.COMPLETED,
                     actualEventId: eventProgress.COMPLETED ? createdEventId : eventId, //eventS!
@@ -361,7 +361,20 @@ export class EventStateController {
                         access_level: "owner",
                     }],
                 },
-                [tikResProp()]: parseServerResponse(tikResponse)
+                debug: {
+                    [thisProjectResProp()]: {
+                        success: true,
+                        isDuplicate: eventStatus.status === eventProgress.COMPLETED,
+                        actualEventId: eventProgress.COMPLETED ? createdEventId : eventId, //eventS!
+                        addedEvents: [{
+                            id: createdEventId,
+                            name: eventProps.name,
+                            length: eventProps.length,
+                            access_level: "owner",
+                        }],
+                    },
+                    [tikResProp()]: parseServerResponse(tikResponse)
+                }
             };
         } catch (error: any) { 
             console.log(error)
