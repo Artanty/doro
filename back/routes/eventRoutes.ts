@@ -61,7 +61,7 @@ router.post('/delete', async (req, res) => {
     const result = await EventController.deleteEvent(
       id, user
     );
-    dd(result)
+    // dd(result)
     res.json({ 
       data: result
     });

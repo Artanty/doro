@@ -4,3 +4,7 @@ dotenv.config();
 export const thisProjectResProp = () => {
 	return `${process.env['PROJECT_NAME']}@${process.env['NAMESPACE']}`
 }
+
+export const tikResProp = () => {
+	return `tik@back`
+}

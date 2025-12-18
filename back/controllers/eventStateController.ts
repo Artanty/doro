@@ -7,6 +7,7 @@ import { dd } from '../utils/dd';
 import { ensureArray } from '../utils/ensureArray';
 import { parseServerResponse } from '../utils/parseServerResponse';
 import { buildOuterEntityId } from '../utils/buildOuterEntityId';
+import { thisProjectResProp, tikResProp } from '../utils/getResProp';
 
 dotenv.config();
 
@@ -51,6 +52,8 @@ export class EventStateController {
      * Create or update event state and add history entry
      */
     static async createOrUpdateEventState(userHandler: any, eventId: any, state: any): Promise<any> {
+        dd('userHandler')
+        dd(userHandler)
         const pool = createPool();
         const connection = await pool.getConnection();
         
@@ -58,14 +61,15 @@ export class EventStateController {
             await connection.beginTransaction();
 
             // Check if event exists and user has access
-            const [eventAccess] = await connection.execute(
-                `SELECT e.id FROM events e 
+            const [eventWithAccess] = await connection.execute(
+                `SELECT e.id, e.length e.access_level FROM events e 
                  INNER JOIN eventToUser etu ON e.id = etu.event_id 
-                 WHERE e.id = ? AND etu.user_handler = ?`,
+                 WHERE e.id = ? AND etu.user_handler = ?
+                 LIMIT 1`,
                 [eventId, userHandler]
             );
 
-            if (eventAccess.length === 0) {
+            if (eventWithAccess.length === 0) {
                 throw new Error('Event not found or access denied');
             } 
             
@@ -107,42 +111,70 @@ export class EventStateController {
                 [eventId, state]
             );
 
-            await connection.commit();
-            
-            // request to tik@back
-            // try {
-            //     const response = await axios.post(`${process.env['TIK_BACK_URL']}/updateEventsState`,
-            //         {
-            //             poolId: 'current_user_id',
-            //             data: [updatedEventStatus],
-            //             projectId: 'doro@web',
-
-            //             // requesterProject,
-            //             // requesterApiKey: apiKeyHeader,
-            //             // requesterUrl
-            //         }
-            //         // ,
-            //         //  {
-            //         //   headers: {
-            //         //     'X-Project-Id': process.env.PROJECT_ID,
-            //         //     'X-Project-Domain-Name': `${req.protocol}://${req.get('host')}`,
-            //         //     'X-Api-Key': process.env.BASE_KEY
-            //         //   }
-            //         // }
-            //     );
-            // } catch (error: any) {
-            //     console.error('process.env[TIK_BACK_URL]/updateEventsState error:', error.message);
-            //     throw new Error(error);
+            const eventProps: EventPropsPure = eventWithAccess[0];
+            dd(eventProps)
+            // { id: 195, length: 25 }  ensureArray
+            const updatedEventsWithStatus: EventStateResItem[] = await this.buildTikEvents(connection, eventProps);
+            dd(updatedEventsWithStatus)
+            // {
+            //   id: 195,
+            //   length: 25,
+            //   status: 2,
+            //   currentSeconds: 9,
+            //   progressPercentage: 36
             // }
-        
+            await connection.commit();
+
+            const tikAction = 'update';
+            const updatedEventStatusWithTikAction = this.addTikActionForEvents(updatedEventsWithStatus, tikAction);
+            dd(updatedEventStatusWithTikAction)
+            // [
+            //   {
+            //     id: 195,
+            //     length: 25,
+            //     status: 2,
+            //     currentSeconds: 9,
+            //     progressPercentage: 36,
+            //     tikAction: 'update'
+            //   }
+            // ]
+
+            // request to tik@back
+            let tikResponse;
+            tikResponse = await axios.post(`${process.env['TIK_BACK_URL']}/updateEventsState`,
+                {
+                    poolId: 'current_user_id',
+                    data: updatedEventStatusWithTikAction,
+                    projectId: 'doro@web',
+
+                    // requesterProject,
+                    // requesterApiKey: apiKeyHeader,
+                    // requesterUrl
+                }
+                // ,
+                //  {
+                //   headers: {
+                //     'X-Project-Id': process.env.PROJECT_ID,
+                //     'X-Project-Domain-Name': `${req.protocol}://${req.get('host')}`,
+                //     'X-Api-Key': process.env.BASE_KEY
+                //   }
+                // }
+            );
+            // todo STOPPED HERE           
             return {
-                eventId,
-                state,
-                userHandler,
-                created: result.affectedRows === 1,
-                updated: result.affectedRows === 2,
-                stateChanged: true
+                [thisProjectResProp()]: {
+                    success: true,
+                    
+                    updatedEvents: [{
+                        id: eventProps.id,
+                        name: eventProps.name,
+                        length: eventProps.length,
+                        access_level: (eventProps as any)?.access_level ?? 'wrong prop name'
+                    }],
+                },
+                [tikResProp()]: parseServerResponse(tikResponse)
             };
+
         } catch (error) {
             await connection.rollback();
             throw error;
@@ -177,7 +209,7 @@ export class EventStateController {
             );
 
             // Process each event to determine status and current seconds
-            const eventsWithStatus = await this.calculateEventsStatus(connection, events);
+            const eventsWithStatus = await this.buildTikEvents(connection, events);
 
             const eventsWithTikAction = this.addTikActionForEvents(eventsWithStatus, 'add');
 
@@ -209,22 +241,21 @@ export class EventStateController {
         let createdEventId;
         try {
             await connection.beginTransaction();
-            /** check that user has permissions and return event entry
-             * */
-            const [rows] = await connection.execute(
+
+            // Check if event exists and user has access
+            const [eventWithAccess] = await connection.execute(
                 `SELECT e.*
                     FROM events e
                     INNER JOIN eventToUser etu ON e.id = etu.event_id
-                    WHERE e.id = ?  -- target event ID
-                      AND etu.user_handler = ?  -- user identifier
+                    WHERE e.id = ? AND etu.user_handler = ?
                     LIMIT 1`,
                 [eventId, userHandler]
             );
-            if (rows.length < 1) {
+            if (eventWithAccess.length < 1) {
                 throw new Error('no event entry found')
             }
             
-            const eventProps: EventPropsPure = rows[0];
+            const eventProps: EventPropsPure = eventWithAccess[0];
             const eventStatus: EventStatus = await this.calculateEventStatus(connection, eventProps);
 
             if (eventStatus.status === eventProgress.STOPPED || eventStatus.status === eventProgress.PAUSED) {
@@ -283,11 +314,11 @@ export class EventStateController {
             // eventProgress.COMPLETED - add event copy
             const eventPropsForCalc = { id: eventProgress.COMPLETED ? createdEventId : eventId, length: eventProps.length }
             // build event for tik
-            const updatedEventStatus: EventStateResItem[] = await EventStateController.calculateEventsStatus(connection, ensureArray(eventPropsForCalc));
+            const updatedEventsStatus: EventStateResItem[] = await EventStateController.buildTikEvents(connection, ensureArray(eventPropsForCalc));
             await connection.commit();
-            dd(updatedEventStatus)
+            dd(updatedEventsStatus)
             const tikAction = eventProgress.COMPLETED ? 'add' : 'update';
-            const updatedEventStatusWithTikAction = this.addTikActionForEvents(updatedEventStatus, tikAction);
+            const updatedEventStatusWithTikAction = this.addTikActionForEvents(updatedEventsStatus, tikAction);
             dd(updatedEventStatusWithTikAction)
             // request to tik@back
             let tikResponse;
@@ -310,12 +341,20 @@ export class EventStateController {
                 //   }
                 // }
             );
-            dd(tikResponse)
-            return { 
-                success: true, 
-                isDuplicate: eventStatus.status === eventProgress.COMPLETED,
-                actualEventId: eventProgress.COMPLETED ? createdEventId : eventId,
-                tik_updateEventsState_res: parseServerResponse(tikResponse)
+            
+            return {
+                [thisProjectResProp()]: {
+                    success: true,
+                    isDuplicate: eventStatus.status === eventProgress.COMPLETED,
+                    actualEventId: eventProgress.COMPLETED ? createdEventId : eventId, //eventS!
+                    addedEvents: [{
+                        id: createdEventId,
+                        name: eventProps.name,
+                        length: eventProps.length,
+                        access_level: "owner",
+                    }],
+                },
+                [tikResProp()]: parseServerResponse(tikResponse)
             };
         } catch (error: any) { 
             console.log(error)
@@ -649,7 +688,8 @@ export class EventStateController {
         }
     }
 
-    static async calculateEventsStatus(connection, events: MinimalEventProps[]): Promise<EventStateResItem[]> {
+    static async buildTikEvents(connection, events: MinimalEventProps | MinimalEventProps[]): Promise<EventStateResItem[]> {
+        events = ensureArray(events);
         const eventsWithStatus = await Promise.all(
             events.map(async (eventProps: MinimalEventProps) => {
                 const eventStatus = await this.calculateEventStatus(connection, eventProps);

@@ -6,7 +6,17 @@ import { ensureArray } from '../utils/ensureArray';
 import { EventStateController } from './eventStateController';
 import { buildOuterEntityId } from '../utils/buildOuterEntityId';
 import { parseServerResponse } from '../utils/parseServerResponse';
-import { thisProjectResProp } from '../utils/thisProjectResProp';
+import { thisProjectResProp, tikResProp } from '../utils/getResProp';
+
+// export interface eventProps {
+// 	"id": 18,
+//         "name": "Morning Focus 2",
+//         "length": 25,
+//         "type": 2,
+//         "created_at": "2025-12-12T08:49:43.000Z",
+//         "type_name": "Работа",
+//         "access_level": "owner"
+// }
 
 dotenv.config();
 
@@ -193,7 +203,7 @@ export class EventController {
 					success: result.affectedRows > 0,
 					ids: [eventId]
 				},
-				tikRes: parseServerResponse(tikResponse),
+				[tikResProp()]: parseServerResponse(tikResponse),
 			}
 		} catch (error) { 
 			console.log(error)

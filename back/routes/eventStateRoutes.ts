@@ -12,7 +12,7 @@ router.post('/set-event-state', async (req, res) => {
     const { eventId, state } = req.body;
     const user = getUserFromRequest(req);
     const itemId = await EventStateController.createOrUpdateEventState(
-      eventId, state, user
+      user, eventId, state
     );
     res.status(201).json({ eventState: itemId });
   } catch (error: unknown) {
@@ -44,8 +44,11 @@ router.post('/play', async (req, res) => {
   try {
     const user = getUserFromRequest(req);
     const { eventId } = req.body;
-    const data = await EventStateController.playOrDuplicateEvent(user, eventId);
-    res.json(data);
+    const result = await EventStateController.playOrDuplicateEvent(user, eventId);
+    // res.json(data);
+    res.json({ 
+      data: result
+    });
   } catch (error) {
     handleError(res as unknown as Response, error) 
   }
