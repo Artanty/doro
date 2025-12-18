@@ -62,7 +62,7 @@ export class EventStateController {
 
             // Check if event exists and user has access
             const [eventWithAccess] = await connection.execute(
-                `SELECT e.id, e.length e.access_level FROM events e 
+                `SELECT e.id, e.length, etu.access_level FROM events e 
                  INNER JOIN eventToUser etu ON e.id = etu.event_id 
                  WHERE e.id = ? AND etu.user_handler = ?
                  LIMIT 1`,
@@ -254,12 +254,14 @@ export class EventStateController {
             if (eventWithAccess.length < 1) {
                 throw new Error('no event entry found')
             }
-            
+         
             const eventProps: EventPropsPure = eventWithAccess[0];
+         
             const eventStatus: EventStatus = await this.calculateEventStatus(connection, eventProps);
-
+         
             if (eventStatus.status === eventProgress.STOPPED || eventStatus.status === eventProgress.PAUSED) {
-                dd('CHANGING STATE OF EXISTING EVENT')
+                dd('CHANGING STATE (PLAYING) OF EXISTING EVENT')
+                
                 const [result] = await connection.execute(
                     `INSERT INTO eventState (eventId, state) 
                  VALUES (?, ?) 
@@ -268,7 +270,7 @@ export class EventStateController {
                      updated_at = CURRENT_TIMESTAMP`,
                     [eventId, state]
                 );
-
+                
                 // Add entry to history table
                 await connection.execute(
                     `INSERT INTO eventStateHistory (eventId, state) 
@@ -312,9 +314,14 @@ export class EventStateController {
             }
             
             // eventProgress.COMPLETED - add event copy
-            const eventPropsForCalc = { id: eventProgress.COMPLETED ? createdEventId : eventId, length: eventProps.length }
+            const eventPropsForCalc = { id: eventStatus.status === eventProgress.COMPLETED ? createdEventId : eventId, length: eventProps.length }
+            dd(eventPropsForCalc)
+            dd(eventProgress.COMPLETED)
+            dd(eventProgress.COMPLETED ? createdEventId : eventId)
+            dd(createdEventId)
+            dd(eventId)
             // build event for tik
-            const updatedEventsStatus: EventStateResItem[] = await EventStateController.buildTikEvents(connection, ensureArray(eventPropsForCalc));
+            const updatedEventsStatus: EventStateResItem[] = await EventStateController.buildTikEvents(connection, eventPropsForCalc);
             await connection.commit();
             dd(updatedEventsStatus)
             const tikAction = eventProgress.COMPLETED ? 'add' : 'update';
@@ -690,6 +697,7 @@ export class EventStateController {
 
     static async buildTikEvents(connection, events: MinimalEventProps | MinimalEventProps[]): Promise<EventStateResItem[]> {
         events = ensureArray(events);
+        dd(events)
         const eventsWithStatus = await Promise.all(
             events.map(async (eventProps: MinimalEventProps) => {
                 const eventStatus = await this.calculateEventStatus(connection, eventProps);
