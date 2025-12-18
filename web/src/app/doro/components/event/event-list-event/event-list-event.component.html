@@ -1,46 +1,97 @@
 @if (eventState$ | async; as eventState) {
-  
-  <!-- <pre>{{eventState|json}}</pre> -->
   <li>
-    
     <div>
-      <div class="name">
-  {{eventProps?.id}} | {{ eventProps.name }} | {{ eventState.eventState }} 
-      </div>
       <ng-container *ngIf="eventState.viewState === 'READY_VIEW_STATE'">
-        <div *ngIf="eventState.eventState === EventStates.COMPLETED" class="timer">
-          COMPLETED
-          <i title="play" class="mu mu-play" (click)="playEvent()"></i>
-          <br>
-          <i title="delete" class="mu mu-i-cross" (click)="deleteEvent()"></i>   
-        </div>
-        <div *ngIf="eventState.eventState === EventStates.PLAYING" class="timer">
-          PLAYING
-          <pre>{{ eventState.data?.cur }}</pre>
-          <br>
-          <i title="delete" class="mu mu-i-cross" (click)="deleteEvent()"></i>   
-        </div>
-        <div *ngIf="eventState.eventState === EventStates.PAUSED" class="timer">
-          <pre>isPaused</pre>
-          <br>
-          <i title="delete" class="mu mu-i-cross" (click)="deleteEvent()"></i>   
-        </div>
-        <div *ngIf="eventState.eventState === EventStates.STOPPED" class="timer">
-          <pre>isStopped</pre>
-          <br>
-          <i title="delete" class="mu mu-i-cross" (click)="deleteEvent()"></i>   
-        </div>
+
+        <ng-container [ngTemplateOutlet]="name"></ng-container>
         
-        <div *ngIf="eventState.eventState === EventStates.PENDING" class="timer">
-          <pre>PENDING</pre>
-          <br>
-          <i title="delete" class="mu mu-i-cross" (click)="deleteEvent()"></i>   
-        </div>
+        <ng-container [ngTemplateOutlet]="readableState"></ng-container>
+
+        <ng-container [ngTemplateOutlet]="playButton"></ng-container>
+
+        <ng-container [ngTemplateOutlet]="pauseButton"></ng-container>
+
+        <ng-container 
+          [ngTemplateOutlet]="progressBar" 
+          [ngTemplateOutletContext]="{$implicit: eventState.data}"
+        ></ng-container>
+
+       <!--  <ng-container [ngSwitch]="eventState.eventState">
+          <ng-container *ngSwitchCase="EventStates.COMPLETED">
+            <pre>IS COMPLETED</pre>
+            <ng-container [ngTemplateOutlet]="playButton"></ng-container>
+          </ng-container>
+          
+          <ng-container *ngSwitchCase="EventStates.PLAYING">
+            PLAYING
+            <ng-container 
+              [ngTemplateOutlet]="progressBar" 
+              [ngTemplateOutletContext]="{$implicit: eventState.data}"
+            ></ng-container>
+          </ng-container>
+          
+          <ng-container *ngSwitchCase="EventStates.PAUSED">
+            <pre>IS PAUSED</pre>
+            <ng-container [ngTemplateOutlet]="playButton"></ng-container>
+          </ng-container>
+          
+          <ng-container *ngSwitchCase="EventStates.STOPPED">
+            <pre>IS STOPPED</pre>
+            <ng-container [ngTemplateOutlet]="playButton"></ng-container>
+          </ng-container>
+          
+          <ng-container *ngSwitchCase="EventStates.PENDING">
+            <pre>??? IS PENDING</pre>
+          </ng-container>
+        </ng-container>  -->
+        
       </ng-container>
 
-      <div class="percent">
-        {{ eventState.data?.prc }}%
-      </div>
+      <ng-template #name let-data>
+        <div class="name">
+          {{ eventProps.id }} | {{ eventProps.name }}
+          <ng-container [ngTemplateOutlet]="deleteButton"></ng-container>
+        </div>
+      </ng-template>
+
+      <ng-template #readableState>
+        @if (eventState && eventState.eventState) {
+          IS {{ eventStateNames[eventState.eventState] }}  
+        }
+        
+      </ng-template>
+
+      <ng-template #playButton>
+        @if (eventState.eventState !== EventStates.PLAYING) {
+          <i title="play" class="mu mu-play" (click)="playEvent()"></i>
+        }
+      </ng-template>
+
+      <ng-template #pauseButton>
+        <!-- @if (eventState.eventState !== EventStates.PLAYING) { -->
+          <i title="pause" class="mu mu-pause" (click)="pauseEvent()"></i>
+        <!-- } -->
+      </ng-template>
+
+      <ng-template #progressBar let-data>
+        <div class="progressBar">
+          <div class="time">
+            {{ data?.cur }}
+          </div>
+          |
+          <div class="percent">
+            {{ data?.prc }}%
+          </div>
+        </div>
+      </ng-template>
+
+      <ng-template #deleteButton>
+        <i title="delete" class="mu mu-i-cross" (click)="deleteEvent()"></i>
+      </ng-template>
+
+      
+
+
       <ng-container *ngIf="eventState.viewState === 'LOADING_VIEW_STATE'">
         <div *ngIf="eventState.eventState === EventStates.PENDING" class="timer">
           <pre>PENDING</pre>
@@ -48,17 +99,6 @@
       </ng-container>
     </div>
     <div class="action">
-
-
-
-     <!--  <div *ngIf="(eventState.viewState === 'READY_VIEW_STATE') && (eventState.eventState !== 'ERROR_VIEW_STATE') && (eventState.eventState !== 'PENDING')">
-          <ng-container *ngIf="eventState.eventState === 'isRunning'" >
-            <i title="pause" class="mu mu-pause" (click)="pauseEvent()"></i>    
-          </ng-container>
-          <ng-container *ngIf="(eventState.eventState === 'isPaused') || eventState.eventState === 'inactive'" >
-            <i title="play" class="mu mu-play" (click)="playEvent()"></i>    
-          </ng-container>
-      </div> -->
 
       <div *ngIf="eventState.viewState === 'ERROR_VIEW_STATE'" class="timer">
           <pre>ERROR</pre>

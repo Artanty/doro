@@ -22,14 +22,16 @@
 	</ul>	
 </div>
  -->
- <div class="list-wrapper">
-  <ul>
-  	@for(event of events$ | async; track event) {
-  		<app-event-list-event
-	      [eventProps]="event"
-	      (actionAway)="handleEventAction($event)"
-	      (deleteEvent)="deleteEvent($event)">
-	    </app-event-list-event>	
-  	}
-  </ul>  
-</div>
+
+@if (events$ | async; as events) {
+	<div class="list-wrapper">
+	  <ul>
+	  	@for(event of events; track event) {
+	  		<app-event-list-event 
+		      [eventProps]="event"
+		      >
+		    </app-event-list-event>	
+	  	}
+	  </ul>
+	</div>
+}

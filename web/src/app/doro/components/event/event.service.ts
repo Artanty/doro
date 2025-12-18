@@ -1,6 +1,6 @@
-import { Inject, Injectable } from '@angular/core';
+import { ChangeDetectorRef, Inject, Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, distinctUntilChanged, filter, map, Observable, of, throwError, catchError, switchMap, tap, Subject } from 'rxjs';
+import { BehaviorSubject, distinctUntilChanged, filter, map, Observable, of, throwError, catchError, switchMap, tap, Subject, take } from 'rxjs';
 import { EventProps, EventState, EventStateReq, EventStateRes, EventWithState, SetPlayEventStateReq } from './event.model';
 import { dd } from '../../helpers/dd';
 import { basicEventTypePrefix, devPoolId, EventProgressType, EventStates } from '../../constants';
@@ -36,9 +36,6 @@ export class EventService {
 
   public events$ = new BehaviorSubject<EventProps[]>([]);
 
-  private eventStreams$ = new BehaviorSubject<Map<string, EventData>>(new Map());
-  
-  // public eventList$ = new BehaviorSubject<EventWithState[]>([]);
   constructor(
     private http: HttpClient,
     @Inject(EVENT_BUS_LISTENER)
@@ -49,6 +46,9 @@ export class EventService {
     })
   }
 
+  public listenEvents() {
+    return this.events$.asObservable();
+  }
   // Get all entries for current user from events db
   // get current connections
   getAllEvents(): Observable<EventProps[]> {
@@ -72,10 +72,16 @@ export class EventService {
       );
   }
 
-  setPlayEventStateApi(data: SetPlayEventStateReq): Observable<any> {
-    return this.http.post<EventStateRes>(`${this.doroBaseUrl}/event-state/play`, data)
+  playEventApi(data: SetPlayEventStateReq): Observable<any> {
+    return this.http.post<any>(`${this.doroBaseUrl}/event-state/play`, data)
       .pipe(
-        map(res => res.eventState)
+        map(res => {
+          if (res.data?.[thisProjectResProp()]?.success) {
+            return res.data[thisProjectResProp()];
+          } else {
+            throw new Error('playEventApi wrong response')
+          }
+        })
       );
   }
 
@@ -93,10 +99,11 @@ export class EventService {
   }
 
   loadEvents() {
-    return this.getUserEventsApi()
+    this.getUserEventsApi()
       .pipe(
+        take(1),
         tap((res: EventProps[]) => this.events$.next(res))
-      )
+      ).subscribe()
   }
 
   // flow: doro@web -> doro@back -> tik@back -> tik@web -> doro@web
@@ -107,10 +114,22 @@ export class EventService {
   public playEvent(eventId: number, isGuiEvent: boolean): void {
     dd('eventService.playEvent');
   
-    this.setPlayEventStateApi({ "eventId": eventId }).pipe(
+    this.playEventApi({ "eventId": eventId }).pipe(
       // @ts-ignore
       tap((res: any) => {
+        
         // this._connectToTikPool(tikProjectId, tikEventId)
+        // "success": true,
+        //         "isDuplicate": true,
+        //         "actualEventId": 49,
+        //         "addedEvents": [
+        //             {
+        //                 "id": 49,
+        //                 "name": "Morning Focus 2",
+        //                 "length": 25,
+        //                 "access_level": "owner"
+        //             }
+        //         ]
       }),
       catchError(error => {
         console.error('Failed to play event:', error);
@@ -119,20 +138,41 @@ export class EventService {
       // @ts-ignore
     ).subscribe((res: any) => {
       console.log(res)
+      if (res.isDuplicate) {
+        if (Array.isArray(res.addedEvents) && res.addedEvents.length) {
+          const eventsToUpdate = this.events$.getValue();
+          eventsToUpdate.push(...res.addedEvents)
+          this.events$.next(eventsToUpdate);
+        }
+      }
     })   
   }
 
   public deleteEvent(id: number) {
-    return this.deleteEventApi({ id: id }).pipe(
+    this.deleteEventApi({ id: id }).pipe(
+      tap((idsToDelete: number[]) => {
+        const currentEvents = this.events$.getValue();
+        const updatedEvents = currentEvents.filter(e => !idsToDelete.includes(e.id));
+        this.events$.next(updatedEvents);
+      }),
       catchError(error => {
         console.error('Failed to delete event:', error);
         return throwError(() => new Error(`Failed to delete event ${id}: ${error.message}`));
       }),
+    ).subscribe()
+  }
+
+  public deleteEvent2(id: number) {
+    return this.deleteEventApi({ id: id }).pipe(
       tap((idsToDelete: number[]) => {
-        let eventsToUpdate = this.events$.getValue();
-        eventsToUpdate = eventsToUpdate.filter((e: EventProps) => !idsToDelete.includes(e.id));
-        this.events$.next(eventsToUpdate);
-      })
+        const currentEvents = this.events$.getValue();
+        const updatedEvents = currentEvents.filter(e => !idsToDelete.includes(e.id));
+        this.events$.next(updatedEvents);
+      }),
+      catchError(error => {
+        console.error('Failed to delete event:', error);
+        return throwError(() => new Error(`Failed to delete event ${id}: ${error.message}`));
+      }),
     )
   }
 
@@ -143,6 +183,7 @@ export class EventService {
       "eventId": eventId, 
       "state": 2
     })
+      .subscribe()
   }
 
 

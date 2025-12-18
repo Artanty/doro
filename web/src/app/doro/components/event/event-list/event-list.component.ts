@@ -1,11 +1,11 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 // import { hexColor } from '../../../utilites/hex-color';
 import { CommonModule } from '@angular/common';
 import { EventProps, EventWithState } from '../event.model';
 import { EventService } from '../event.service';
 import { Router } from '@angular/router';
 import { GuiDirective } from '../../_remote/web-component-wrapper/gui.directive';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, debounceTime, delay, Observable, shareReplay, tap } from 'rxjs';
 import { EventListEventComponent } from '../event-list-event/event-list-event.component';
 import { dd } from 'src/app/doro/helpers/dd';
 
@@ -24,10 +24,15 @@ export class EventListComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private router: Router
   ) {
-    this.events$ = this.eventService.events$.asObservable().pipe(tap(res => {
-      dd(res);
-      this.cdr.detectChanges();
-    }))
+    this.events$ = this.eventService.listenEvents().pipe(
+      // debounceTime(50),
+      // shareReplay(1),
+      // delay(500),
+      tap(res => {
+        setTimeout(() => {}, 1000); // crutch to update state
+        // this.cdr.detectChanges()
+      })
+    );
   }
 
   menuItems = [
@@ -38,20 +43,12 @@ export class EventListComponent implements OnInit {
   // }
 
   ngOnInit() {
-    this._loadEvents();
+    this.eventService.loadEvents();
   }
 
-  public handleEventAction(data: [string, any]): void {
-    // const [action, eventId] = data
-    // switch (action) {
-    //   case 'play': this.playEvent(eventId)
-    //     break;
-    //   case 'pause': this.pauseEvent(eventId)
-    //     break;
-    //   default: throw new Error(`Action ${action} not implemented`)
-    // }
-    dd(data)
-  }
+  
+
+  
 
   // public playEvent(eventId: number) {
   //   this.eventService.playEvent(eventId).subscribe(res => {
@@ -96,14 +93,5 @@ export class EventListComponent implements OnInit {
   //   this.router.navigateByUrl('/note/keyword-edit' + '/' + id)
   // }
 
-  private _loadEvents(): void {
-    this.eventService.loadEvents().subscribe({
-      next: (events) => {
-        // this.events$.next(events)
-        this.cdr.detectChanges()
-        // dd(events)
-      },
-      error: (err) => console.error('Error loading events:', err)
-    });
-  }
+ 
 }
