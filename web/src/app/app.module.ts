@@ -59,7 +59,7 @@ const eventBus$ = new BehaviorSubject(initBusEvent)
    */
   providers: [
     { provide: EVENT_BUS, useValue: eventBus$ },
-    { provide: HOST_NAME, useValue: 'DORO' },
+    { provide: HOST_NAME, useValue: 'DORO-STANDALONE' },
     provideHttpClient(
       // DI-based interceptors must be explicitly enabled.
       withInterceptorsFromDi(),

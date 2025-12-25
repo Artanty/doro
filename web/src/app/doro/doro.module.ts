@@ -34,6 +34,9 @@ import { EventService } from './components/event/event.service';
 
 import { EventListEventComponent } from './components/event/event-list-event/event-list-event.component';
 import { GuiDirective } from './components/_remote/web-component-wrapper/gui.directive';
+import { TimerComponent } from './components/event/timer/timer.component';
+import { TimerWrapperComponent } from './components/event/timer-wrapper/timer-wrapper.component';
+import { eventResolver } from './components/event/timer-wrapper/event.resolver';
 
 // function initConfigActivator(counterServ: CounterService) {
 //   return () => counterServ.scheduleConfigActivator();
@@ -51,8 +54,15 @@ export const CHILD_ROUTES = [
       {
         path: 'event-list', component: EventListComponent
       },
+      {
+        path: 'timer/:id', 
+        component: TimerWrapperComponent,
+        resolve: {
+          event: eventResolver
+        }
+      },
     ]
-  }, 
+  },
 ]
 
 @NgModule({
@@ -70,6 +80,8 @@ export const CHILD_ROUTES = [
     // ScrollDirective,
     EventListComponent,
     EventListEventComponent,
+    TimerComponent,
+    TimerWrapperComponent,
     
   ],
   imports: [

@@ -1,9 +1,9 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Optional, Inject, OnInit } from "@angular/core";
 import { StoreService } from "./services/store.service";
 import { combineLatestWith, map, Observable, tap } from "rxjs";
 import { TConnectionState, TTab } from "./models/app.model";
 import { SseService } from "./services/sse.service";
-import { BusEvent, EVENT_BUS_LISTENER } from "typlib";
+import { BusEvent, EVENT_BUS_LISTENER, HOST_NAME } from "typlib";
 import { animate, style, transition, trigger } from "@angular/animations";
 import { Router } from "@angular/router";
 
@@ -47,6 +47,7 @@ export class DoroComponent implements OnInit {
     // @Inject(EVENT_BUS_PUSHER)
     // private readonly eventBusPusher: (busEvent: BusEvent) => void,
     private router: Router,
+    @Optional() @Inject(HOST_NAME) private hostName?: string,
   ) {
    
     
@@ -74,7 +75,13 @@ export class DoroComponent implements OnInit {
 
   ngOnInit(): void {
     // this.createEventSourceOnce();
-    this.router.navigateByUrl('/doro/event-list')
+    if (this.hostName === 'DORO-STANDALONE') {
+      this.router.navigateByUrl('/doro/timer/209')  
+    } else {
+      this.router.navigateByUrl('/doro/event-list')
+    }
+    
+
   }
 
   createEventSourceOnce() {

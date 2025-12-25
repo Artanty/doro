@@ -98,15 +98,20 @@ export class EventService {
       );
   }
 
-  loadEvents() {
-    this.getUserEventsApi()
+  loadEvents(): Observable<boolean> {
+    return this.getUserEventsApi()
       .pipe(
         take(1),
         tap((res: EventProps[]) => {
           dd(res)
           this.events$.next(res)
-        })
-      ).subscribe()
+        }),
+        catchError((err: any) => {
+          return of(false);
+        }),
+        map(() => true),
+      )
+    // .subscribe()
   }
 
   // flow: doro@web -> doro@back -> tik@back -> tik@web -> doro@web

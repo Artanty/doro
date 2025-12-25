@@ -5,19 +5,19 @@ import { EventProps, EventWithState } from '../event.model';
 import { EventService } from '../event.service';
 import { Router } from '@angular/router';
 import { GuiDirective } from '../../_remote/web-component-wrapper/gui.directive';
-import { BehaviorSubject, debounceTime, delay, Observable, shareReplay, tap } from 'rxjs';
+import { BehaviorSubject, debounceTime, delay, Observable, shareReplay, take, tap } from 'rxjs';
 import { EventListEventComponent } from '../event-list-event/event-list-event.component';
 import { dd } from 'src/app/doro/helpers/dd';
 
 @Component({
   selector: 'app-event-list',
   standalone: false,
-//   standalone: true,
-//   imports: [
-//   GuiDirective, 
-//   CommonModule, 
-//   EventListEventComponent
-// ],
+  //   standalone: true,
+  //   imports: [
+  //   GuiDirective, 
+  //   CommonModule, 
+  //   EventListEventComponent
+  // ],
   templateUrl: './event-list.component.html',
   styleUrl: './event-list.component.scss'
 })
@@ -52,7 +52,7 @@ export class EventListComponent implements OnInit {
   // }
 
   ngOnInit() {
-    this.eventService.loadEvents();
+    this.eventService.loadEvents().pipe(take(1)).subscribe();
   }
 
   

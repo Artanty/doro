@@ -3,47 +3,24 @@
     <div>
       <ng-container *ngIf="eventState.viewState === 'READY_VIEW_STATE'">
 
-        <ng-container [ngTemplateOutlet]="name"></ng-container>
+     <!--    <ng-container [ngTemplateOutlet]="name"></ng-container>
         
-        <ng-container [ngTemplateOutlet]="readableState"></ng-container>
+        <ng-container [ngTemplateOutlet]="readableState"></ng-container> -->
 
         <ng-container [ngTemplateOutlet]="playButton"></ng-container>
 
         <ng-container [ngTemplateOutlet]="pauseButton"></ng-container>
 
-        <ng-container 
+      <!--   <ng-container 
           [ngTemplateOutlet]="progressBar" 
           [ngTemplateOutletContext]="{$implicit: eventState.data}"
-        ></ng-container>
+        ></ng-container> -->
 
-       <!--  <ng-container [ngSwitch]="eventState.eventState">
-          <ng-container *ngSwitchCase="EventStates.COMPLETED">
-            <pre>IS COMPLETED</pre>
-            <ng-container [ngTemplateOutlet]="playButton"></ng-container>
-          </ng-container>
-          
-          <ng-container *ngSwitchCase="EventStates.PLAYING">
-            PLAYING
-            <ng-container 
-              [ngTemplateOutlet]="progressBar" 
-              [ngTemplateOutletContext]="{$implicit: eventState.data}"
-            ></ng-container>
-          </ng-container>
-          
-          <ng-container *ngSwitchCase="EventStates.PAUSED">
-            <pre>IS PAUSED</pre>
-            <ng-container [ngTemplateOutlet]="playButton"></ng-container>
-          </ng-container>
-          
-          <ng-container *ngSwitchCase="EventStates.STOPPED">
-            <pre>IS STOPPED</pre>
-            <ng-container [ngTemplateOutlet]="playButton"></ng-container>
-          </ng-container>
-          
-          <ng-container *ngSwitchCase="EventStates.PENDING">
-            <pre>??? IS PENDING</pre>
-          </ng-container>
-        </ng-container>  -->
+      
+       <app-timer 
+       	[percentage]="getPrc(eventState)
+       		" 
+       ></app-timer>
         
       </ng-container>
 
@@ -102,6 +79,7 @@
 
       <div *ngIf="eventState.viewState === 'ERROR_VIEW_STATE'" class="timer">
           <pre>ERROR</pre>
+          <pre>{{eventState.error}}</pre>
         </div>
 
       <div gui type="dropdown"
