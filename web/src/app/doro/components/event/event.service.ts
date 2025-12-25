@@ -75,6 +75,7 @@ export class EventService {
     return this.http.post<any>(`${this.doroBaseUrl}/event-state/play`, data)
       .pipe(
         map(res => {
+          dd(res)
           if (res.data.success) {
             return res.data;
           } else {
@@ -101,7 +102,10 @@ export class EventService {
     this.getUserEventsApi()
       .pipe(
         take(1),
-        tap((res: EventProps[]) => this.events$.next(res))
+        tap((res: EventProps[]) => {
+          dd(res)
+          this.events$.next(res)
+        })
       ).subscribe()
   }
 

@@ -32,6 +32,9 @@ import { dd } from './helpers/dd';
 import { EventListComponent } from './components/event/event-list/event-list.component';
 import { EventService } from './components/event/event.service';
 
+import { EventListEventComponent } from './components/event/event-list-event/event-list-event.component';
+import { GuiDirective } from './components/_remote/web-component-wrapper/gui.directive';
+
 // function initConfigActivator(counterServ: CounterService) {
 //   return () => counterServ.scheduleConfigActivator();
 // }
@@ -65,6 +68,9 @@ export const CHILD_ROUTES = [
     // FormArrayComponent,
     // EndEventScreenComponent,
     // ScrollDirective,
+    EventListComponent,
+    EventListEventComponent,
+    
   ],
   imports: [
     CommonModule,
@@ -75,6 +81,8 @@ export const CHILD_ROUTES = [
     AudioComponent,
     RouterModule.forChild(CHILD_ROUTES),
     // HttpClientModule,
+    GuiDirective
+    
   ],
   // exports: [DoroComponent, MyCustomElementComponent, LoadingComponent],
   exports: [DoroComponent],

@@ -1,13 +1,19 @@
-import { NgModule } from '@angular/core';
+import { APP_INITIALIZER, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
-import { HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject } from 'rxjs';
 import { BusEvent, EVENT_BUS, HOST_NAME } from 'typlib';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { DoroModule } from './doro/doro.module';
+import { MockInterceptor } from './app.mock.interceptor';
+
+import { initializeIconFallback } from './app.icon-fallback.observer';
+import { MockBackService } from './app.mock.back.service';
+
+
 
 // export const authStrategyBusEvent: BusEvent = {
 //   from: 'DORO',
@@ -33,7 +39,10 @@ export const initBusEvent: BusEvent = {
 const eventBus$ = new BehaviorSubject(initBusEvent)
 
 @NgModule({
-  declarations: [AppComponent],
+  declarations: [
+    AppComponent,
+    // GlobalIconFallbackDirective
+  ],
   imports: [
     // CommonModule,
     BrowserModule,
@@ -41,6 +50,8 @@ const eventBus$ = new BehaviorSubject(initBusEvent)
     BrowserAnimationsModule,
     DoroModule,
     HttpClientModule,
+    // GlobalIconFallbackDirective,
+    // SharedModule
   ],
   /**
    * Эти провайдеры для standalone сборки приложения DORO
@@ -49,8 +60,35 @@ const eventBus$ = new BehaviorSubject(initBusEvent)
   providers: [
     { provide: EVENT_BUS, useValue: eventBus$ },
     { provide: HOST_NAME, useValue: 'DORO' },
+    provideHttpClient(
+      // DI-based interceptors must be explicitly enabled.
+      withInterceptorsFromDi(),
+    ),
+    { provide: HTTP_INTERCEPTORS, useClass: MockInterceptor, multi: true },
+    // {
+    //   provide: APP_INITIALIZER,
+    //   useFactory: (loader: DirectiveLoaderService) => () => {
+    //     // Register root directives
+    //     loader.registerRootDirectives([IconFallbackDirectiveService]);
+    //     return Promise.resolve();
+    //   },
+    //   deps: [DirectiveLoaderService],
+    //   multi: true
+    // },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeIconFallback,
+      multi: true
+    }
   ],
   bootstrap: [AppComponent],
   schemas: [],
+
 })
-export class AppModule {}
+export class AppModule {
+  constructor(
+    private _mockBackService: MockBackService
+  ) {
+    this._mockBackService.init()
+  }
+}

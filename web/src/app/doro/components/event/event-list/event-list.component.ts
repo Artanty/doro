@@ -11,8 +11,13 @@ import { dd } from 'src/app/doro/helpers/dd';
 
 @Component({
   selector: 'app-event-list',
-  standalone: true,
-  imports: [GuiDirective, CommonModule, EventListEventComponent],
+  standalone: false,
+//   standalone: true,
+//   imports: [
+//   GuiDirective, 
+//   CommonModule, 
+//   EventListEventComponent
+// ],
   templateUrl: './event-list.component.html',
   styleUrl: './event-list.component.scss'
 })
@@ -29,8 +34,12 @@ export class EventListComponent implements OnInit {
       // shareReplay(1),
       // delay(500),
       tap(res => {
+        dd(res)
         setTimeout(() => {}, 1000); // crutch to update state
-        // this.cdr.detectChanges()
+        
+        // setTimeout(() => {
+        //   this.cdr.detectChanges()
+        // }, 1000); // crutch to update state
       })
     );
   }

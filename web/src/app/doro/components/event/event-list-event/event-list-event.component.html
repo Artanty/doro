@@ -1,3 +1,4 @@
+<!-- <i title="play" class="mu mu-play"></i> -->
 @if (eventState$ | async; as eventState) {
   <li>
     <div>
@@ -68,9 +69,9 @@
       </ng-template>
 
       <ng-template #pauseButton>
-        <!-- @if (eventState.eventState !== EventStates.PLAYING) { -->
+        @if (eventState.eventState === EventStates.PLAYING) {
           <i title="pause" class="mu mu-pause" (click)="pauseEvent()"></i>
-        <!-- } -->
+        }
       </ng-template>
 
       <ng-template #progressBar let-data>

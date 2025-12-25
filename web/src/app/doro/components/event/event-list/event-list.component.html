@@ -26,7 +26,9 @@
 @if (events$ | async; as events) {
 	<div class="list-wrapper">
 	  <ul>
+
 	  	@for(event of events; track event) {
+	  		<!-- <pre>{{event | json }}</pre> -->
 	  		<app-event-list-event 
 		      [eventProps]="event"
 		      >

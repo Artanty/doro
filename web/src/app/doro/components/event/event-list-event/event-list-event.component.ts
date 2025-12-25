@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Injector, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { Observable, Subject, takeUntil, filter, startWith, distinctUntilChanged, map, tap, withLatestFrom, catchError, EMPTY, finalize } from 'rxjs';
 import { EventProps, EventState, EventViewState, EventWithState } from '../event.model';
 import { EventData, EventService, EventStateResItem } from '../event.service';
@@ -7,11 +7,15 @@ import { GuiDirective } from '../../_remote/web-component-wrapper/gui.directive'
 import { dd } from 'src/app/doro/helpers/dd';
 import { EventStates } from 'src/app/doro/constants';
 
+
 export type EventStateResItemStateless = Omit<EventStateResItem, 'stt'>
 @Component({
   selector: 'app-event-list-event',
-  standalone: true,
-  imports: [GuiDirective, CommonModule],
+  standalone: false,
+  // standalone: true,
+  // imports: [GuiDirective, CommonModule,
+  //   // GlobalIconFallbackDirective
+  // ],
   templateUrl: './event-list-event.component.html',
   styleUrl: './event-list-event.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -37,8 +41,12 @@ export class EventListEventComponent implements OnInit, OnDestroy {
   public eventState: any = null
   constructor(
     private cdr: ChangeDetectorRef,
-    private eventService: EventService
-  ) {}
+    private eventService: EventService,
+    private injector: Injector
+  ) {
+    // const service = this.injector.get(IconFallbackService);
+    // console.log(service)
+  }
   
   // loading view state
   // play loading

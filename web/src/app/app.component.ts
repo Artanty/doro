@@ -47,4 +47,7 @@ export class AppComponent {
   custom() {
     console.log(`${process.env['SERVER_URL']}`);
   }
+  play() { console.log('Play'); }
+  pause() { console.log('Pause'); }
+  stop() { console.log('Stop'); }
 }

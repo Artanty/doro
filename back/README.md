@@ -1,3 +1,5 @@
+0=inactive, 1=active, 2=paused
+
 -- Create eventTypes table first (due to foreign key dependency)
 CREATE TABLE eventTypes (
     id INT PRIMARY KEY AUTO_INCREMENT,

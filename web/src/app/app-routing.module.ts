@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { DoroComponent } from './doro/doro.component';
 import { loadRemoteModule } from '@angular-architects/module-federation'
 
+
 const AU_APP_URL = "http://localhost:4204/remoteEntry.js"
 const AU_APP_URL_PROD = "https://au2.vercel.app/remoteEntry.js"
 
@@ -54,3 +55,12 @@ const routes: Routes = [
   exports: [RouterModule]
 })
 export class AppRoutingModule {}
+
+
+// @NgModule({
+//   imports: [RouterModule.forRoot(routes, {
+//     preloadingStrategy: DirectivePreloadingStrategy  // Custom strategy
+//   })],
+//   exports: [RouterModule]
+// })
+// export class AppRoutingModule {}
