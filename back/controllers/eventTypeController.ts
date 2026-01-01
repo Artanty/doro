@@ -1,4 +1,5 @@
 import createPool from '../core/db_connection';
+import { getUTCDatetime } from '../utils/get-utc-datetime';
 
 export class EventTypeController {
 
@@ -7,8 +8,8 @@ export class EventTypeController {
 		const connection = await pool.getConnection();
 		try {
 			const [result] = await connection.execute(
-				'INSERT INTO eventTypes (name) VALUES (?)',
-				[name]
+				'INSERT INTO eventTypes (name, created_at) VALUES (?, ?)',
+				[name, getUTCDatetime()]
 			);
 			return result.insertId;
 		} catch (error) { 

@@ -15,7 +15,7 @@ function createPool() {
       host: process.env.DB_HOST,
       waitForConnections: true,
       connectionLimit: 10,
-      queueLimit: 0
+      queueLimit: 0,
     });
     pool = thisPool
   }

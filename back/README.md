@@ -4,7 +4,7 @@
 CREATE TABLE eventTypes (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at DATETIME NOT NULL
 );
 
 -- Create events table
@@ -13,7 +13,7 @@ CREATE TABLE events (
     name VARCHAR(255) NOT NULL,
     length INT NOT NULL COMMENT 'Duration in seconds,
     type INT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at DATETIME NOT NULL,
     FOREIGN KEY (type) REFERENCES eventTypes(id) ON DELETE RESTRICT
 );
 
@@ -23,7 +23,7 @@ CREATE TABLE eventToUser (
     event_id INT NOT NULL,
     user_handler VARCHAR(255) NOT NULL COMMENT 'Reference to user from external system',
     access_level ENUM('owner', 'editor', 'viewer') NOT NULL DEFAULT 'viewer',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at DATETIME NOT NULL,
     FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
     INDEX idx_user_handler (user_handler),
     INDEX idx_event_user (event_id, user_handler)
@@ -33,8 +33,8 @@ CREATE TABLE eventState (
     id INT PRIMARY KEY AUTO_INCREMENT,
     eventId INT NOT NULL UNIQUE,
     state INT NOT NULL COMMENT 'State number (0=inactive, 1=active, 2=paused, etc.)',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
     FOREIGN KEY (eventId) REFERENCES events(id) ON DELETE CASCADE,
     INDEX idx_state (state),
     INDEX idx_event_state (eventId, state)

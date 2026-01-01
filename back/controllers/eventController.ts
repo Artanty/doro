@@ -7,6 +7,7 @@ import { EventStateController } from './eventStateController';
 import { buildOuterEntityId } from '../utils/buildOuterEntityId';
 import { parseServerResponse } from '../utils/parseServerResponse';
 import { thisProjectResProp, tikResProp } from '../utils/getResProp';
+import { getUTCDatetime } from '../utils/get-utc-datetime';
 
 // export interface eventProps {
 // 	"id": 18,
@@ -30,22 +31,22 @@ export class EventController {
 
 			// Insert event
 			const [eventResult] = await connection.execute(
-				'INSERT INTO events (name, length, type) VALUES (?, ?, ?)',
-				[name, length, type]
+				'INSERT INTO events (name, length, type, created_at) VALUES (?, ?, ?, ?)',
+				[name, length, type, getUTCDatetime()]
 			);
 			const eventId = eventResult.insertId;
 
 			// Create owner relationship in eventToUser
 			await connection.execute(
-				'INSERT INTO eventToUser (event_id, user_handler, access_level) VALUES (?, ?, ?)',
-				[eventId, userHandle, 'owner']
+				'INSERT INTO eventToUser (event_id, user_handler, access_level, created_at) VALUES (?, ?, ?, ?)',
+				[eventId, userHandle, 'owner', getUTCDatetime()]
 			);
 
 			await connection.execute(
-				`INSERT INTO eventState (eventId, state) 
-                 VALUES (?, ?) 
-                 ON DUPLICATE KEY UPDATE eventId = ?, updated_at = CURRENT_TIMESTAMP`,
-				[eventId, "2", eventId]
+				`INSERT INTO eventState (eventId, state, created_at, updated_at) 
+                 VALUES (?, ?, ?, ?) 
+                 ON DUPLICATE KEY UPDATE eventId = ?`,
+				[eventId, "2", getUTCDatetime(), getUTCDatetime(), eventId]
 			);
 
 			await connection.commit();

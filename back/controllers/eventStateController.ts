@@ -8,6 +8,7 @@ import { ensureArray } from '../utils/ensureArray';
 import { parseServerResponse } from '../utils/parseServerResponse';
 import { buildOuterEntityId } from '../utils/buildOuterEntityId';
 import { thisProjectResProp, tikResProp } from '../utils/getResProp';
+import { getUTCDatetime } from '../utils/get-utc-datetime';
 
 dotenv.config();
 
@@ -96,19 +97,18 @@ export class EventStateController {
 
             // Update or insert current state
             const [result] = await connection.execute(
-                `INSERT INTO eventState (eventId, state) 
-             VALUES (?, ?) 
-             ON DUPLICATE KEY UPDATE 
-                 state = VALUES(state), 
-                 updated_at = CURRENT_TIMESTAMP`,
-                [eventId, state]
+                `INSERT INTO eventState (eventId, state, created_at, updated_at) 
+                 VALUES (?, ?, ?, ?) 
+                 ON DUPLICATE KEY UPDATE 
+                     state = VALUES(state)`,
+                [eventId, state, getUTCDatetime(), getUTCDatetime()]
             );
 
             // Add entry to history table
             await connection.execute(
-                `INSERT INTO eventStateHistory (eventId, state) 
-             VALUES (?, ?)`,
-                [eventId, state]
+                `INSERT INTO eventStateHistory (eventId, state, created_at) 
+             VALUES (?, ?, ?)`,
+                [eventId, state, getUTCDatetime()]
             );
 
             const eventProps: EventPropsPure = eventWithAccess[0];
@@ -192,19 +192,19 @@ export class EventStateController {
         try {
             const [events] = await connection.execute(
                 `SELECT 
-                e.id,
-                e.name,
-                e.length,
-                et.name as event_type,
-                es.state as current_state,
-                es.updated_at as last_state_change,
-                etu.access_level
-             FROM events e
-             INNER JOIN eventToUser etu ON e.id = etu.event_id
-             INNER JOIN eventTypes et ON e.type = et.id
-             LEFT JOIN eventState es ON e.id = es.eventId
-             WHERE etu.user_handler = ?
-             ORDER BY e.created_at DESC`,
+                    e.id,
+                    e.name,
+                    e.length,
+                    et.name as event_type,
+                    es.state as current_state,
+                    es.updated_at as last_state_change,
+                    etu.access_level
+                 FROM events e
+                 INNER JOIN eventToUser etu ON e.id = etu.event_id
+                 INNER JOIN eventTypes et ON e.type = et.id
+                 LEFT JOIN eventState es ON e.id = es.eventId
+                 WHERE etu.user_handler = ?
+                 ORDER BY e.created_at DESC`,
                 [userHandler]
             );
 
@@ -263,19 +263,18 @@ export class EventStateController {
                 dd('CHANGING STATE (PLAYING) OF EXISTING EVENT')
                 
                 const [result] = await connection.execute(
-                    `INSERT INTO eventState (eventId, state) 
-                 VALUES (?, ?) 
+                    `INSERT INTO eventState (eventId, state, created_at, updated_at) 
+                 VALUES (?, ?, ?, ?) 
                  ON DUPLICATE KEY UPDATE 
-                     state = VALUES(state), 
-                     updated_at = CURRENT_TIMESTAMP`,
-                    [eventId, state]
+                     state = VALUES(state)`,
+                    [eventId, state, getUTCDatetime(), getUTCDatetime()]
                 );
                 
                 // Add entry to history table
                 await connection.execute(
-                    `INSERT INTO eventStateHistory (eventId, state) 
-                 VALUES (?, ?)`,
-                    [eventId, state]
+                    `INSERT INTO eventStateHistory (eventId, state, created_at) 
+                 VALUES (?, ?, ?)`,
+                    [eventId, state, getUTCDatetime()]
                 );
 
             } else if (eventStatus.status === eventProgress.COMPLETED) {
@@ -286,28 +285,28 @@ export class EventStateController {
                 const accessLevel = 'owner';
 
                 const [eventResult] = await connection.execute(
-                    'INSERT INTO events (name, length, type) VALUES (?, ?, ?)',
-                    [name, length, type]
+                    'INSERT INTO events (name, length, type, created_at) VALUES (?, ?, ?, ?)',
+                    [name, length, type, getUTCDatetime()]
                 );
                 createdEventId = eventResult.insertId;
 
                 // Create owner relationship in eventToUser
                 await connection.execute(
-                    'INSERT INTO eventToUser (event_id, user_handler, access_level) VALUES (?, ?, ?)',
-                    [createdEventId, userHandler, accessLevel]
+                    'INSERT INTO eventToUser (event_id, user_handler, access_level, created_at) VALUES (?, ?, ?, ?)',
+                    [createdEventId, userHandler, accessLevel, getUTCDatetime()]
                 );
 
                 const [result] = await connection.execute(
-                    `INSERT INTO eventState (eventId, state) 
-                     VALUES (?, ?)`,
-                    [createdEventId, eventProgress.PLAYING]
+                    `INSERT INTO eventState (eventId, state, created_at, updated_at) 
+                     VALUES (?, ?, ?, ?)`,
+                    [createdEventId, eventProgress.PLAYING, getUTCDatetime(), getUTCDatetime()]
                 );
 
                 // Add entry to history table
                 await connection.execute(
-                    `INSERT INTO eventStateHistory (eventId, state) 
-                 VALUES (?, ?)`,
-                    [createdEventId, state]
+                    `INSERT INTO eventStateHistory (eventId, state, created_at) 
+                 VALUES (?, ?, ?)`,
+                    [createdEventId, state, getUTCDatetime()]
                 );
             } else {
                 throw new Error('wrong state of event')
@@ -412,9 +411,9 @@ export class EventStateController {
         // Get all state history for this event
         const [history] = await connection.execute(
             `SELECT state, created_at 
-         FROM eventStateHistory 
-         WHERE eventId = ? 
-         ORDER BY created_at ASC`,
+             FROM eventStateHistory 
+             WHERE eventId = ? 
+             ORDER BY created_at ASC`,
             [eventId]
         );
 
@@ -432,11 +431,11 @@ export class EventStateController {
         // Calculate total active time from history
         for (const record of history) {
             if (record.state === 1 && activeStartTime === null) {
-                // Start of active period
-                activeStartTime = new Date(record.created_at);
+                // Start of active period - create UTC date
+                activeStartTime = new Date(record.created_at + 'Z');
             } else if ((record.state === 0 || record.state === 2) && activeStartTime !== null) {
-                // End of active period - calculate duration
-                const activeEndTime = new Date(record.created_at);
+                // End of active period - calculate duration with UTC date
+                const activeEndTime = new Date(record.created_at + 'Z');
                 const diff = activeEndTime.getTime() - activeStartTime.getTime();
                 const durationSeconds = Math.floor(diff / 1000);
                 totalActiveSeconds += durationSeconds;
@@ -447,7 +446,17 @@ export class EventStateController {
         // If currently active and we have an open active period
         if (currentState === 1 && activeStartTime !== null) {
             const currentTime = new Date();
-            const diff = currentTime.getTime() - activeStartTime.getTime();
+            // Get current time in UTC
+            const currentUTC = Date.UTC(
+                currentTime.getUTCFullYear(),
+                currentTime.getUTCMonth(),
+                currentTime.getUTCDate(),
+                currentTime.getUTCHours(),
+                currentTime.getUTCMinutes(),
+                currentTime.getUTCSeconds(),
+                currentTime.getUTCMilliseconds()
+            );
+            const diff = currentUTC - activeStartTime.getTime();
             const currentActiveSeconds = Math.floor(diff / 1000);
             totalActiveSeconds += currentActiveSeconds;
         }
@@ -725,7 +734,7 @@ export class EventStateController {
                 return res;
             })
         );
-
+        dd(eventsWithStatus)
         return eventsWithStatus;
     }
 }
