@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { countPrc } from '../utils';
 
 @Component({
   selector: 'app-timer',
@@ -9,19 +10,25 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Out
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TimerComponent implements OnChanges {
-  @Input() percentage: number = 0;
+  @Input() time: number = 0;
+  @Input() length: number = 0;
   @Output() percentageChange = new EventEmitter<number>();
 
+  public percentage: number = 0;
+  public timeLeft: number = 0
   // Constants
   private readonly radius = 100;
   private readonly circumference = 2 * Math.PI * this.radius; // ≈ 628.32
   private readonly center = 103;
 
- 
+  ngOnInit(): void {
+
+  }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['percentage']) {
-      // You can add any side effects here when percentage changes
+    if (changes['time'] || changes['length']) {
+      this.percentage = countPrc(this.length, this.time);
+      this.timeLeft = this.length - this.time;
     }
   }
 

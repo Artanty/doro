@@ -15,6 +15,13 @@ export class MockBackService {
 		"stt": 2,
 		"id": "e_209"
 	}
+	// private _event1 = {
+	// 	"cur": 4000,
+	// 	"len": 25000,
+	// 	"prc": 12,
+	// 	"stt": 2,
+	// 	"id": "e_209"
+	// }
 	constructor(
 		private injector: Injector,
 		@Inject(EVENT_BUS_LISTENER)

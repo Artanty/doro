@@ -61,8 +61,8 @@ export class TimerWrapperComponent {
     }
 
     const eventProps = this.route.snapshot.data['event'];
-    dd('eventProps')
-    dd(eventProps)
+    // dd('eventProps')
+    // dd(eventProps)
     if (eventProps) {
       this.eventProps = eventProps;
     }
@@ -86,8 +86,8 @@ export class TimerWrapperComponent {
           }),
           startWith(initalState),
           tap((res: any) => {
-            dd('go')
-            dd(res)
+            // dd('go')
+            // dd(res)
             this.cdr.detectChanges()
           }),
           catchError(error => {
