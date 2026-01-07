@@ -27,19 +27,44 @@
         </circle>
       </g>
     </svg>
-    
-    <!-- Percentage Display -->
-    <!-- <div class="percentage">{{ percentage }}%</div> -->
-    @if(timeLeft >= 3600) {
-      <div class="time">{{ timeLeft * 1000 | date:'HH:mm:ss':'UTC' }}</div>
-    } 
-    @else {
-      <div class="time">{{ timeLeft * 1000 | date:'mm:ss':'UTC' }}</div>
-    }
-      
+    <div class="innerWrapper">
+      <!-- Percentage Display -->
+      <!-- <div class="percentage">{{ percentage }}%</div> -->
+      <div class="eventIcon">
+        @if(eventType === eventTypes.WORK) {
+          <i title="work" class="mu mu-show"></i>
+        } @else {
+          <i title="rest" class="mu mu-audio"></i>
+        }
+      </div>
+      <div class="remainingTime">
+        @if(timeLeft >= 3600) {
+          <span>{{ timeLeft * 1000 | date:'HH:mm:ss':'UTC' }}</span>
+        } 
+        @else {
+          <span>{{ timeLeft * 1000 | date:'mm:ss':'UTC' }}</span>
+        }
+      </div>
+
+      <div class="scheduleProgress">
+        @for(isDone of scheduleEvents; track isDone; let idx = $index) {
+          <div class="scheduleProgress__square" [class.isDone]="isDone === 1">
+              
+          </div>
+        }
+      </div>
+
+      <div class="eventName">
+        @if(eventType === eventTypes.WORK) {
+          <span>work</span>
+        } @else {
+          <span>rest</span>
+        }
+      </div>
+
+    </div>
     
   </div>
-  
   
   <!-- <div class="controls">
     <button (click)="setPercentage(20)">20%</button>

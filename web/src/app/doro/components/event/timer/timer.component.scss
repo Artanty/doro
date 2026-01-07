@@ -21,16 +21,43 @@
   transition: stroke-dasharray 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.percentage,
-.time {
+.innerWrapper {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 2.5rem;
-  font-weight: bold;
-  color: #c5c5c5;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  & .eventIcon {}
+
+  & .remainingTime {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #dfdfdf;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  & .scheduleProgress {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+
+
+
+    &__square {
+      // border: 1px solid #FF3B30;
+      background: #5e5e5e;
+      height: 10px;
+      width: 10px;
+
+      &.isDone {
+        background: #a0312a;
+      }
+    }
+  }
+
+  & .eventName {
+    text-transform: uppercase;
+  }
 }
 
 .controls {

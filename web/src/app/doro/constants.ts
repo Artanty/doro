@@ -23,3 +23,8 @@ export type EventStatesType = EventProgressType | EventCommonStateType;
 
 
 export const basicEventTypePrefix = 'e';
+
+export const eventTypes = {
+	REST: 3,
+	WORK: 2
+}

@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { countPrc } from '../utils';
+import { eventTypes } from '../../../constants';
+import { dd } from 'src/app/doro/helpers/dd';
 
 @Component({
   selector: 'app-timer',
@@ -12,17 +14,21 @@ import { countPrc } from '../utils';
 export class TimerComponent implements OnChanges {
   @Input() time: number = 0;
   @Input() length: number = 0;
+  @Input() eventType: number = 0; // work = 2, rest = 3;
+  @Input() scheduleProgress: [number, number] = [2, 4];
   @Output() percentageChange = new EventEmitter<number>();
 
   public percentage: number = 0;
   public timeLeft: number = 0
+  public eventTypes = eventTypes;
+  public scheduleEvents: number[] = [1, 1, 1, 1];
   // Constants
   private readonly radius = 100;
   private readonly circumference = 2 * Math.PI * this.radius; // ≈ 628.32
   private readonly center = 103;
 
   ngOnInit(): void {
-
+    this._buildScheduleEvents();
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -30,9 +36,20 @@ export class TimerComponent implements OnChanges {
       this.percentage = countPrc(this.length, this.time);
       this.timeLeft = this.length - this.time;
     }
+    if (changes['scheduleProgress']) {
+      this._buildScheduleEvents();
+    }
   }
 
-
+  private _buildScheduleEvents() {
+    const all: unknown[] = Array(this.scheduleProgress[1]).fill(0)
+    const done = this.scheduleProgress[0];
+    this.scheduleEvents = all.map((_, i: number) => {
+      // el - each evnt in schedule
+      // 1 = done, 0 - undone;
+      return i < done ? 1 : 0;
+    })
+  }
 
   // Calculate stroke-dasharray value
   getDashArray(): string {
