@@ -23,7 +23,13 @@ dotenv.config();
 
 export class EventController {
 	// Create event and assign owner access
-	static async createEvent(name: string, length: number, type: number, userHandle: string) {
+	static async createEvent(
+		name: string, 
+		length: number, 
+		type: number, 
+		userHandle: string,
+		base_access: string
+	) {
 		const pool = createPool();
 		const connection = await pool.getConnection();
 		try {
@@ -31,8 +37,8 @@ export class EventController {
 
 			// Insert event
 			const [eventResult] = await connection.execute(
-				'INSERT INTO events (name, length, type, created_at) VALUES (?, ?, ?, ?)',
-				[name, length, type, getUTCDatetime()]
+				'INSERT INTO events (name, length, type, created_at, base_access) VALUES (?, ?, ?, ?, ?)',
+				[name, length, type, getUTCDatetime(), base_access]
 			);
 			const eventId = eventResult.insertId;
 
@@ -65,13 +71,29 @@ export class EventController {
 		const pool = createPool();
 		const connection = await pool.getConnection();
 		try {
+			// todo: remove eventTypes join for initial load ditionary
 			const [rows] = await connection.execute(
-				`SELECT e.*, et.name as type_name, etu.access_level 
-				 FROM events e
-				 INNER JOIN eventTypes et ON e.type = et.id
-				 INNER JOIN eventToUser etu ON e.id = etu.event_id
-				 WHERE etu.user_handler = ? 
-				 ORDER BY e.created_at DESC`,
+				// `SELECT 
+				// 	e.*, 
+				// 	et.name as type_name, 
+				// 	etu.access_level 
+				//  FROM events e
+				//  INNER JOIN eventTypes et ON e.type = et.id
+				//  INNER JOIN eventToUser etu ON e.id = etu.event_id
+				//  WHERE etu.user_handler = ? 
+				//  ORDER BY e.created_at DESC`,
+				// [userHandler]
+				`SELECT e.*, et.name as type_name, etu.access_level,
+			           CASE 
+			               WHEN etu.access_level IS NOT NULL THEN TRUE
+			               WHEN e.base_access IN ('public-read', 'public-write') THEN TRUE
+			               ELSE FALSE
+			           END as has_access
+			    FROM events e
+			    INNER JOIN eventTypes et ON e.type = et.id
+			    LEFT JOIN eventToUser etu 
+			        ON e.id = etu.event_id AND etu.user_handler = ?
+			    ORDER BY e.created_at DESC`,
 				[userHandler]
 			);
 			return rows;

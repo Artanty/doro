@@ -13,8 +13,10 @@ CREATE TABLE events (
     name VARCHAR(255) NOT NULL,
     length INT NOT NULL COMMENT 'Duration in seconds,
     type INT NOT NULL,
+    base_access ENUM('public-read', 'public-write') DEFAULT NULL,
     created_at DATETIME NOT NULL,
-    FOREIGN KEY (type) REFERENCES eventTypes(id) ON DELETE RESTRICT
+    FOREIGN KEY (type) REFERENCES eventTypes(id) ON DELETE RESTRICT,
+    INDEX idx_base_access (base_access)
 );
 
 -- Create eventToUser table
