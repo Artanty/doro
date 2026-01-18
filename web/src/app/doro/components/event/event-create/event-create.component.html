@@ -1,0 +1,131 @@
+<div class="event-create-container">
+      <div class="header-row">
+        <h2>Создать новое событие</h2>
+        <button gui type="button"
+          [inputs]="{
+            label: 'К списку',
+            routerLink: 'doro/event-list'
+          }"
+        ></button>
+      </div>
+      
+      <form #eventForm="ngForm">
+        <!-- Название события -->
+        <div class="form-group">
+          <label for="name">Название события:</label>
+          <input 
+            type="text" 
+            id="name" 
+            name="name" 
+            [(ngModel)]="eventData.name" 
+            required
+            placeholder="Введите название события"
+            class="form-control"
+            [class.is-invalid]="submitted && !eventData.name"
+          >
+          <div class="invalid-feedback" *ngIf="submitted && !eventData.name">
+            Название обязательно
+          </div>
+        </div>
+
+        <!-- Длительность события -->
+        <div class="form-group">
+          <label for="length">Длительность (секунды):</label>
+          <input 
+            type="number" 
+            id="length" 
+            name="length" 
+            [(ngModel)]="eventData.length" 
+            required
+            min="1"
+            placeholder="Например: 3600 (1 час)"
+            class="form-control"
+            [class.is-invalid]="submitted && (!eventData.length || eventData.length <= 0)"
+          >
+          <div class="invalid-feedback" *ngIf="submitted && (!eventData.length || eventData.length <= 0)">
+            Укажите положительную длительность
+          </div>
+          <small class="form-text text-muted">
+            {{ getDurationText() }}
+          </small>
+        </div>
+
+        <!-- Тип события -->
+        <div class="form-group">
+          <label for="type">Тип события:</label>
+          <select 
+            id="type" 
+            name="type" 
+            [(ngModel)]="eventData.type" 
+            required
+            class="form-control"
+            [class.is-invalid]="submitted && !eventData.type"
+          >
+            <option value="" disabled selected>Выберите тип</option>
+            <option *ngFor="let type of eventTypes" [value]="type.id">
+              {{ type.name }}
+            </option>
+          </select>
+          <div class="invalid-feedback" *ngIf="submitted && !eventData.type">
+            Выберите тип события
+          </div>
+        </div>
+
+        <!-- Уровень доступа -->
+        <div class="form-group">
+          <label for="base_access">Уровень доступа:</label>
+          <div class="access-options">
+            <div *ngFor="let access of accessLevels" class="form-check">
+              <input 
+                type="radio" 
+                [id]="'access_' + access.value" 
+                name="base_access" 
+                [value]="access.value" 
+                [(ngModel)]="eventData.base_access"
+                class="form-check-input"
+              >
+              <label [for]="'access_' + access.value" class="form-check-label">
+                <!-- <span class="access-icon">{{ access.icon }}</span> -->
+                <strong>{{ access.label }}</strong>
+                <small class="access-description">{{ access.description }}</small>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Сообщения об ошибке/успехе -->
+        <div *ngIf="errorMessage" class="alert alert-danger">
+          {{ errorMessage }}
+        </div>
+
+        <div *ngIf="successMessage" class="alert alert-success">
+          <strong>Событие создано!</strong>
+          <div>ID: {{ createdEventId }}</div>
+          <div>Название: {{ createdEventName }}</div>
+          <div>Доступ: {{ getAccessLabel(eventData.base_access) }}</div>
+        </div>
+
+        <!-- Кнопки -->
+        <div class="form-actions">
+          <button gui
+            type="submit" 
+            [inputs]="{
+              label: isLoading ? 'Создание...' : 'Создать событие',
+              disabled: isLoading,
+            }"
+            [outputs]="{click: onSubmit.bind(this)}"
+          >
+            <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+          </button>
+          
+          <button 
+            type="button" 
+            class="btn btn-secondary ms-2"
+            (click)="resetForm()"
+            [disabled]="isLoading"
+          >
+            Сбросить
+          </button>
+        </div>
+      </form>
+    </div>

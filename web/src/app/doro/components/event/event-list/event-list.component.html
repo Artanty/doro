@@ -33,7 +33,12 @@
 		      [eventProps]="event"
 		      >
 		    </app-event-list-event>	
-	  	}
+		} @empty {
+		    <li class="noEvents">
+		    	<p>No events</p>
+		    	<a (click)="goToCreateEvent()">Добавить</a>
+		    </li>
+		  }
 	  </ul>
 	</div>
 }

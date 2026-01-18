@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
 import { GuiDirective } from '../../_remote/web-component-wrapper/gui.directive';
 import { dd } from 'src/app/doro/helpers/dd';
 import { EventStates } from 'src/app/doro/constants';
+import { Router } from '@angular/router';
 
 
 export type EventStateResItemStateless = Omit<EventStateResItem, 'stt'>
@@ -42,7 +43,8 @@ export class EventListEventComponent implements OnInit, OnDestroy {
   constructor(
     private cdr: ChangeDetectorRef,
     private eventService: EventService,
-    private injector: Injector
+    private injector: Injector,
+    private router: Router,
   ) {
     // const service = this.injector.get(IconFallbackService);
     // console.log(service)
@@ -106,6 +108,10 @@ export class EventListEventComponent implements OnInit, OnDestroy {
     // .subscribe(res => {
     //   this.eventState = res
     // })
+  }
+
+  goToEventTimer() {
+    this.router.navigateByUrl(`/doro/timer/${this.eventProps.id}`);
   }
   deleteEvent() {
     // this.isDeleting$.next(true);

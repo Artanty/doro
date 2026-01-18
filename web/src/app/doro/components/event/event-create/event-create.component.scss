@@ -1,0 +1,168 @@
+    .event-create-container {
+      // max-width: 500px;
+      // margin: 2rem auto;
+      padding: 0 12px;
+      // border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #12162a;
+
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .form-group {
+      margin-bottom: 4px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: #67ca21;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+      background: #12162a;
+      color: #fff;
+      box-sizing: border-box;
+    }
+
+    .form-control.is-invalid {
+      border-color: #dc3545;
+    }
+
+    .invalid-feedback {
+      color: #dc3545;
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+    }
+
+    .form-text {
+      font-size: 0.875rem;
+      color: #6c757d;
+      margin-top: 0.25rem;
+    }
+
+    /* Стили для выбора уровня доступа */
+    .access-options {
+      // border: 1px solid #ddd;
+      // border-radius: 4px;
+      // padding: 0.5rem;
+      // background: #f8f9fa;
+    }
+
+    .form-check {
+      // padding: 0.75rem;
+      // border-bottom: 1px solid #eee;
+      cursor: pointer;
+      transition: background 0.2s;
+      display: flex;
+      justify-content: space-between;
+      align-self: center;
+    }
+
+    .form-check:last-child {
+      border-bottom: none;
+    }
+
+    .form-check:hover {
+      background: #000;
+    }
+
+    .form-check-label {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      width: 100%;
+
+      &>strong {
+        width: 120px;
+        min-width: 120px;
+        padding-left: 4px;
+      }
+    }
+
+    .access-icon {
+      font-size: 1.5rem;
+      margin-right: 0.75rem;
+      width: 40px;
+      text-align: center;
+    }
+
+    .access-description {
+      display: block;
+      color: #6c757d;
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+      font-weight: normal;
+      padding: 0px 4px;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .btn {
+      padding: 0.5rem 1.5rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background-color: #007bff;
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background-color: #0056b3;
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background-color: #545b62;
+    }
+
+    .alert {
+      padding: 1rem;
+      border-radius: 4px;
+      margin: 1rem 0;
+    }
+
+    .alert-danger {
+      background-color: #f8d7da;
+      border-color: #f5c6cb;
+      color: #721c24;
+    }
+
+    .alert-success {
+      background-color: #d4edda;
+      border-color: #c3e6cb;
+      color: #155724;
+    }
+
+    .spinner-border {
+      vertical-align: middle;
+    }

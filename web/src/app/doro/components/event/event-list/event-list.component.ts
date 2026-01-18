@@ -98,6 +98,11 @@ export class EventListComponent implements OnInit {
     // });
   }
 
+  public goToCreateEvent() {
+    this.router.navigateByUrl('doro/event-create');
+      
+  }
+
   // public goToKeywordEdit(id: number) {
   //   this.router.navigateByUrl('/note/keyword-edit' + '/' + id)
   // }

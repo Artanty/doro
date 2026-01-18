@@ -37,6 +37,7 @@ import { GuiDirective } from './components/_remote/web-component-wrapper/gui.dir
 import { TimerComponent } from './components/event/timer/timer.component';
 import { TimerWrapperComponent } from './components/event/timer-wrapper/timer-wrapper.component';
 import { eventResolver } from './components/event/timer-wrapper/event.resolver';
+import { EventCreateComponent } from './components/event/event-create/event-create.component';
 
 // function initConfigActivator(counterServ: CounterService) {
 //   return () => counterServ.scheduleConfigActivator();
@@ -53,6 +54,9 @@ export const CHILD_ROUTES = [
     children: [
       {
         path: 'event-list', component: EventListComponent
+      },
+      {
+        path: 'event-create', component: EventCreateComponent
       },
       {
         path: 'timer/:id', 
@@ -82,7 +86,7 @@ export const CHILD_ROUTES = [
     EventListEventComponent,
     TimerComponent,
     TimerWrapperComponent,
-    
+    EventCreateComponent
   ],
   imports: [
     CommonModule,

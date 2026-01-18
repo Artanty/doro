@@ -25,3 +25,6 @@ https://www.svgrepo.com/svg/347261/pause-circle
 https://www.svgrepo.com/svg/347287/play-circle
 
 
+event types:
+
+ // work = 2, rest = 3;
