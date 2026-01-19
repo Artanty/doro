@@ -10,6 +10,9 @@ import { validateUserAccessToken } from './middlewares/validateUserAccessToken'
 import eventStateRoutes from './routes/eventStateRoutes'
 import shareEventStateRoute from './routes/service/shareEventState.route'
 import { validateApiKey } from './middlewares/validateApiKey'
+import { dd } from './utils/dd'
+import { ConfigManager } from './controllers/config-manager'
+import { injectConfigHashMiddleware } from './middlewares/inject-config-hash.middleware'
 
 dotenv.config();
 
@@ -22,7 +25,7 @@ app.use(cookieParser());
 app.use(cors()) // todo dev only
 
 app.use('/eventType', eventTypeRoutes);
-app.use('/event', validateUserAccessToken, eventRoutes);
+app.use('/event', validateUserAccessToken, injectConfigHashMiddleware, eventRoutes);
 app.use('/event-state', validateUserAccessToken, eventStateRoutes);
 app.use('/save-temp', saveTempRoutes);
 app.use('/service', [validateApiKey, validateUserAccessToken], shareEventStateRoute);
@@ -37,6 +40,7 @@ app.get('/get-updates', async (req, res) => {
 
 // Start the server
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  dd(`Server is running on port ${PORT}`);
   checkDBConnection()
+  ConfigManager.setConfigHash(); 
 });

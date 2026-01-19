@@ -8,12 +8,12 @@ const router = express.Router();
 
 router.post('/create', async (req, res) => {
   try {
-    const { name, length, type, base_access } = req.body;
+    const { name, length, type, base_access, state } = req.body;
     const user = getUserFromRequest(req);
-    const itemId = await EventController.createEvent(
-      name, length, type, user, base_access,
+    const result = await EventController.createEvent(
+      name, length, type, user, base_access, state,
     );
-    res.status(201).json({ id: itemId });
+    res.status(201).json(result);
   } catch (error: unknown) {
     res.status(500).json({ error: (error as any)?.message ? (error as any).message : error });
   }
@@ -22,8 +22,8 @@ router.post('/create', async (req, res) => {
 router.post('/list', async (req, res) => {
   try {
     const user = getUserFromRequest(req);
-    const data = await EventController.getUserEvents(user);
-    res.json(data);
+    const result = await EventController.getUserEvents(user);
+    res.json(result);
   } catch (error) {
     handleError(res as unknown as Response, error) 
   }

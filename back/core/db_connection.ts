@@ -1,5 +1,6 @@
 import mysql from 'mysql2/promise'
 import dotenv from 'dotenv';
+import { dd } from '../utils/dd';
 
 dotenv.config();
 
@@ -7,7 +8,7 @@ let pool: any
 
 function createPool() {
   if (!pool) {
-    console.log('Creatig DB pool...')
+    dd('Creatig DB pool...')
     const thisPool = mysql.createPool({
       database: process.env.DB_DATABASE,
       user: process.env.DB_USERNAME,

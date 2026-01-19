@@ -8,6 +8,8 @@ import { buildOuterEntityId } from '../utils/buildOuterEntityId';
 import { parseServerResponse } from '../utils/parseServerResponse';
 import { thisProjectResProp, tikResProp } from '../utils/getResProp';
 import { getUTCDatetime } from '../utils/get-utc-datetime';
+import { upsertEventState } from '../db-actions/upsert-event-state';
+import { ConfigManager } from './config-manager';
 
 // export interface eventProps {
 // 	"id": 18,
@@ -28,7 +30,8 @@ export class EventController {
 		length: number, 
 		type: number, 
 		userHandle: string,
-		base_access: string
+		base_access: string,
+		state: number
 	) {
 		const pool = createPool();
 		const connection = await pool.getConnection();
@@ -48,15 +51,20 @@ export class EventController {
 				[eventId, userHandle, 'owner', getUTCDatetime()]
 			);
 
-			await connection.execute(
-				`INSERT INTO eventState (eventId, state, created_at, updated_at) 
-                 VALUES (?, ?, ?, ?) 
-                 ON DUPLICATE KEY UPDATE eventId = ?`,
-				[eventId, "2", getUTCDatetime(), getUTCDatetime(), eventId]
-			);
+			await upsertEventState(connection, eventId, state)
+
+			/**
+			 * Нужно чтобы tik@ подтянул новое cобытие и раздал его другим клиентам.
+			 * Это делается через обновление хэша.
+			 * */
+			ConfigManager.setConfigHash(); 
 
 			await connection.commit();
-			return eventId;
+			return {
+				[thisProjectResProp()]: {
+					id: eventId
+				},
+			};
 		} catch (error) { 
 			console.log(error)
 			await connection.rollback();
@@ -96,7 +104,11 @@ export class EventController {
 			    ORDER BY e.created_at DESC`,
 				[userHandler]
 			);
-			return rows;
+			return {
+				[thisProjectResProp()]: {
+					data: rows,
+				},
+			}
 		} catch (error) { 
 			console.log(error)
 			throw error;
@@ -128,7 +140,13 @@ export class EventController {
 	}
 
 	// Update event
-	static async updateEvent(eventId: number, name: string, length: number, type: number, userHandle: string) {
+	static async updateEvent(
+		eventId: number, 
+		name: string, 
+		length: number, 
+		type: number, 
+		userHandle: string
+	) {
 		const pool = createPool();
 		const connection = await pool.getConnection();
 		try {

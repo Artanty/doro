@@ -9,6 +9,7 @@ import { parseServerResponse } from '../utils/parseServerResponse';
 import { buildOuterEntityId } from '../utils/buildOuterEntityId';
 import { thisProjectResProp, tikResProp } from '../utils/getResProp';
 import { getUTCDatetime } from '../utils/get-utc-datetime';
+import { ConfigManager } from './config-manager';
 
 dotenv.config();
 
@@ -44,7 +45,7 @@ export interface EventStateResItem {
     id: string,
     cur: number,
     len: number,
-    prc: number,
+    // prc: number,
     stt: number
 }
 
@@ -205,7 +206,7 @@ export class EventStateController {
                  LEFT JOIN eventState es ON e.id = es.eventId
                  WHERE etu.user_handler = ?
                  ORDER BY e.created_at DESC`,
-                [userHandler]
+                [userHandler]            
             );
 
             // Process each event to determine status and current seconds
@@ -213,8 +214,16 @@ export class EventStateController {
 
             const eventsWithTikAction = this.addTikActionForEvents(eventsWithStatus, 'add');
 
-            console.log(eventsWithTikAction)
-            return eventsWithTikAction;
+            const configHashEntry = { 
+                id: buildOuterEntityId('configHash', 1), // 1 - id
+                cur: ConfigManager.configHash,
+                [EVENT_TIK_ACTION_PROP]: 'upsert',
+            };
+
+            const productEntriesForTik: any[] = [...eventsWithTikAction, configHashEntry];
+
+            console.log(productEntriesForTik)
+            return productEntriesForTik;
         } catch (error) {
             throw error;
         } finally {
@@ -727,7 +736,7 @@ export class EventStateController {
                     id: buildOuterEntityId('event', eventProps.id),
                     cur: eventStatus.currentSeconds,
                     len: eventProps.length,
-                    prc: eventStatus.progressPercentage,
+                    // prc: eventStatus.progressPercentage,
                     stt: eventStatus.status
                 }
 
