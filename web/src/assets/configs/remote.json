@@ -50,6 +50,17 @@
                     } 
                 }
             ]
+        },
+        {
+            "on": "RESPONSE",
+            "url_pattern": "/^http:\/\/localhost:3201\/(event|event-state)(\/.*)?$/",
+            "push": {
+                "type": "TRIGGER_ACTION",
+                "action": "SET_CONFIG_HASH",
+                "include_request": true,
+                "include_response": true
+            },
+            "project_id": "doro@web"
         }
     ],
     "todo": "добавить сборку этой секции при serve/build"

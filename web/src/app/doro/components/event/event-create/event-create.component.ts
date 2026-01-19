@@ -18,7 +18,8 @@ export class EventCreateComponent {
     name: '',
     length: 3600, // 1 час по умолчанию
     type: 2,
-    base_access: 'private' // Значение по умолчанию
+    base_access: 'private', // Значение по умолчанию
+    state: 0,
   };
 
   // Список типов событий
@@ -29,6 +30,13 @@ export class EventCreateComponent {
     { id: 4, name: 'Тренинг' },
     { id: 5, name: 'Встреча' }
   ];
+
+  eventStates = [
+    { id: 0, name: 'Остановлено' },
+    { id: 1, name: 'Проигрывается' },
+    { id: 2, name: 'На паузе' },
+    { id: 3, name: 'Завершено' },
+  ]
 
   // Уровни доступа
   accessLevels = [
@@ -86,8 +94,8 @@ export class EventCreateComponent {
       name: this.eventData.name,
       length: Number(this.eventData.length),
       type: Number(this.eventData.type),
-      base_access: this.eventData.base_access !== 'private' ? this.eventData.base_access : null
-      // Если private, отправляем null или не включаем поле
+      base_access: this.eventData.base_access !== 'private' ? this.eventData.base_access : null, // Если private, отправляем null или не включаем поле
+      state: this.eventData.state,      
     };
 
     const apiUrl = `${process.env['DORO_BACK_URL']}/event/create`;
@@ -124,7 +132,8 @@ export class EventCreateComponent {
       name: '',
       length: 3600,
       type: 2,
-      base_access: 'private'
+      base_access: 'private',
+      state: 0,
     };
     this.submitted = false;
     this.errorMessage = '';

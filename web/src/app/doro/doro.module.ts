@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { HttpClientModule, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClient, HttpClientModule, provideHttpClient, withInterceptors, withInterceptorsFromDi } from '@angular/common/http';
 import {
   APP_INITIALIZER,
   ApplicationRef,
@@ -27,10 +27,10 @@ import { CounterConfigComponent } from './widgets/counter-config/counter-config.
 import { CounterComponent } from './widgets/counter/counter.component';
 
 import { BusEvent, EVENT_BUS, EVENT_BUS_LISTENER, EVENT_BUS_PUSHER } from 'typlib';
-import { BehaviorSubject, filter, Observable } from 'rxjs';
+import { BehaviorSubject, filter, map, Observable } from 'rxjs';
 import { dd } from './helpers/dd';
 import { EventListComponent } from './components/event/event-list/event-list.component';
-import { EventService } from './components/event/event.service';
+import { EventService, EventStateResItem } from './components/event/event.service';
 
 import { EventListEventComponent } from './components/event/event-list-event/event-list-event.component';
 import { GuiDirective } from './components/_remote/web-component-wrapper/gui.directive';
@@ -38,6 +38,10 @@ import { TimerComponent } from './components/event/timer/timer.component';
 import { TimerWrapperComponent } from './components/event/timer-wrapper/timer-wrapper.component';
 import { eventResolver } from './components/event/timer-wrapper/event.resolver';
 import { EventCreateComponent } from './components/event/event-create/event-create.component';
+import { CompareConfigHashAction } from './services/compare-config-hash.action';
+import { SetConfigHashAction } from './services/set-config-hash.action';
+import { filterStreamDataEntries } from './helpers/filterStreamDataEntries';
+
 
 // function initConfigActivator(counterServ: CounterService) {
 //   return () => counterServ.scheduleConfigActivator();
@@ -103,9 +107,20 @@ export const CHILD_ROUTES = [
   // exports: [DoroComponent, MyCustomElementComponent, LoadingComponent],
   exports: [DoroComponent],
   providers: [
-    // provideHttpClient(
-    //   withInterceptorsFromDi() // Enable DI-based interceptors
-    // ),
+
+    // {
+    //   provide: HTTP_INTERCEPTORS,
+    //   useClass: ComparisonInterceptor,
+    //   multi: true
+    // },
+    // Используем root HttpClient
+    // {
+    //   provide: HttpClient,
+    //   useFactory: (injector: Injector) => {
+    //     return injector.get('ROOT_HTTP_CLIENT');
+    //   },
+    //   deps: [Injector]
+    // },
     // {
     //   provide: APP_INITIALIZER,
     //   useFactory: initConfigActivator,
@@ -141,12 +156,40 @@ export class DoroModule implements DoBootstrap {
     private readonly eventBusListener$: Observable<BusEvent>,
     @Inject(EVENT_BUS_PUSHER)
     private readonly eventBusPusher: (busEvent: BusEvent) => void,
+    private _compareConfigHashAction: CompareConfigHashAction,
+    private _setConfigHashAction: SetConfigHashAction
   ) {
     console.log('DoroModule');
-    this.eventBusListener$.subscribe((res: BusEvent) => {
-      // console.log('DORO BUS LISTENER');
-      // console.log(res);
-    });
+    // this.eventBusListener$.subscribe((res: BusEvent) => {
+    //   console.log('DORO BUS LISTENER');
+    // });
+
+    // part of scenario
+    // При получении ответа с doro@back сохраняется configHash.
+    this.eventBusListener$
+      .pipe(
+        filter((res) => res.to === `${process.env['PROJECT_ID']}@${process.env['NAMESPACE']}`),
+        filter((res) => res.event === 'SET_CONFIG_HASH'),
+      )
+      .subscribe((res: BusEvent) => {
+        console.log(res);
+        this._setConfigHashAction.init(res);
+      });
+
+    // При получении состояния  таймеров из tik@web сравниваем configHash:
+    this.eventBusListener$.pipe(
+      filter(filterStreamDataEntries),
+      map((busEvent: BusEvent<EventStateResItem[]>): EventStateResItem | null => {
+        const foundEntry = busEvent.payload.find(entry => entry.id === 'h_1');
+        return foundEntry || null;
+      }))
+      .subscribe(res => {
+        const isEqual = this._compareConfigHashAction.init(res);
+        if (!isEqual) {
+          dd('configHash not equal. make request...')
+        }
+      });
+    // part of scenario END
     // this._sendAuthDoneEvent()
   }
   ngDoBootstrap(appRef: ApplicationRef) {

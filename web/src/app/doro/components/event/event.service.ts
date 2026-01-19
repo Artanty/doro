@@ -6,15 +6,15 @@ import { dd } from '../../helpers/dd';
 import { basicEventTypePrefix, devPoolId, EventProgressType, EventStates } from '../../constants';
 import { BusEvent, EVENT_BUS_LISTENER, EVENT_BUS_PUSHER } from 'typlib';
 
-import { filterStreamDataEvents } from '../../helpers/filterStreamDataEvents';
+import { filterStreamDataEntries } from '../../helpers/filterStreamDataEntries';
 // import { validateShareKeyword } from './edit-keyword/edit-keyword.validation';
 
-export interface EventStateResItem {
+export interface EventStateResItem { // todo: rename to entry
   id: string,
   cur: number,
-  len: number,
-  prc: number,
-  stt: EventProgressType
+  len?: number,
+  // prc: number,
+  stt?: EventProgressType
 }
 
 export interface EventData {
@@ -22,6 +22,10 @@ export interface EventData {
   state: string
   initialEvent: EventWithState
 }
+
+export type GetUserEventsRes = Record<string, {
+  data: EventProps[]
+}>
 
 
 @Injectable(
@@ -58,8 +62,8 @@ export class EventService {
   //   return this.http.post<EventProps[]>(`${this.doroBaseUrl}/event-state/list-by-user`, null);
   // }
 
-  getUserEventsApi(): Observable<EventProps[]> {
-    return this.http.post<EventProps[]>(`${this.doroBaseUrl}/event/list`, null);
+  getUserEventsApi(): Observable<GetUserEventsRes> {
+    return this.http.post<GetUserEventsRes>(`${this.doroBaseUrl}/event/list`, null);
   }
 
   
@@ -102,11 +106,14 @@ export class EventService {
     return this.getUserEventsApi()
       .pipe(
         take(1),
-        tap((res: EventProps[]) => {
-          dd(res)
-          this.events$.next(res)
+        tap((res: GetUserEventsRes) => {
+          const data: EventProps[] = res[`${process.env['THIS_BACK_PROJECT_ID']}`]?.data;
+          if (!data) throw new Error('wrong response format');
+
+          this.events$.next(data)
         }),
         catchError((err: any) => {
+          dd(err)
           return of(false);
         }),
         map(() => true),
@@ -199,7 +206,7 @@ export class EventService {
   
   // public listenEventState(eventId: number): Observable<EventStateResItem> {
   //   return this.eventBusListener$.pipe(
-  //     filter(filterStreamDataEvents),
+  //     filter(filterStreamDataEntries),
   //     map((busEvent: BusEvent<EventStateResItem[]>): EventStateResItem => {
   //       const receivedEventId = `${basicEventTypePrefix}_${eventId}`
   //       const foundEvent = busEvent.payload.find(event => event.id === receivedEventId)
@@ -215,7 +222,7 @@ export class EventService {
     const receivedEventId = `${basicEventTypePrefix}_${eventId}`;
   
     return this.eventBusListener$.pipe(
-      filter(filterStreamDataEvents),
+      filter(filterStreamDataEntries),
       map((busEvent: BusEvent<EventStateResItem[]>): EventStateResItem | null => {
         const foundEvent = busEvent.payload.find(event => event.id === receivedEventId);
         return foundEvent || null;

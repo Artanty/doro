@@ -50,6 +50,27 @@
           </small>
         </div>
 
+        <!-- Статус события -->
+        <div class="form-group">
+          <label for="name">Статус события:</label>
+          <select 
+            id="state" 
+            name="state" 
+            [(ngModel)]="eventData.state" 
+            required
+            class="form-control"
+            [class.is-invalid]="submitted && !eventData.state"
+          >
+            <option value="" disabled selected>Выберите статус</option>
+            <option *ngFor="let stateItem of eventStates" [value]="stateItem.id">
+              {{ stateItem.name }}
+            </option>
+          </select>
+          <div class="invalid-feedback" *ngIf="submitted && !eventData.state">
+            Выберите статус события
+          </div>
+        </div>
+
         <!-- Тип события -->
         <div class="form-group">
           <label for="type">Тип события:</label>
@@ -116,8 +137,9 @@
             [outputs]="{click: onSubmit.bind(this)}"
           >
             <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+            Создать событие
           </button>
-          
+          <!-- 
           <button 
             type="button" 
             class="btn btn-secondary ms-2"
@@ -125,7 +147,15 @@
             [disabled]="isLoading"
           >
             Сбросить
-          </button>
+          </button> -->
+          <button gui
+            type="button" 
+            [inputs]="{
+              label: 'Сбросить',
+              disabled: isLoading,
+            }"
+            [outputs]="{click: resetForm.bind(this)}"
+          >Сбросить</button>
         </div>
       </form>
     </div>
