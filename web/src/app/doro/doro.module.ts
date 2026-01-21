@@ -27,7 +27,7 @@ import { CounterConfigComponent } from './widgets/counter-config/counter-config.
 import { CounterComponent } from './widgets/counter/counter.component';
 
 import { BusEvent, EVENT_BUS, EVENT_BUS_LISTENER, EVENT_BUS_PUSHER } from 'typlib';
-import { BehaviorSubject, filter, map, Observable } from 'rxjs';
+import { BehaviorSubject, filter, map, Observable, switchMap, take } from 'rxjs';
 import { dd } from './helpers/dd';
 import { EventListComponent } from './components/event/event-list/event-list.component';
 import { EventService, EventStateResItem } from './components/event/event.service';
@@ -157,7 +157,8 @@ export class DoroModule implements DoBootstrap {
     @Inject(EVENT_BUS_PUSHER)
     private readonly eventBusPusher: (busEvent: BusEvent) => void,
     private _compareConfigHashAction: CompareConfigHashAction,
-    private _setConfigHashAction: SetConfigHashAction
+    private _setConfigHashAction: SetConfigHashAction,
+    private eventService: EventService,
   ) {
     console.log('DoroModule');
     // this.eventBusListener$.subscribe((res: BusEvent) => {
@@ -176,21 +177,27 @@ export class DoroModule implements DoBootstrap {
         this._setConfigHashAction.init(res);
       });
 
-    // При получении состояния  таймеров из tik@web сравниваем configHash:
+    // При получении состояния таймеров из tik@web сравниваем с configHash:
     this.eventBusListener$.pipe(
       filter(filterStreamDataEntries),
-      map((busEvent: BusEvent<EventStateResItem[]>): EventStateResItem | null => {
+      map((busEvent: BusEvent<EventStateResItem[]>): boolean => {
         const foundEntry = busEvent.payload.find(entry => entry.id === 'h_1');
-        return foundEntry || null;
-      }))
-      .subscribe(res => {
-        const isEqual = this._compareConfigHashAction.init(res);
-        if (!isEqual) {
-          dd('configHash not equal. make request...')
+        if (!foundEntry) {
+          return false
+        } else {
+          const isNeedRefresh = !this._compareConfigHashAction.init(foundEntry);
+          return isNeedRefresh;
         }
-      });
+      }),
+      filter(Boolean),
+      switchMap(() => {
+        dd('configHash not equal. make request...')
+        return this.eventService.loadEvents();
+      })
+    )
+      .subscribe();
     // part of scenario END
-    // this._sendAuthDoneEvent()
+    
   }
   ngDoBootstrap(appRef: ApplicationRef) {
     // console.log('DoroModule ngDoBootstrap');

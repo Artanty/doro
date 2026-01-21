@@ -60,7 +60,7 @@ export class TimerWrapperComponent {
       eventState: -1 // pending
     }
 
-    const eventProps = this.route.snapshot.data['event'];
+    const eventProps = this.route.snapshot.data['event']; // todo rewrite to load method & add refresh
     // dd('eventProps')
     // dd(eventProps)
     if (eventProps) {
