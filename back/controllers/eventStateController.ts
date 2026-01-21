@@ -10,6 +10,7 @@ import { buildOuterEntityId } from '../utils/buildOuterEntityId';
 import { thisProjectResProp, tikResProp } from '../utils/getResProp';
 import { getUTCDatetime } from '../utils/get-utc-datetime';
 import { ConfigManager } from './config-manager';
+import { OuterSyncService } from './outer-sync.service';
 
 dotenv.config();
 
@@ -45,7 +46,6 @@ export interface EventStateResItem {
     id: string,
     cur: number,
     len: number,
-    // prc: number,
     stt: number
 }
 
@@ -127,7 +127,7 @@ export class EventStateController {
             await connection.commit();
 
             const tikAction = 'update';
-            const updatedEventStatusWithTikAction = this.addTikActionForEvents(updatedEventsWithStatus, tikAction);
+            const updatedEventStatusWithTikAction = OuterSyncService.addOuterActionInEvents(updatedEventsWithStatus, tikAction);
             dd(updatedEventStatusWithTikAction)
             // [
             //   {
@@ -212,7 +212,7 @@ export class EventStateController {
             // Process each event to determine status and current seconds
             const eventsWithStatus = await this.buildTikEvents(connection, events);
 
-            const eventsWithTikAction = this.addTikActionForEvents(eventsWithStatus, 'add');
+            const eventsWithTikAction = OuterSyncService.addOuterActionInEvents(eventsWithStatus, 'add');
 
             const configHashEntry = { 
                 id: buildOuterEntityId('configHash', 1), // 1 - id
@@ -229,14 +229,6 @@ export class EventStateController {
         } finally {
             connection.release();
         }
-    }
-
-    static addTikActionForEvents<T = any>(events: T | T[], action: string): T[] {
-        events = ensureArray(events)
-        return events.map(el => {
-            el = { ...el, [EVENT_TIK_ACTION_PROP]: action } //todo pass propName?
-            return el;
-        })
     }
 
     /**
@@ -333,7 +325,7 @@ export class EventStateController {
             await connection.commit();
             // dd(updatedEventsStatus)
             const tikAction = eventProgress.COMPLETED ? 'add' : 'update';
-            const updatedEventStatusWithTikAction = this.addTikActionForEvents(updatedEventsStatus, tikAction);
+            const updatedEventStatusWithTikAction = OuterSyncService.addOuterActionInEvents(updatedEventsStatus, tikAction);
             // dd(updatedEventStatusWithTikAction)
             // request to tik@back
             let tikResponse;
@@ -736,7 +728,6 @@ export class EventStateController {
                     id: buildOuterEntityId('event', eventProps.id),
                     cur: eventStatus.currentSeconds,
                     len: eventProps.length,
-                    // prc: eventStatus.progressPercentage,
                     stt: eventStatus.status
                 }
 

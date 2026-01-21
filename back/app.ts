@@ -13,6 +13,7 @@ import { validateApiKey } from './middlewares/validateApiKey'
 import { dd } from './utils/dd'
 import { ConfigManager } from './controllers/config-manager'
 import { injectConfigHashMiddleware } from './middlewares/inject-config-hash.middleware'
+import { OuterSyncService } from './controllers/outer-sync.service'
 
 dotenv.config();
 
@@ -42,5 +43,6 @@ app.get('/get-updates', async (req, res) => {
 app.listen(PORT, () => {
   dd(`Server is running on port ${PORT}`);
   checkDBConnection()
-  ConfigManager.setConfigHash(); 
+  ConfigManager.setConfigHash(); // принудительно сеттим, потому что чтение не меняет хэш.
+  OuterSyncService.updateOuterConfigHash(); // todo дождаться, пока tik@ сам сюда стукнется?
 });

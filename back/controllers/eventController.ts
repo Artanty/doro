@@ -10,6 +10,7 @@ import { thisProjectResProp, tikResProp } from '../utils/getResProp';
 import { getUTCDatetime } from '../utils/get-utc-datetime';
 import { upsertEventState } from '../db-actions/upsert-event-state';
 import { ConfigManager } from './config-manager';
+import { OuterSyncService } from './outer-sync.service';
 
 // export interface eventProps {
 // 	"id": 18,
@@ -54,14 +55,22 @@ export class EventController {
 			await upsertEventState(connection, eventId, state)
 
 			/**
-			 * Нужно чтобы tik@ подтянул новое cобытие и раздал его другим клиентам.
-			 * Это делается через обновление хэша.
+			 * Нужно чтобы doro@web подтянул новое cобытие.
+			 * Для этого обновляем хэш, который doro@web впоследствии получит от tik@web
 			 * */
 			ConfigManager.setConfigHash(); 
+			/**
+			 * Стейт события нужно передать в tik@, чтобы отобразился прогресс.
+			 * Передаем обе сущности в одном запросе.
+			 * v2: проверять, нужно ли сейчас отправлять это событие или оно не актуальное.
+			 * */
+			const hashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert');
+			const eventsPayload = OuterSyncService.buildNewOuterEventPayload(eventId, length, state);
+			await OuterSyncService.updateOuterEntries([...hashPayload, ...eventsPayload]);
 
 			await connection.commit();
 			return {
-				[thisProjectResProp()]: {
+				data: {
 					id: eventId
 				},
 			};
@@ -208,37 +217,15 @@ export class EventController {
 
 			await connection.commit();
 
+			ConfigManager.setConfigHash(); 
 
-			const minimalEventForTikAction = { id: buildOuterEntityId('event', eventId) };
-			const updateEventsStatePayloadData = EventStateController.addTikActionForEvents(minimalEventForTikAction, 'delete');
-			// request to tik@back
-			let tikResponse;
-			try {
-				tikResponse = await axios.post(`${process.env['TIK_BACK_URL']}/updateEventsState`,
-					{
-						poolId: 'current_user_id',
-						data: updateEventsStatePayloadData,
-						projectId: 'doro@web',
+			const hashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert');
 
-						// requesterProject,
-						// requesterApiKey: apiKeyHeader,
-						// requesterUrl
-					}
-					// ,
-					//  {
-					//   headers: {
-					//     'X-Project-Id': process.env.PROJECT_ID,
-					//     'X-Project-Domain-Name': `${req.protocol}://${req.get('host')}`,
-					//     'X-Api-Key': process.env.BASE_KEY
-					//   }
-					// }
-				);
-			} catch (error: any) {
-				console.error('process.env[TIK_BACK_URL]/updateEventsState error:', error.message);
-				throw new Error(error);
-			}
-
-
+			const outerEvent = { id: buildOuterEntityId('event', eventId) };
+			const eventsPayload = OuterSyncService.addOuterActionInEvents(outerEvent, 'delete');
+			
+			const tikResponse = await OuterSyncService.updateOuterEntries([...hashPayload, ...eventsPayload]);
+		
 			return {
 				data: {
 					success: result.affectedRows > 0,

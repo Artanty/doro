@@ -42,53 +42,7 @@ export class ConfigManager {
         newHash = newHash ?? new Date().getTime();
         ConfigManager._configHash = newHash;
         dd(`Setting configHash to ${newHash}`);
-        ConfigManager.updateOuterConfigHash(newHash);
     }
-
-
-    public static async updateOuterConfigHash(newHash: number) {
-        dd('updateOuterConfigHash started')
-        const minimalEventForTikAction = { 
-            id: buildOuterEntityId('configHash', 1), // 1 - id
-            cur: newHash,
-        };
-        const updateEventsStatePayloadData = EventStateController.addTikActionForEvents(minimalEventForTikAction, 'upsert');
-        let tikResponse;
-        try {
-            tikResponse = await axios.post(`${process.env['TIK_BACK_URL']}/updateEventsState`,
-                {
-                    poolId: 'current_user_id',
-                    data: updateEventsStatePayloadData,
-                    projectId: 'doro@web',
-
-                    // requesterProject,
-                    // requesterApiKey: apiKeyHeader,
-                    // requesterUrl
-                },
-                {
-                    timeout: 10000,  // Таймаут 10 секунд на каждый запрос
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                }
-                // ,
-                //  {
-                //   headers: {
-                //     'X-Project-Id': process.env.PROJECT_ID,
-                //     'X-Project-Domain-Name': `${req.protocol}://${req.get('host')}`,
-                //     'X-Api-Key': process.env.BASE_KEY
-                //   }
-                // }
-            );
-        } catch (error: any) {
-            console.error('process.env[TIK_BACK_URL]/updateEventsState error:', error.message);
-            throw new Error(error);
-        }
-        dd('updateOuterConfigHash result:')
-        dd(parseServerResponse(tikResponse))
-    }
-
-
 }
 
 // Usage:
