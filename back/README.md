@@ -4,7 +4,32 @@
 CREATE TABLE eventTypes (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL,
+    sort_order INT DEFAULT 0,
     created_at DATETIME NOT NULL
+);
+
+CREATE TABLE accessLevels (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    description VARCHAR(255) NULL,
+    sort_order INT DEFAULT 0,
+    created_at DATETIME NOT NULL
+);
+
+ CREATE TABLE schedules (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    created_by VARCHAR(255) NOT NULL COMMENT 'user_handler',
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
+    INDEX idx_created_by (created_by)
+);
+
+CREATE TABLE eventStatesDictionary (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(50) NOT NULL,
+    description VARCHAR(255),
+    sort_order INT DEFAULT 0
 );
 
 -- Create events table
@@ -14,9 +39,16 @@ CREATE TABLE events (
     length INT NOT NULL COMMENT 'Duration in seconds,
     type INT NOT NULL,
     base_access ENUM('public-read', 'public-write') DEFAULT NULL,
+    schedule_id INT NULL,
+    schedule_position FLOAT NULL,
+    created_by VARCHAR(255) NOT NULL COMMENT 'user_handler',
     created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
     FOREIGN KEY (type) REFERENCES eventTypes(id) ON DELETE RESTRICT,
-    INDEX idx_base_access (base_access)
+    FOREIGN KEY (schedule_id) REFERENCES schedules(id) ON DELETE SET NULL,
+    INDEX idx_base_access (base_access),
+    INDEX idx_schedule_order (schedule_id, schedule_position),
+    INDEX idx_created_by (created_by)
 );
 
 -- Create eventToUser table
@@ -33,11 +65,13 @@ CREATE TABLE eventToUser (
 
 CREATE TABLE eventState (
     id INT PRIMARY KEY AUTO_INCREMENT,
+    event_state_id INT NOT NULL COMMENT 'References eventStateDictionary.id'
     eventId INT NOT NULL UNIQUE,
     state INT NOT NULL COMMENT 'State number (0=inactive, 1=active, 2=paused, etc.)',
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL,
     FOREIGN KEY (eventId) REFERENCES events(id) ON DELETE CASCADE,
+    FOREIGN KEY (eventStateDictionaryId) eventStateDictionary(id),
     INDEX idx_state (state),
     INDEX idx_event_state (eventId, state)
 );

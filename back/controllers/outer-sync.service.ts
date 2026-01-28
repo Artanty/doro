@@ -45,7 +45,7 @@ export class OuterSyncService {
 	): EventStateResItem {
 		return {
 			id: this.buildOuterEntityId('event', id),
-			cur: 0, // v2 событие может быть создано с плехэдом не в нулевой точке.
+			cur: 0, // v2 событие может быть создано с плейхэдом не в нулевой точке.
 			len: length,
 			stt: state
 		}	

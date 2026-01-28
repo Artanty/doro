@@ -11,6 +11,11 @@ import { thisProjectResProp, tikResProp } from '../utils/getResProp';
 import { getUTCDatetime } from '../utils/get-utc-datetime';
 import { ConfigManager } from './config-manager';
 import { OuterSyncService } from './outer-sync.service';
+import { upsertEventState } from '../db-actions/upsert-event-state';
+import { addEventStateHistory } from '../db-actions/add-event-state-history';
+import { getAccessibleEvent } from '../db-actions/get-accessible-event';
+import { createEvent } from '../db-actions/create-event';
+import { upsertEventAccess } from '../db-actions/upsert-event-access';
 
 dotenv.config();
 
@@ -75,16 +80,10 @@ export class EventStateController {
                 throw new Error('Event not found or access denied');
             } 
             
-            // Only proceed if state is actually changing
-            // Get current state before update for history comparison
 
-            const [currentState] = await connection.execute(
-                `SELECT state FROM eventState WHERE eventId = ?`,
-                [eventId]
-            );
-
-            const previousState = currentState.length > 0 ? currentState[0].state : null;
-            if (previousState === state) {
+            const upsertStateResult = await upsertEventState(connection, eventId, state) // todo add false return if no updated
+            
+            if (!upsertStateResult.isStateUpdated) {
                 await connection.commit();
                 return {
                     eventId,
@@ -96,21 +95,7 @@ export class EventStateController {
                 };
             }
 
-            // Update or insert current state
-            const [result] = await connection.execute(
-                `INSERT INTO eventState (eventId, state, created_at, updated_at) 
-                 VALUES (?, ?, ?, ?) 
-                 ON DUPLICATE KEY UPDATE 
-                     state = VALUES(state)`,
-                [eventId, state, getUTCDatetime(), getUTCDatetime()]
-            );
-
-            // Add entry to history table
-            await connection.execute(
-                `INSERT INTO eventStateHistory (eventId, state, created_at) 
-             VALUES (?, ?, ?)`,
-                [eventId, state, getUTCDatetime()]
-            );
+            await addEventStateHistory(connection, eventId, state)
 
             const eventProps: EventPropsPure = eventWithAccess[0];
             dd(eventProps)
@@ -173,7 +158,12 @@ export class EventStateController {
                         access_level: (eventProps as any)?.access_level ?? 'wrong prop name'
                     }],
                 },
-                [tikResProp()]: parseServerResponse(tikResponse)
+                [tikResProp()]: parseServerResponse(tikResponse),
+                debug: {
+                    [thisProjectResProp()]: {
+                        upsertStateResult: upsertStateResult
+                    }
+                }
             };
 
         } catch (error) {
@@ -239,82 +229,54 @@ export class EventStateController {
         const state = eventProgress.PLAYING; // 1
         const pool = createPool();
         const connection = await pool.getConnection();
-        let createdEventId;
+        let createdEventId,
+            upsertStateResult,
+            addHistoryResult,
+            upsertEventAccessResult;
         try {
             await connection.beginTransaction();
 
-            // Check if event exists and user has access
-            const [eventWithAccess] = await connection.execute(
-                `SELECT e.*
-                    FROM events e
-                    INNER JOIN eventToUser etu ON e.id = etu.event_id
-                    WHERE e.id = ? AND etu.user_handler = ?
-                    LIMIT 1`,
-                [eventId, userHandler]
-            );
-            if (eventWithAccess.length < 1) {
-                throw new Error('no event entry found')
+            const eventWithAccessResult = await getAccessibleEvent(connection, eventId, userHandler);
+            if (eventWithAccessResult.error) {
+                throw new Error(eventWithAccessResult.error);
             }
-         
-            const eventProps: EventPropsPure = eventWithAccess[0];
-         
+
+            const eventProps: EventPropsPure = eventWithAccessResult.result[0];
+            dd('eventProps')
+            dd(eventProps)
             const eventStatus: EventStatus = await this.calculateEventStatus(connection, eventProps);
-         
+            dd(eventStatus);
             if (eventStatus.status === eventProgress.STOPPED || eventStatus.status === eventProgress.PAUSED) {
                 dd('CHANGING STATE (PLAYING) OF EXISTING EVENT')
                 
-                const [result] = await connection.execute(
-                    `INSERT INTO eventState (eventId, state, created_at, updated_at) 
-                 VALUES (?, ?, ?, ?) 
-                 ON DUPLICATE KEY UPDATE 
-                     state = VALUES(state)`,
-                    [eventId, state, getUTCDatetime(), getUTCDatetime()]
-                );
-                
-                // Add entry to history table
-                await connection.execute(
-                    `INSERT INTO eventStateHistory (eventId, state, created_at) 
-                 VALUES (?, ?, ?)`,
-                    [eventId, state, getUTCDatetime()]
-                );
+                upsertStateResult = await upsertEventState(connection, eventId, state)
+                addHistoryResult = await addEventStateHistory(connection, eventId, state)
 
             } else if (eventStatus.status === eventProgress.COMPLETED) {
                 dd('DUPLICATING EVENT')
                 const name = eventProps.name;
                 const length = eventProps.length;
-                const type = eventProps.type;
+                const type = Number(eventProps.type);
                 const accessLevel = 'owner';
 
-                const [eventResult] = await connection.execute(
-                    'INSERT INTO events (name, length, type, created_at) VALUES (?, ?, ?, ?)',
-                    [name, length, type, getUTCDatetime()]
-                );
-                createdEventId = eventResult.insertId;
+                const createEventResult = await createEvent(connection, name, length, type, userHandler);
+                if (createEventResult.error) {
+                    throw new Error(createEventResult.error);
+                }
+                createdEventId = createEventResult.result;
 
-                // Create owner relationship in eventToUser
-                await connection.execute(
-                    'INSERT INTO eventToUser (event_id, user_handler, access_level, created_at) VALUES (?, ?, ?, ?)',
-                    [createdEventId, userHandler, accessLevel, getUTCDatetime()]
-                );
-
-                const [result] = await connection.execute(
-                    `INSERT INTO eventState (eventId, state, created_at, updated_at) 
-                     VALUES (?, ?, ?, ?)`,
-                    [createdEventId, eventProgress.PLAYING, getUTCDatetime(), getUTCDatetime()]
-                );
-
-                // Add entry to history table
-                await connection.execute(
-                    `INSERT INTO eventStateHistory (eventId, state, created_at) 
-                 VALUES (?, ?, ?)`,
-                    [createdEventId, state, getUTCDatetime()]
-                );
+                upsertEventAccessResult = await upsertEventAccess(connection, createdEventId, userHandler, accessLevel)
+                upsertStateResult = await upsertEventState(connection, createdEventId, state)
+                addHistoryResult = await addEventStateHistory(connection, createdEventId, state)
             } else {
                 throw new Error('wrong state of event')
             }
             
             // eventProgress.COMPLETED - add event copy
-            const eventPropsForCalc = { id: eventStatus.status === eventProgress.COMPLETED ? createdEventId : eventId, length: eventProps.length }
+            const eventPropsForCalc = { 
+                id: eventStatus.status === eventProgress.COMPLETED ? createdEventId : eventId, 
+                length: eventProps.length 
+            }
             // dd(eventPropsForCalc)
             // dd(eventProgress.COMPLETED)
             // dd(eventProgress.COMPLETED ? createdEventId : eventId)
@@ -372,6 +334,9 @@ export class EventStateController {
                             length: eventProps.length,
                             access_level: "owner",
                         }],
+                        upsertStateResult,
+                        addHistoryResult,
+                        upsertEventAccessResult,
                     },
                     [tikResProp()]: parseServerResponse(tikResponse)
                 }
@@ -394,11 +359,11 @@ export class EventStateController {
         
         // Get current state from eventState table (not from events table)
         const [currentStateResult] = await connection.execute(
-            `SELECT state FROM eventState WHERE eventId = ?`,
+            `SELECT event_state_id FROM eventState WHERE eventId = ?`,
             [eventId]
         );
         
-        const currentState = currentStateResult.length > 0 ? currentStateResult[0].state : null;
+        const currentState = currentStateResult.length > 0 ? currentStateResult[0].event_state_id : null;
 
         // If event is stopped/inactive
         if (currentState === 0 || currentState === null) {
@@ -411,7 +376,7 @@ export class EventStateController {
 
         // Get all state history for this event
         const [history] = await connection.execute(
-            `SELECT state, created_at 
+            `SELECT event_state_id, created_at 
              FROM eventStateHistory 
              WHERE eventId = ? 
              ORDER BY created_at ASC`,
@@ -431,10 +396,10 @@ export class EventStateController {
 
         // Calculate total active time from history
         for (const record of history) {
-            if (record.state === 1 && activeStartTime === null) {
+            if (record.event_state_id === 1 && activeStartTime === null) {
                 // Start of active period - create UTC date
                 activeStartTime = new Date(record.created_at + 'Z');
-            } else if ((record.state === 0 || record.state === 2) && activeStartTime !== null) {
+            } else if ((record.event_state_id === 0 || record.event_state_id === 2) && activeStartTime !== null) {
                 // End of active period - calculate duration with UTC date
                 const activeEndTime = new Date(record.created_at + 'Z');
                 const diff = activeEndTime.getTime() - activeStartTime.getTime();
@@ -510,8 +475,8 @@ export class EventStateController {
                  WHERE etu.user_handler = ? 
                  ORDER BY 
                      CASE 
-                         WHEN es.state = 1 THEN 1  -- Active first
-                         WHEN es.state = 2 THEN 2  -- Paused second
+                         WHEN es.event_state_id = 1 THEN 1  -- Active first
+                         WHEN es.event_state_id = 2 THEN 2  -- Paused second
                          ELSE 3                    -- Other states
                      END,
                      es.updated_at DESC
@@ -619,7 +584,7 @@ export class EventStateController {
                 `SELECT es.*, e.name as event_name 
                  FROM eventState es 
                  INNER JOIN events e ON es.eventId = e.id 
-                 WHERE es.state = ? 
+                 WHERE es.event_state_id = ? 
                  ORDER BY es.updated_at DESC`,
                 [state]
             );
@@ -673,14 +638,14 @@ export class EventStateController {
         try {
             const [rows] = await connection.execute(
                 `SELECT 
-                    es.state, 
+                    es.event_state_id, 
                     COUNT(*) as count,
                     MAX(es.updated_at) as last_updated
                  FROM eventState es
                  INNER JOIN eventToUser etu ON es.eventId = etu.event_id
                  WHERE etu.user_handler = ? 
-                 GROUP BY es.state 
-                 ORDER BY es.state`,
+                 GROUP BY es.event_state_id 
+                 ORDER BY es.event_state_id`,
                 [userHandler]
             );
 
@@ -700,7 +665,7 @@ export class EventStateController {
         const connection = await pool.getConnection();
         try {
             const [rows] = await connection.execute(
-                `SELECT state, updated_at 
+                `SELECT event_state_id, updated_at 
                  FROM eventState 
                  WHERE eventId = ?`,
                 [eventId]

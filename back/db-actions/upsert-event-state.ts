@@ -15,21 +15,21 @@ export const upsertEventState = async (
 		isStateUpdated: false,
 		result: null,
 	}
-
+	
 	const [currentState] = await connection.execute(
-		`SELECT state FROM eventState WHERE eventId = ?`,
+		`SELECT event_state_id FROM eventState WHERE eventId = ?`,
 		[eventId]
 	);
-	const previousState = currentState.length > 0 ? currentState[0].state : null;
+	const previousState = currentState.length > 0 ? currentState[0].event_state_id : null;
 
 	if (previousState === state) {
 		res.isStateUpdated = false;
 	} else {
 		const [result] = await connection.execute(
-			`INSERT INTO eventState (eventId, state, created_at, updated_at) 
+			`INSERT INTO eventState (eventId, event_state_id, created_at, updated_at) 
              VALUES (?, ?, ?, ?) 
              ON DUPLICATE KEY UPDATE 
-                 state = VALUES(state)`,
+                 event_state_id = VALUES(event_state_id)`,
 			[eventId, state, getUTCDatetime(), getUTCDatetime()]
 		);
 

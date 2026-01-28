@@ -52,7 +52,7 @@ export class EventController {
 				[eventId, userHandle, 'owner', getUTCDatetime()]
 			);
 
-			await upsertEventState(connection, eventId, state)
+			await upsertEventState(connection, eventId, state) // todo add false return if no updated
 
 			/**
 			 * Нужно чтобы doro@web подтянул новое cобытие.
