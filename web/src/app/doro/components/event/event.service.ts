@@ -1,32 +1,13 @@
 import { ChangeDetectorRef, Inject, Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, distinctUntilChanged, filter, map, Observable, of, throwError, catchError, switchMap, tap, Subject, take } from 'rxjs';
-import { EventProps, EventState, EventStateReq, EventStateRes, EventWithState, SetPlayEventStateReq } from './event.model';
+import { EventProps, EventState, EventStateReq, EventStateRes, EventStateResItem, EventWithState, GetUserEventsRes, SetPlayEventStateReq } from './event.model';
 import { dd } from '../../helpers/dd';
 import { basicEventTypePrefix, devPoolId, EventProgressType, EventStates } from '../../constants';
 import { BusEvent, EVENT_BUS_LISTENER, EVENT_BUS_PUSHER } from 'typlib';
 
 import { filterStreamDataEntries } from '../../helpers/filterStreamDataEntries';
 // import { validateShareKeyword } from './edit-keyword/edit-keyword.validation';
-
-export interface EventStateResItem { // todo: rename to entry
-  id: string,
-  cur: number,
-  len?: number,
-  // prc: number,
-  stt?: EventProgressType
-}
-
-export interface EventData {
-  data: any
-  state: string
-  initialEvent: EventWithState
-}
-
-export type GetUserEventsRes = Record<string, {
-  data: EventProps[]
-}>
-
 
 @Injectable(
   // {

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Injector, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { Observable, Subject, takeUntil, filter, startWith, distinctUntilChanged, map, tap, withLatestFrom, catchError, EMPTY, finalize } from 'rxjs';
-import { EventProps, EventState, EventViewState, EventWithState } from '../event.model';
-import { EventData, EventService, EventStateResItem } from '../event.service';
+import { EventProps, EventState, EventStateResItem, EventStateResItemStateless, EventViewState, EventWithState } from '../event.model';
+import { EventService, } from '../event.service';
 import { CommonModule } from '@angular/common';
 import { GuiDirective } from '../../_remote/web-component-wrapper/gui.directive';
 import { dd } from 'src/app/doro/helpers/dd';
@@ -9,7 +9,7 @@ import { EventStates } from 'src/app/doro/constants';
 import { Router } from '@angular/router';
 
 
-export type EventStateResItemStateless = Omit<EventStateResItem, 'stt'>
+
 @Component({
   selector: 'app-event-list-event',
   standalone: false,
@@ -80,11 +80,12 @@ export class EventListEventComponent implements OnInit, OnDestroy {
         .pipe(
           takeUntil(this.destroy$),
           map((res: EventStateResItem) => {
+            dd(res)
             const { stt, ...rest } = res;
             const readyState: EventViewState<EventStateResItemStateless> = {
               viewState: 'READY_VIEW_STATE',
               eventState: stt,
-              data: rest
+              data: { ...rest, prc: 0 }
             };
 
             return readyState;

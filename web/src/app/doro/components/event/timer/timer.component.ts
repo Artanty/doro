@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
-import { countPrc } from '../utils';
+
 import { eventTypes } from '../../../constants';
 import { dd } from 'src/app/doro/helpers/dd';
+import { countPrc } from 'src/app/doro/utilites/count-percent.util';
 
 @Component({
   selector: 'app-timer',

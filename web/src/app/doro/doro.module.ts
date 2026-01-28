@@ -30,7 +30,7 @@ import { BusEvent, EVENT_BUS, EVENT_BUS_LISTENER, EVENT_BUS_PUSHER } from 'typli
 import { BehaviorSubject, filter, map, Observable, switchMap, take } from 'rxjs';
 import { dd } from './helpers/dd';
 import { EventListComponent } from './components/event/event-list/event-list.component';
-import { EventService, EventStateResItem } from './components/event/event.service';
+import { EventService } from './components/event/event.service';
 
 import { EventListEventComponent } from './components/event/event-list-event/event-list-event.component';
 import { GuiDirective } from './components/_remote/web-component-wrapper/gui.directive';
@@ -41,6 +41,7 @@ import { EventCreateComponent } from './components/event/event-create/event-crea
 import { CompareConfigHashAction } from './services/compare-config-hash.action';
 import { SetConfigHashAction } from './services/set-config-hash.action';
 import { filterStreamDataEntries } from './helpers/filterStreamDataEntries';
+import { EventStateResItem } from './components/event/event.model';
 
 
 // function initConfigActivator(counterServ: CounterService) {
@@ -107,20 +108,10 @@ export const CHILD_ROUTES = [
   // exports: [DoroComponent, MyCustomElementComponent, LoadingComponent],
   exports: [DoroComponent],
   providers: [
-
-    // {
-    //   provide: HTTP_INTERCEPTORS,
-    //   useClass: ComparisonInterceptor,
-    //   multi: true
-    // },
-    // Используем root HttpClient
-    // {
-    //   provide: HttpClient,
-    //   useFactory: (injector: Injector) => {
-    //     return injector.get('ROOT_HTTP_CLIENT');
-    //   },
-    //   deps: [Injector]
-    // },
+    // provideHttpClient(
+    //   // DI-based interceptors must be explicitly enabled.
+    //   withInterceptorsFromDi(),
+    // ),
     // {
     //   provide: APP_INITIALIZER,
     //   useFactory: initConfigActivator,

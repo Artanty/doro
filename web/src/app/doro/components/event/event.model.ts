@@ -1,4 +1,12 @@
-import { EventStatesType } from "../../constants"
+import { basicEventTypePrefix, devPoolId, EventProgressType, EventStates, EventStatesType } from '../../constants';
+
+export interface EventStateResItem { // todo: rename to entry
+	id: string,
+	cur: number,
+	len?: number,
+	stt?: EventProgressType
+}
+
 
 export interface EventViewState<T = null> {
 	viewState: string,
@@ -54,3 +62,15 @@ export interface EventStateReq {
 export interface SetPlayEventStateReq {
 	"eventId": number
 }
+
+export interface EventData {
+	data: any
+	state: string
+	initialEvent: EventWithState
+}
+
+export type GetUserEventsRes = Record<string, {
+	data: EventProps[]
+}>
+
+export type EventStateResItemStateless = Omit<EventStateResItem, 'stt'> & { prc: number }

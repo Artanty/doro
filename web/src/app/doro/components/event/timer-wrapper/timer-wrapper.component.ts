@@ -2,10 +2,11 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Injector, Input,
 import { Subject, Observable, takeUntil, map, startWith, tap, catchError, EMPTY, finalize, throwError } from 'rxjs';
 import { EventStates } from 'src/app/doro/constants';
 import { dd } from 'src/app/doro/helpers/dd';
-import { EventStateResItemStateless } from '../event-list-event/event-list-event.component';
-import { EventProps, EventViewState, EventState } from '../event.model';
-import { EventStateResItem, EventService } from '../event.service';
+
+import { EventProps, EventViewState, EventState, EventStateResItem, EventStateResItemStateless } from '../event.model';
+import { EventService } from '../event.service';
 import { ActivatedRoute } from '@angular/router';
+import { countPrc } from 'src/app/doro/utilites/count-percent.util';
 
 @Component({
   selector: 'app-timer-wrapper',
@@ -53,7 +54,7 @@ export class TimerWrapperComponent {
       : 0;
     return Math.round(result)
   }
-
+  // countPrc
   ngOnInit() {
     let initalState: EventViewState<EventStateResItemStateless> | EventViewState<EventState> = {
       viewState: 'LOADING_VIEW_STATE',
@@ -75,11 +76,16 @@ export class TimerWrapperComponent {
         .pipe(
           takeUntil(this.destroy$),
           map((res: EventStateResItem) => {
-            const { stt, ...rest } = res;
+            const { stt, len, cur, id } = res;
             const readyState: EventViewState<EventStateResItemStateless> = {
               viewState: 'READY_VIEW_STATE',
               eventState: stt,
-              data: rest
+              data: {
+                id,
+                cur,
+                len,
+                prc: countPrc(len!, cur),
+              }              
             };
 
             return readyState;

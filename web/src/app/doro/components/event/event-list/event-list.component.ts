@@ -34,12 +34,14 @@ export class EventListComponent implements OnInit {
       // shareReplay(1),
       // delay(500),
       tap(res => {
-        dd(res)
-        setTimeout(() => {}, 1000); // crutch to update state
+        dd('UPDATE NOW')
         
-        // setTimeout(() => {
-        //   this.cdr.detectChanges()
-        // }, 1000); // crutch to update state
+        dd(res)
+        // setTimeout(() => {}, 1000); // crutch to update state
+        
+        setTimeout(() => {
+          this.cdr.detectChanges()
+        }, 1000); // crutch to update state
       })
     );
   }

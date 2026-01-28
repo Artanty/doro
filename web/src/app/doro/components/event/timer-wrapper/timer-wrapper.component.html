@@ -3,18 +3,20 @@
     <div>
       <ng-container *ngIf="eventState.viewState === 'READY_VIEW_STATE'">
 
-     <!--    <ng-container [ngTemplateOutlet]="name"></ng-container>
+        <ng-container [ngTemplateOutlet]="name"></ng-container>
         
-        <ng-container [ngTemplateOutlet]="readableState"></ng-container> -->
+        <ng-container [ngTemplateOutlet]="readableState"></ng-container>
 
         <ng-container [ngTemplateOutlet]="playButton"></ng-container>
 
         <ng-container [ngTemplateOutlet]="pauseButton"></ng-container>
 
-      <!--   <ng-container 
+        <ng-container [ngTemplateOutlet]="length"></ng-container>
+
+        <ng-container 
           [ngTemplateOutlet]="progressBar" 
           [ngTemplateOutletContext]="{$implicit: eventState.data}"
-        ></ng-container> -->
+        ></ng-container>
 
       <!-- [percentage]="getPrc(eventState)" -->
        <app-timer 
@@ -52,10 +54,17 @@
         }
       </ng-template>
 
+      <ng-template #length>
+        <br>
+        @if(eventProps.length) {
+          {{ eventProps.length * 1000 | date:'HH:mm:ss':'UTC'}}
+        }
+      </ng-template>
+
       <ng-template #progressBar let-data>
         <div class="progressBar">
           <div class="time">
-            {{ data?.cur }}
+            {{ data?.cur  * 1000 | date:'HH:mm:ss':'UTC'}}
           </div>
           |
           <div class="percent">
