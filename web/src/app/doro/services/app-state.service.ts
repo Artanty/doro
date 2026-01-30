@@ -10,7 +10,7 @@ import { Nullable } from '../utilites/utility.types';
 })
 export class AppStateService {
   public configHash = obs$<number>(0);
-  
+  public recentEvent = obs$<Nullable<number>>(null);
   // public userAction = obs$<Nullable<UserAction>>(null)
   // public isLoggedIn = obs$<boolean>(false)
   // public userProfile = obs$<Nullable<UserData>>(null)

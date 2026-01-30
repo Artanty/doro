@@ -7,16 +7,11 @@ import { GuiDirective } from '../../_remote/web-component-wrapper/gui.directive'
 import { dd } from 'src/app/doro/helpers/dd';
 import { EventStates } from 'src/app/doro/constants';
 import { Router } from '@angular/router';
-
-
+import { Schedule, ScheduleService } from '../schedule.service';
 
 @Component({
   selector: 'app-event-list-event',
   standalone: false,
-  // standalone: true,
-  // imports: [GuiDirective, CommonModule,
-  //   // GlobalIconFallbackDirective
-  // ],
   templateUrl: './event-list-event.component.html',
   styleUrl: './event-list-event.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -27,6 +22,7 @@ export class EventListEventComponent implements OnInit, OnDestroy {
   menuItems = [
     { id: 'DELETE', name: 'Удалить' },
   ];
+  scheduleMenuItems$: Observable<Schedule[]>;
   
   eventState$!: Observable<EventViewState<EventStateResItem>>;
   public EventStates = EventStates;
@@ -45,9 +41,18 @@ export class EventListEventComponent implements OnInit, OnDestroy {
     private eventService: EventService,
     private injector: Injector,
     private router: Router,
+    private _scheduleService: ScheduleService
   ) {
     // const service = this.injector.get(IconFallbackService);
     // console.log(service)
+    this.scheduleMenuItems$ = this._scheduleService.getSchedules().pipe(
+      map(res => {
+        dd(this.eventProps)
+        if (this.eventProps.schedule_id) {
+          return res.filter(el => el.id !== this.eventProps.schedule_id);
+        }
+        return res;
+      }));
   }
   
   // loading view state
@@ -80,7 +85,7 @@ export class EventListEventComponent implements OnInit, OnDestroy {
         .pipe(
           takeUntil(this.destroy$),
           map((res: EventStateResItem) => {
-            dd(res)
+            // dd(res)
             const { stt, ...rest } = res;
             const readyState: EventViewState<EventStateResItemStateless> = {
               viewState: 'READY_VIEW_STATE',
@@ -106,38 +111,18 @@ export class EventListEventComponent implements OnInit, OnDestroy {
             return EMPTY;
           })
         )
-    // .subscribe(res => {
-    //   this.eventState = res
-    // })
   }
 
   goToEventTimer() {
     this.router.navigateByUrl(`/doro/timer/${this.eventProps.id}`);
   }
   deleteEvent() {
-    // this.isDeleting$.next(true);
-    // this.cdr.detectChanges()
     this.eventService.deleteEvent(this.eventProps.id);
   }
-  deleteEvent2() {
-    // this.eventState.eventState = EventStates.PENDING
-
-
-    this.eventService.deleteEvent2(this.eventProps.id)
-      .pipe(
-        takeUntil(this.destroy$),
-        finalize(() => {
-          // this.isDeleting = false;
-          // this.cdr.detectChanges();
-        }),
-      )
-      .subscribe({
-        next: () => {
-          console.log('delete success');
-          // this.cdr.detectChanges();
-        },
-        error: (err) => console.error('Error deleting keyword:', err)
-      });
+  addToSchedule(data: any) {
+    dd(data)
+    const scheduleId = data.id;
+    this.eventService.addToSchedule(this.eventProps.id, scheduleId).subscribe()
   }
 
   ngOnChanges(changes: SimpleChanges): void {

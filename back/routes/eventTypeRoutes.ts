@@ -20,7 +20,7 @@ router.post('/create', async (req, res) => {
 
 router.post('/list', async (req, res) => {
   try {
-    const data = await EventTypeController.getAllEventTypes();
+    const data = await EventTypeController.getEventTypes();
     res.json(data);
   } catch (error) {
     handleError(res as unknown as Response, error) 

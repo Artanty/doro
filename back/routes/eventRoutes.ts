@@ -42,10 +42,10 @@ router.post('/get-one', async (req, res) => {
   
 router.post('/update', async (req, res) => {
   try {
-    const { id, name, length, type } = req.body;
+    const { id, ...rest } = req.body;
     const user = getUserFromRequest(req);
     const itemId = await EventController.updateEvent(
-      id, name, length, type, user
+      id, rest, user
     );
 
     res.json({ success: true });

@@ -11,7 +11,7 @@ export const upsertEventAccess = async (
 	connection: any, 
 	eventId, 
 	userHandler: string,
-	accessLevel: string, //number, // todo change to number
+	accessLevel: string | number, //number, // todo change to number
 ): Promise<DbActionResult> => {
 
 	const res = {
@@ -19,10 +19,10 @@ export const upsertEventAccess = async (
 		result: null,
 		error: null
 	}
-	
+	accessLevel = 3; // todo
 	try {
 		const [queryResult] = await connection.execute(
-			'INSERT INTO eventToUser (event_id, user_handler, access_level, created_at) VALUES (?, ?, ?, ?)',
+			'INSERT INTO eventToUser (event_id, user_handler, access_level_id, created_at) VALUES (?, ?, ?, ?)',
 			[eventId, userHandler, accessLevel, getUTCDatetime()]
 		);
                 

@@ -27,7 +27,7 @@ import { CounterConfigComponent } from './widgets/counter-config/counter-config.
 import { CounterComponent } from './widgets/counter/counter.component';
 
 import { BusEvent, EVENT_BUS, EVENT_BUS_LISTENER, EVENT_BUS_PUSHER } from 'typlib';
-import { BehaviorSubject, filter, map, Observable, switchMap, take } from 'rxjs';
+import { BehaviorSubject, filter, map, Observable, of, switchMap, take, tap } from 'rxjs';
 import { dd } from './helpers/dd';
 import { EventListComponent } from './components/event/event-list/event-list.component';
 import { EventService } from './components/event/event.service';
@@ -42,6 +42,10 @@ import { CompareConfigHashAction } from './services/compare-config-hash.action';
 import { SetConfigHashAction } from './services/set-config-hash.action';
 import { filterStreamDataEntries } from './helpers/filterStreamDataEntries';
 import { EventStateResItem } from './components/event/event.model';
+import { ConfigHashTikEntry, mapBusEventToConfigHashTikEntry } from './helpers/getConfigHashFromBusEvent';
+import { AccessLevelService } from './components/event/access-level.service';
+import { EventTypeService } from './components/event/event-type.service';
+import { ScheduleService } from './components/event/schedule.service';
 
 
 // function initConfigActivator(counterServ: CounterService) {
@@ -136,7 +140,10 @@ export const CHILD_ROUTES = [
       },
       deps: [EVENT_BUS],
     },
-    EventService
+    EventService,
+    AccessLevelService,
+    EventTypeService,
+    ScheduleService
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
@@ -155,7 +162,7 @@ export class DoroModule implements DoBootstrap {
     // this.eventBusListener$.subscribe((res: BusEvent) => {
     //   console.log('DORO BUS LISTENER');
     // });
-
+ 
     // part of scenario
     // При получении ответа с doro@back сохраняется configHash.
     this.eventBusListener$
@@ -164,26 +171,28 @@ export class DoroModule implements DoBootstrap {
         filter((res) => res.event === 'SET_CONFIG_HASH'),
       )
       .subscribe((res: BusEvent) => {
-        console.log(res);
+         
+        // dd('res to set as hash config: ')
+        if (res)
+          dd(res)
         this._setConfigHashAction.init(res);
       });
 
     // При получении состояния таймеров из tik@web сравниваем с configHash:
     this.eventBusListener$.pipe(
       filter(filterStreamDataEntries),
-      map((busEvent: BusEvent<EventStateResItem[]>): boolean => {
-        const foundEntry = busEvent.payload.find(entry => entry.id === 'h_1');
-        if (!foundEntry) {
-          return false
-        } else {
-          const isNeedRefresh = !this._compareConfigHashAction.init(foundEntry);
-          return isNeedRefresh;
-        }
+      map(busEvent => mapBusEventToConfigHashTikEntry(busEvent)),
+      filter(Boolean),
+      map((configHashTikEntry: ConfigHashTikEntry): boolean => {
+        const isNeedRefresh = this._compareConfigHashAction.init(configHashTikEntry);
+        return isNeedRefresh;
       }),
       filter(Boolean),
       switchMap(() => {
-        dd('configHash not equal. make request...')
-        return this.eventService.loadEvents();
+        dd('configHash not equal. refresh...')
+        return this.eventService.loadRecentEventOrSchedule();
+
+        return of(8)
       })
     )
       .subscribe();

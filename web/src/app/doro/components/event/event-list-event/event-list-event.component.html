@@ -89,9 +89,6 @@
         <i title="delete" class="mu mu-i-cross" (click)="deleteEvent()"></i>
       </ng-template>
 
-      
-
-
       <ng-container *ngIf="eventState.viewState === 'LOADING_VIEW_STATE'">
         <div *ngIf="eventState.eventState === EventStates.PENDING" class="timer">
           <pre>PENDING</pre>
@@ -99,10 +96,20 @@
       </ng-container>
     </div>
     <div class="action">
-
       <div *ngIf="eventState.viewState === 'ERROR_VIEW_STATE'" class="timer">
-          <pre>ERROR</pre>
-        </div>
+        <pre>ERROR</pre>
+      </div>
+
+      <div gui type="dropdown"
+        [inputs]="{
+          buttonIcon: 'mu mu-calendar',
+          items$: scheduleMenuItems$
+        }"
+        [outputs]="{
+          itemSelected: addToSchedule.bind(this)
+        }"
+      ></div>
+
 
       <div gui type="dropdown"
         [inputs]="{

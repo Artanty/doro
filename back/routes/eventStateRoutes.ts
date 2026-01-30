@@ -46,9 +46,16 @@ router.post('/play', async (req, res) => {
     const { eventId } = req.body;
     const result = await EventStateController.playOrDuplicateEvent(user, eventId);
     res.json(result);
-    // res.json({ 
-    //   data: result
-    // });
+  } catch (error) {
+    handleError(res as unknown as Response, error) 
+  }
+});
+
+router.post('/get-recent-event-or-schedule', async (req, res) => {
+  try {
+    const user = getUserFromRequest(req);
+    const result = await EventStateController.getRecentEventOrSchedule(user);
+    res.json(result);
   } catch (error) {
     handleError(res as unknown as Response, error) 
   }

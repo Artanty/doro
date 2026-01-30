@@ -1,5 +1,6 @@
 import { basicEventTypePrefix, devPoolId, EventProgressType, EventStates, EventStatesType } from '../../constants';
 
+
 export interface EventStateResItem { // todo: rename to entry
 	id: string,
 	cur: number,
@@ -16,13 +17,20 @@ export interface EventViewState<T = null> {
 }
 
 export interface EventProps {
-	"id": number
-	"name": string
-	"length": number
-	"type": number
-	"created_at": string
-	"type_name": string
-	"access_level": string
+	id: number;
+	name: string;
+	length: number;
+	type: number;
+	// type_name: string; // replace to dictionaries
+	created_at: string;
+	updated_at: string | null;
+	created_by: string; // hide on backend
+	schedule_id: number | null;
+	schedule_position: number | null;
+	// base_access: "public-read"; //remove on backend
+	base_access_id: number;
+	// access_level: "owner" | "editor" | "viewer"; //remove on backend
+	has_access: number; // 0 or 1 (boolean)
 }
 
 export interface EventWithState { // todo rename
@@ -69,8 +77,24 @@ export interface EventData {
 	initialEvent: EventWithState
 }
 
-export type GetUserEventsRes = Record<string, {
+export type GetUserEventsRes = {
 	data: EventProps[]
-}>
+}
+
+export interface Schedule {
+	id: number;
+	name: string;
+	created_by: string;
+	created_at: Date | string;
+	updated_at: Date | string;
+	events?: EventProps[];
+}
+
+export interface GetRecentRes {
+	data: {
+		recentEvent?: EventProps,
+		recentSchedule?: Schedule,
+	}
+}
 
 export type EventStateResItemStateless = Omit<EventStateResItem, 'stt'> & { prc: number }

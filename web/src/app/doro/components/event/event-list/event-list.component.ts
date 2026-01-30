@@ -54,12 +54,10 @@ export class EventListComponent implements OnInit {
   // }
 
   ngOnInit() {
-    this.eventService.loadEvents().pipe(take(1)).subscribe();
+    // this.eventService.loadEvents().pipe(take(1)).subscribe();
+
+    this.eventService.loadRecentEventOrSchedule().subscribe();
   }
-
-  
-
-  
 
   // public playEvent(eventId: number) {
   //   this.eventService.playEvent(eventId).subscribe(res => {

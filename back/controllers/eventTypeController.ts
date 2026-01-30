@@ -21,14 +21,18 @@ export class EventTypeController {
 	}
 
 	// Get all event types
-	static async getAllEventTypes() {
+	static async getEventTypes() {
 		const pool = createPool();
 		const connection = await pool.getConnection();
 		try {
 			const [rows] = await connection.execute(
-				'SELECT * FROM eventTypes ORDER BY created_at DESC'
+				'SELECT * FROM eventTypes ORDER BY sort_order DESC'
 			);
-			return rows;
+
+			return {
+				data: rows
+			};
+
 		} catch (error) { 
 			console.log(error)
 			throw error;

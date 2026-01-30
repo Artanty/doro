@@ -1,12 +1,13 @@
 import { ChangeDetectorRef, Inject, Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, distinctUntilChanged, filter, map, Observable, of, throwError, catchError, switchMap, tap, Subject, take } from 'rxjs';
-import { EventProps, EventState, EventStateReq, EventStateRes, EventStateResItem, EventWithState, GetUserEventsRes, SetPlayEventStateReq } from './event.model';
+import { BehaviorSubject, distinctUntilChanged, filter, map, Observable, of, throwError, catchError, switchMap, tap, Subject, take, delay } from 'rxjs';
+import { EventProps, EventState, EventStateReq, EventStateRes, EventStateResItem, EventWithState, GetRecentRes, GetUserEventsRes, SetPlayEventStateReq } from './event.model';
 import { dd } from '../../helpers/dd';
 import { basicEventTypePrefix, devPoolId, EventProgressType, EventStates } from '../../constants';
 import { BusEvent, EVENT_BUS_LISTENER, EVENT_BUS_PUSHER } from 'typlib';
 
 import { filterStreamDataEntries } from '../../helpers/filterStreamDataEntries';
+import { AppStateService } from '../../services/app-state.service';
 // import { validateShareKeyword } from './edit-keyword/edit-keyword.validation';
 
 @Injectable(
@@ -24,30 +25,33 @@ export class EventService {
     private http: HttpClient,
     @Inject(EVENT_BUS_LISTENER)
     private readonly eventBusListener$: Observable<BusEvent>,
+    private _appStateService: AppStateService
   ) {
     this.eventBusListener$.subscribe(res => {
       // dd(res)
     })
   }
 
+  public createEvent(payload: any) {
+    const apiUrl = `${process.env['DORO_BACK_URL']}/event/create`;
+    return this.http.post(apiUrl, payload).pipe(delay(1000))
+  }
+
+  public addToSchedule(eventId: number, scheduleId: number): Observable<unknown> {
+    const payload = {
+      id: eventId,
+      schedule_id: scheduleId
+    }
+    return this.updateEventApi(payload)
+      
+  }
   public listenEvents() {
     return this.events$.asObservable();
   }
-  // Get all entries for current user from events db
-  // get current connections
-  getAllEvents(): Observable<EventProps[]> {
-    return this.http.post<EventProps[]>(`${this.doroBaseUrl}/event-state/list`, null);
-  }
-
-  // getUserEventsWithStateApi(): Observable<EventProps[]> {
-  //   return this.http.post<EventProps[]>(`${this.doroBaseUrl}/event-state/list-by-user`, null);
-  // }
 
   getUserEventsApi(): Observable<GetUserEventsRes> {
     return this.http.post<GetUserEventsRes>(`${this.doroBaseUrl}/event/list`, null);
   }
-
-  
 
   setEventStateApi(data: EventStateReq): Observable<EventState> {
     return this.http.post<EventStateRes>(`${this.doroBaseUrl}/event-state/set-event-state`, data)
@@ -70,6 +74,14 @@ export class EventService {
       );
   }
 
+  updateEventApi(data: any): Observable<unknown> {
+    return this.http
+      .post<any>(`${this.doroBaseUrl}/event/update`, data)
+      .pipe(
+        map(res => res.data)
+      )
+  }
+
   deleteEventApi(data: { id: number }): Observable<number[]> {
     return this.http.post<any>(`${this.doroBaseUrl}/event/delete`, data)
       .pipe(
@@ -86,9 +98,8 @@ export class EventService {
   loadEvents(): Observable<boolean> {
     return this.getUserEventsApi()
       .pipe(
-        take(1),
         tap((res: GetUserEventsRes) => {
-          const data: EventProps[] = res[`${process.env['THIS_BACK_PROJECT_ID']}`]?.data;
+          const data: EventProps[] = res.data;
           if (!data) throw new Error('wrong response format');
 
           this.events$.next(data)
@@ -99,7 +110,46 @@ export class EventService {
         }),
         map(() => true),
       )
-    // .subscribe()
+  }
+
+  public loadRecentEventOrSchedule() {
+    return this.http.post<GetRecentRes>(`${this.doroBaseUrl}/event-state/get-recent-event-or-schedule`, null)
+      .pipe(
+        tap((res: GetRecentRes) => {
+          let events: EventProps[] = [];
+          const { recentEvent, recentSchedule } = res.data;
+          if (recentEvent) {
+            events = [recentEvent];
+            this._appStateService.recentEvent.next(recentEvent.id);
+          }
+          if (recentSchedule) {
+            events = recentSchedule.events ?? [];
+          }
+          this.events$.next(events);
+        }),
+        catchError((err: any) => {
+          dd(err)
+          return of(false);
+        }),
+        map(() => true),
+      )
+  }
+
+  public getRecentEventOrSchedule() {
+    return this.http.post<any>(`${this.doroBaseUrl}/event-state/get-recent-event-or-schedule`, null)
+      .pipe(
+        tap((res: GetUserEventsRes) => {
+          const data: EventProps[] = res.data;
+          if (!data) throw new Error('wrong response format');
+
+          this.events$.next(data)
+        }),
+        catchError((err: any) => {
+          dd(err)
+          return of(false);
+        }),
+        map(() => true),
+      )
   }
 
   // flow: doro@web -> doro@back -> tik@back -> tik@web -> doro@web
@@ -166,6 +216,7 @@ export class EventService {
       .subscribe()
   }
 
+  
 
 
   private _connectionsState = new BehaviorSubject<Map<string, any>>(new Map());
@@ -185,20 +236,6 @@ export class EventService {
     );
   }
   
-  // public listenEventState(eventId: number): Observable<EventStateResItem> {
-  //   return this.eventBusListener$.pipe(
-  //     filter(filterStreamDataEntries),
-  //     map((busEvent: BusEvent<EventStateResItem[]>): EventStateResItem => {
-  //       const receivedEventId = `${basicEventTypePrefix}_${eventId}`
-  //       const foundEvent = busEvent.payload.find(event => event.id === receivedEventId)
-  //       if (!foundEvent) {
-  //         return null;
-  //       }
-  //       return foundEvent;
-  //     }),
-  //     filter(Boolean)
-  //   )
-  // }
   public listenEventState(eventId: number): Observable<EventStateResItem> {
     const receivedEventId = `${basicEventTypePrefix}_${eventId}`;
   
@@ -211,74 +248,6 @@ export class EventService {
       filter((event): event is EventStateResItem => event !== null),
     );
   }
-
-  private _connectToTikPool() {
-    
-  }
-
-  // // Get single keyword
-  // getKeyword(id: number): Observable<Keyword> {
-  //   const data = { id: id }
-  //   return this.http.post<Keyword>(`${this.baseUrl}/get-one`, data);
-  // }
-
-  // // Create new keyword
-  // createKeyword(keyword: { name: string; color: number }): Observable<Keyword> {
-  //   return this.http.post<Keyword>(`${this.baseUrl}/create`, {
-  //     ...keyword,
-  //   });
-  // }
-
-  // // Update keyword
-  // updateKeyword(keyword: { id: number, name?: string; color?: number }): Observable<Keyword> {
-  //   const data = keyword
-  //   return this.http.post<Keyword>(`${this.baseUrl}/update`, data);
-  // }
-
-
-
-  // // get list of users that have access to keyword
-  // public getKeywordUsers(keywordId: number): Observable<KeywordUser[]> {
-  //   const data = {
-  //     "keywordId": keywordId
-  //   }
-  //   return this.http.post<KeywordUsersRes>(`${this.baseUrl}/users/list`, data).pipe(
-  //     map(res => {
-  //       return res.enrichedUsersData
-  //     }));
-  // }
-  
-
-
-  // // Share keyword with another user
-  // shareKeyword(
-  //   keywordId: number, 
-  //   targetUserProviderId: string,
-  //   targetUserId: string, 
-  //   accessLevel: number
-  // ): Observable<ShareKeywordRes> {
-  //   validateShareKeyword(keywordId, targetUserProviderId, targetUserId, accessLevel)
-  //   return this.http.post<ShareKeywordRes>(`${this.baseUrl}/share`, {
-  //     keywordId: keywordId,
-  //     targetUserProviderId: targetUserProviderId,
-  //     targetUserId: targetUserId,
-  //     accessLevel: accessLevel,
-  //   });
-  // }
-
-  // // Share keyword with another user
-  // unshareKeyword(
-  //   keywordId: number, 
-  //   targetUserProviderId: string,
-  //   targetUserId: string, 
-    
-  // ): Observable<ShareKeywordRes> {
-  //   return this.http.post<ShareKeywordRes>(`${this.baseUrl}/unshare`, {
-  //     keywordId: keywordId,
-  //     targetUserProviderId: targetUserProviderId,
-  //     targetUserId: targetUserId,
-  //   });
-  // }
 
   public getAccessLevels() {
     return [

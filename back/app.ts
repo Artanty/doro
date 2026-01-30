@@ -14,6 +14,8 @@ import { dd } from './utils/dd'
 import { ConfigManager } from './controllers/config-manager'
 import { injectConfigHashMiddleware } from './middlewares/inject-config-hash.middleware'
 import { OuterSyncService } from './controllers/outer-sync.service'
+import accessLevelRoutes from './routes/access-level.routes'
+import scheduleRoutes from './routes/schedule.routes'
 
 dotenv.config();
 
@@ -25,9 +27,11 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(cors()) // todo dev only
 
+app.use('/access-level', accessLevelRoutes);
 app.use('/eventType', eventTypeRoutes);
 app.use('/event', validateUserAccessToken, injectConfigHashMiddleware, eventRoutes);
-app.use('/event-state', validateUserAccessToken, eventStateRoutes);
+app.use('/event-state', validateUserAccessToken, injectConfigHashMiddleware, eventStateRoutes);
+app.use('/schedule', validateUserAccessToken, injectConfigHashMiddleware, scheduleRoutes);
 app.use('/save-temp', saveTempRoutes);
 app.use('/service', [validateApiKey, validateUserAccessToken], shareEventStateRoute);
 

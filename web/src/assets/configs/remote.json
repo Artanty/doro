@@ -30,7 +30,7 @@
     "interceptors": [
         {
             "on": "REQUEST",
-            "url_pattern": "/^http:\/\/localhost:3201\/(event|event-state)(\/.*)?$/",
+            "url_pattern": "/^http:\/\/localhost:3201\/(event|event-state|schedule)(\/.*)?$/",
             "data": [
                 {
                     "target": "headers",

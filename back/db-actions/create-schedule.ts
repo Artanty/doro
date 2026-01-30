@@ -7,13 +7,10 @@ export interface DbActionResult {
 	error: null | string;
 }
 
-export const createEvent = async (
+export const createSchedule = async (
 	connection: any, 
 	name: string,
-	length: number,
-	type: number,
 	userHandler: string,
-	base_access: number = 0,
 ): Promise<DbActionResult> => {
 
 	const res = {
@@ -23,13 +20,13 @@ export const createEvent = async (
 	}
 	
 	try {
-		const [eventResult] = await connection.execute(
-			'INSERT INTO events (name, length, type, created_at, created_by, base_access_id) VALUES (?, ?, ?, ?, ?, ?)',
-			[name, length, type, getUTCDatetime(), userHandler, base_access]
+		const [queryResult] = await connection.execute(
+			'INSERT INTO schedules (name, created_by, created_at, updated_at) VALUES (?, ?, ?, ?)',
+			[name, userHandler, getUTCDatetime(), getUTCDatetime()]
 		);
                 
 		res.success = true;
-		res.result = eventResult.insertId;
+		res.result = queryResult.insertId;
 
 		return res;
 	} catch (error: any) {

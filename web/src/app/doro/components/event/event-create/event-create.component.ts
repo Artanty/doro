@@ -1,9 +1,12 @@
-import { ChangeDetectorRef, Component } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { delay } from 'rxjs';
 import { Router } from '@angular/router';
+import { EventService } from '../event.service';
+import { AccessLevel, AccessLevelService } from '../access-level.service';
+import { EventType, EventTypeService } from '../event-type.service';
 
 @Component({
   selector: 'app-event-create',
@@ -12,24 +15,18 @@ import { Router } from '@angular/router';
   templateUrl: './event-create.component.html',
   styleUrl: './event-create.component.scss',
 })
-export class EventCreateComponent {
+export class EventCreateComponent implements OnInit {
   // Данные события
   eventData = {
     name: '',
     length: 3600, // 1 час по умолчанию
-    type: 2,
-    base_access: 'private', // Значение по умолчанию
+    type: 1, // work
+    base_access: 1, // Значение по умолчанию
     state: 0,
   };
 
   // Список типов событий
-  eventTypes = [
-    { id: 1, name: 'Совещание' },
-    { id: 2, name: 'Вебинар' },
-    { id: 3, name: 'Конференция' },
-    { id: 4, name: 'Тренинг' },
-    { id: 5, name: 'Встреча' }
-  ];
+  eventTypes: EventType[] = [];
 
   eventStates = [
     { id: 0, name: 'Остановлено' },
@@ -39,26 +36,7 @@ export class EventCreateComponent {
   ]
 
   // Уровни доступа
-  accessLevels = [
-    { 
-      value: 'private', 
-      label: 'Приватный', 
-      description: 'Только вы и указанные пользователи',
-      icon: '🔒'
-    },
-    { 
-      value: 'public-read', 
-      label: 'Публичный (чтение)', 
-      description: 'Все могут просматривать, редактировать только вы',
-      icon: '👁️'
-    },
-    { 
-      value: 'public-write', 
-      label: 'Публичный (запись)', 
-      description: 'Все могут просматривать и редактировать',
-      icon: '✏️'
-    }
-  ];
+  accessLevels: AccessLevel[] = [];
 
   // Состояние компонента
   isLoading = false;
@@ -71,9 +49,29 @@ export class EventCreateComponent {
   constructor(
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
-    private router: Router
+    private router: Router,
+    private _eventService: EventService,
+    private _accessLevelService: AccessLevelService,
+    private _eventTypeService: EventTypeService
   ) {}
 
+  ngOnInit(): void {
+    this._eventTypeService.getEventTypes().subscribe(res => {
+      this.eventTypes = res
+    })
+    this._accessLevelService.getAccessLevels()
+      .subscribe(res => {
+        this.accessLevels = res.slice(0, 2).map(el => {
+          return {
+            id: el.id, 
+            name: el.description,
+            description: el.description,
+            sort_order: el.sort_order
+          }
+        });
+        this.cdr.detectChanges()
+      });
+  }
   // Отправка формы
   onSubmit() {
     this.submitted = true;
@@ -94,13 +92,12 @@ export class EventCreateComponent {
       name: this.eventData.name,
       length: Number(this.eventData.length),
       type: Number(this.eventData.type),
-      base_access: this.eventData.base_access !== 'private' ? this.eventData.base_access : null, // Если private, отправляем null или не включаем поле
+      // Если private - придумать
+      base_access: this.eventData.base_access,
       state: this.eventData.state,      
     };
 
-    const apiUrl = `${process.env['DORO_BACK_URL']}/event/create`;
-
-    this.http.post(apiUrl, payload).pipe(delay(1000)).subscribe({
+    this._eventService.createEvent(payload).pipe().subscribe({
       next: (response: any) => {
 
         this.isLoading = false;
@@ -132,7 +129,7 @@ export class EventCreateComponent {
       name: '',
       length: 3600,
       type: 2,
-      base_access: 'private',
+      base_access: 1,
       state: 0,
     };
     this.submitted = false;
@@ -160,8 +157,8 @@ export class EventCreateComponent {
   }
 
   // Получение названия уровня доступа
-  getAccessLabel(value: string): string {
-    const access = this.accessLevels.find(a => a.value === value);
-    return access ? access.label : 'Не указано';
+  getAccessLabel(value: number): string {
+    const access = this.accessLevels.find(a => a.id === value);
+    return access ? access.name : 'Не указано';
   }
 }

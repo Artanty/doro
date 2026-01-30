@@ -11,48 +11,43 @@ import { getUTCDatetime } from '../utils/get-utc-datetime';
 import { upsertEventState } from '../db-actions/upsert-event-state';
 import { ConfigManager } from './config-manager';
 import { OuterSyncService } from './outer-sync.service';
-
-// export interface eventProps {
-// 	"id": 18,
-//         "name": "Morning Focus 2",
-//         "length": 25,
-//         "type": 2,
-//         "created_at": "2025-12-12T08:49:43.000Z",
-//         "type_name": "Работа",
-//         "access_level": "owner"
-// }
+import { ACCESS_CASE, getAccessibleEvent } from '../db-actions/get-accessible-event';
+import { createEvent } from '../db-actions/create-event';
+import { upsertEventAccess } from '../db-actions/upsert-event-access';
 
 dotenv.config();
 
+/**
+ * v2.1: initial state - only eventProgress.STOPPED
+ * тотлько пользователь может запускать ивенты.
+ * */
 export class EventController {
-	// Create event and assign owner access
 	static async createEvent(
 		name: string, 
 		length: number, 
 		type: number, 
-		userHandle: string,
-		base_access: string,
+		userHandler: string,
+		base_access: number,
 		state: number
 	) {
 		const pool = createPool();
 		const connection = await pool.getConnection();
+
+		let createEventResult,
+			upsertEventAccessResult,
+			upsertEventStateResult;
 		try {
 			await connection.beginTransaction();
 
-			// Insert event
-			const [eventResult] = await connection.execute(
-				'INSERT INTO events (name, length, type, created_at, base_access) VALUES (?, ?, ?, ?, ?)',
-				[name, length, type, getUTCDatetime(), base_access]
-			);
-			const eventId = eventResult.insertId;
+			createEventResult = await createEvent(connection, name, length, type, userHandler, base_access);
+			if (createEventResult.error) {
+				throw new Error(createEventResult.error);
+			}
+			const eventId = createEventResult.result;
 
-			// Create owner relationship in eventToUser
-			await connection.execute(
-				'INSERT INTO eventToUser (event_id, user_handler, access_level, created_at) VALUES (?, ?, ?, ?)',
-				[eventId, userHandle, 'owner', getUTCDatetime()]
-			);
+			upsertEventAccessResult = await upsertEventAccess(connection, eventId, userHandler, 3);
 
-			await upsertEventState(connection, eventId, state) // todo add false return if no updated
+			upsertEventStateResult = await upsertEventState(connection, eventId, state) // todo add false return if no updated
 
 			/**
 			 * Нужно чтобы doro@web подтянул новое cобытие.
@@ -100,10 +95,11 @@ export class EventController {
 				//  WHERE etu.user_handler = ? 
 				//  ORDER BY e.created_at DESC`,
 				// [userHandler]
+
+				// todo: разделить запрос своих ивентов и шаредных?
 				`SELECT e.*, et.name as type_name, etu.access_level,
 			           CASE 
-			               WHEN etu.access_level IS NOT NULL THEN TRUE
-			               WHEN e.base_access IN ('public-read', 'public-write') THEN TRUE
+			               WHEN e.base_access_id IN (1, 2, 3) THEN TRUE
 			               ELSE FALSE
 			           END as has_access
 			    FROM events e
@@ -114,9 +110,12 @@ export class EventController {
 				[userHandler]
 			);
 			return {
-				[thisProjectResProp()]: {
-					data: rows,
-				},
+				data: rows,
+				debug: {
+					[thisProjectResProp()]: {
+						data: rows,
+					},
+				}
 			}
 		} catch (error) { 
 			console.log(error)
@@ -150,63 +149,121 @@ export class EventController {
 
 	// Update event
 	static async updateEvent(
-		eventId: number, 
-		name: string, 
-		length: number, 
-		type: number, 
-		userHandle: string
+		eventId: number,
+		updates: {
+			name?: string,
+			length?: number,
+			type?: number,
+			schedule_id?: number | null,
+			schedule_position?: number | null,
+			base_access_id?: number
+		},
+		userHandler: string // For permission check
 	) {
 		const pool = createPool();
 		const connection = await pool.getConnection();
+		let getAccessibleEventResult;
 		try {
 			await connection.beginTransaction();
 
-			// Check if user has editor or owner access
-			const [accessRows] = await connection.execute(
-				`SELECT access_level FROM eventToUser 
-				 WHERE event_id = ? AND user_handler = ? 
-				 AND access_level IN ('editor', 'owner')`,
-				[eventId, userHandle]
-			);
-
-			if (accessRows.length === 0) {
-				throw new Error('Insufficient permissions to update event');
+			getAccessibleEventResult = await getAccessibleEvent(connection, eventId, userHandler, ACCESS_CASE.UPDATE);
+			if (!getAccessibleEventResult.success) {
+				throw new Error(getAccessibleEventResult.error!);
 			}
 
-			// Update event
-			const [result] = await connection.execute(
-				'UPDATE events SET name = ?, length = ?, type = ? WHERE id = ?',
-				[name, length, type, eventId]
-			);
+			// Build dynamic UPDATE query
+			const updateFields: string[] = [];
+			const updateValues: any[] = [];
+			const updatedAt = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+			// Always update updated_at
+			updateFields.push('updated_at = ?');
+			updateValues.push(updatedAt);
+
+			// Add each provided field to update
+			if (updates.name !== undefined) {
+				updateFields.push('name = ?');
+				updateValues.push(updates.name);
+			}
+			if (updates.length !== undefined) {
+				updateFields.push('length = ?');
+				updateValues.push(updates.length);
+			}
+			if (updates.type !== undefined) {
+				updateFields.push('type = ?');
+				updateValues.push(updates.type);
+			}
+			if (updates.schedule_id !== undefined) {
+				updateFields.push('schedule_id = ?');
+				updateValues.push(updates.schedule_id);
+			}
+			if (updates.schedule_position !== undefined) {
+				updateFields.push('schedule_position = ?');
+				updateValues.push(updates.schedule_position);
+			}
+			if (updates.base_access_id !== undefined) {
+				updateFields.push('base_access_id = ?');
+				updateValues.push(updates.base_access_id);
+			}
+
+			// If no fields to update besides updated_at, return early
+			if (updateFields.length === 1) {
+				await connection.commit();
+				return false; // Nothing was updated
+			}
+
+			// 3. Execute dynamic update
+			const query = `UPDATE events SET ${updateFields.join(', ')} WHERE id = ?`;
+			updateValues.push(eventId);
+
+			const [result] = await connection.execute(query, updateValues);
 
 			await connection.commit();
-			return result.affectedRows > 0;
-		} catch (error) { 
-			console.log(error)
+
+			return {
+				data: {
+					success: result.affectedRows > 0,
+				},
+				debug: {
+					[thisProjectResProp()]: {
+						getAccessibleEventResult,
+						updateEventResult: result,
+					}
+				}
+			}
+        
+		} catch (error) {
+			console.log(error);
 			await connection.rollback();
 			throw error;
 		} finally {
 			connection.release();
 		}
 	}
-
 	// Delete event (only if user has owner access)
-	static async deleteEvent(eventId: number, userHandle: string) {
+	static async deleteEvent(eventId: number, userHandler: string) {
+		let getAccessibleEventResult;
+
 		const pool = createPool();
 		const connection = await pool.getConnection();
 		try {
 			await connection.beginTransaction();
 
-			// Check if user has owner access
-			const [accessRows] = await connection.execute(
-				`SELECT access_level FROM eventToUser 
-				 WHERE event_id = ? AND user_handler = ? 
-				 AND access_level = 'owner'`,
-				[eventId, userHandle]
-			);
+			// // Check if user has owner access
+			// const [accessRows] = await connection.execute(
+			// 	`SELECT access_level FROM eventToUser 
+			// 	 WHERE event_id = ? AND user_handler = ? 
+			// 	 AND access_level = 'owner'`,
+			// 	[eventId, userHandler]
+			// );
 
-			if (accessRows.length === 0) {
-				throw new Error('Only owner can delete event');
+			// if (accessRows.length === 0) {
+			// 	throw new Error('Only owner can delete event');
+			// }
+
+			getAccessibleEventResult = await getAccessibleEvent(connection, eventId, userHandler, ACCESS_CASE.DELETE);
+			if (!getAccessibleEventResult.success) {
+				throw new Error(getAccessibleEventResult.error!);
 			}
 
 			// Delete event (eventToUser entries will be automatically deleted due to ON DELETE CASCADE)
@@ -225,7 +282,7 @@ export class EventController {
 			const eventsPayload = OuterSyncService.addOuterActionInEvents(outerEvent, 'delete');
 			
 			const tikResponse = await OuterSyncService.updateOuterEntries([...hashPayload, ...eventsPayload]);
-		
+			
 			return {
 				data: {
 					success: result.affectedRows > 0,

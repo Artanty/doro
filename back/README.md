@@ -12,8 +12,7 @@ CREATE TABLE accessLevels (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(50) NOT NULL UNIQUE,
     description VARCHAR(255) NULL,
-    sort_order INT DEFAULT 0,
-    created_at DATETIME NOT NULL
+    sort_order INT DEFAULT 0
 );
 
  CREATE TABLE schedules (
@@ -38,7 +37,7 @@ CREATE TABLE events (
     name VARCHAR(255) NOT NULL,
     length INT NOT NULL COMMENT 'Duration in seconds,
     type INT NOT NULL,
-    base_access ENUM('public-read', 'public-write') DEFAULT NULL,
+    base_access_id INT NOT NULL,
     schedule_id INT NULL,
     schedule_position FLOAT NULL,
     created_by VARCHAR(255) NOT NULL COMMENT 'user_handler',
@@ -46,7 +45,7 @@ CREATE TABLE events (
     updated_at DATETIME NOT NULL,
     FOREIGN KEY (type) REFERENCES eventTypes(id) ON DELETE RESTRICT,
     FOREIGN KEY (schedule_id) REFERENCES schedules(id) ON DELETE SET NULL,
-    INDEX idx_base_access (base_access),
+    
     INDEX idx_schedule_order (schedule_id, schedule_position),
     INDEX idx_created_by (created_by)
 );

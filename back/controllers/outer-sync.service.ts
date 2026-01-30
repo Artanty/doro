@@ -144,5 +144,7 @@ export class OuterSyncService {
 		}
 		dd('updateOuterEntries result:')
 		dd(parseServerResponse(tikResponse))
+		
+		return tikResponse;
 	}
 }

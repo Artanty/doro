@@ -88,20 +88,11 @@
       align-items: center;
       cursor: pointer;
       width: 100%;
+      margin-bottom: 0 !important;
 
-      &>strong {
-        width: 120px;
-        min-width: 120px;
-        padding-left: 4px;
-      }
     }
 
-    .access-icon {
-      font-size: 1.5rem;
-      margin-right: 0.75rem;
-      width: 40px;
-      text-align: center;
-    }
+
 
     .access-description {
       display: block;

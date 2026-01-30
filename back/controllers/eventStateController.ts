@@ -16,6 +16,8 @@ import { addEventStateHistory } from '../db-actions/add-event-state-history';
 import { getAccessibleEvent } from '../db-actions/get-accessible-event';
 import { createEvent } from '../db-actions/create-event';
 import { upsertEventAccess } from '../db-actions/upsert-event-access';
+import { getRecentEvent } from '../db-actions/get-recent-event';
+import { getScheduleWithEvents } from '../db-actions/get-schedules-with-events';
 
 dotenv.config();
 
@@ -47,6 +49,7 @@ export interface EventPropsPure {
     "created_at": string
 }
 
+//todo: rename to entry
 export interface EventStateResItem {
     id: string,
     cur: number,
@@ -78,8 +81,7 @@ export class EventStateController {
 
             if (eventWithAccess.length === 0) {
                 throw new Error('Event not found or access denied');
-            } 
-            
+            }
 
             const upsertStateResult = await upsertEventState(connection, eventId, state) // todo add false return if no updated
             
@@ -158,11 +160,11 @@ export class EventStateController {
                         access_level: (eventProps as any)?.access_level ?? 'wrong prop name'
                     }],
                 },
-                [tikResProp()]: parseServerResponse(tikResponse),
                 debug: {
                     [thisProjectResProp()]: {
                         upsertStateResult: upsertStateResult
-                    }
+                    },
+                    [tikResProp()]: parseServerResponse(tikResponse),
                 }
             };
 
@@ -226,6 +228,7 @@ export class EventStateController {
      * if completed ('COMPLETED': 3) - duplicate event, then createOrUpdateEventState(1)
      * */
     static async playOrDuplicateEvent(userHandler: any, eventId: any) {
+        let eventWithAccessResult;
         const state = eventProgress.PLAYING; // 1
         const pool = createPool();
         const connection = await pool.getConnection();
@@ -236,9 +239,9 @@ export class EventStateController {
         try {
             await connection.beginTransaction();
 
-            const eventWithAccessResult = await getAccessibleEvent(connection, eventId, userHandler);
-            if (eventWithAccessResult.error) {
-                throw new Error(eventWithAccessResult.error);
+            eventWithAccessResult = await getAccessibleEvent(connection, eventId, userHandler, 1);
+            if (!eventWithAccessResult.success) {
+                throw new Error(eventWithAccessResult.error!);
             }
 
             const eventProps: EventPropsPure = eventWithAccessResult.result[0];
@@ -325,6 +328,8 @@ export class EventStateController {
                 },
                 debug: {
                     [thisProjectResProp()]: {
+                        eventWithAccessResult,
+
                         success: true,
                         isDuplicate: eventStatus.status === eventProgress.COMPLETED,
                         actualEventId: eventProgress.COMPLETED ? createdEventId : eventId, //eventS!
@@ -350,6 +355,33 @@ export class EventStateController {
         }
     }
 
+    static async getRecentEventOrSchedule(userHandler) {
+        const pool = createPool();
+        const connection = await pool.getConnection();
+
+        let getRecentEventResult;
+        let getSchduleWithEventsResult;
+
+        getRecentEventResult = await getRecentEvent(connection, userHandler);
+        const [recentEvent] = getRecentEventResult.result;
+
+        if (recentEvent.schedule_id) {
+            getSchduleWithEventsResult = await getScheduleWithEvents(connection, userHandler, recentEvent.schedule_id)
+        }
+
+        return {
+            data: {
+                recentEvent,
+                recentSchedule: getSchduleWithEventsResult.result,
+            },
+            debug: {
+                [thisProjectResProp()]: {
+                    getRecentEventResult,
+                    getSchduleWithEventsResult
+                },
+            }
+        }
+    }
     /**
      * Calculate event status and current seconds based on state and history
      */
@@ -492,196 +524,6 @@ export class EventStateController {
         }
     }
 
-    /**
-     * Get event state by eventId
-     */
-    static async getEventState(eventId: any) {
-        const pool = createPool();
-        const connection = await pool.getConnection();
-        try {
-            const [rows] = await connection.execute(
-                `SELECT es.*, e.name as event_name 
-                 FROM eventState es 
-                 INNER JOIN events e ON es.eventId = e.id 
-                 WHERE es.eventId = ?`,
-                [eventId]
-            );
-
-            if (rows.length === 0) {
-                return null;
-            }
-
-            return rows[0];
-        } catch (error) {
-            throw error;
-        } finally {
-            connection.release();
-        }
-    }
-
-    /**
-     * Get all event states for a specific event
-     */
-    static async getEventStatesByEvent(eventId: any) {
-        const pool = createPool();
-        const connection = await pool.getConnection();
-        try {
-            const [rows] = await connection.execute(
-                `SELECT es.*, e.name as event_name 
-                 FROM eventState es 
-                 INNER JOIN events e ON es.eventId = e.id 
-                 WHERE es.eventId = ? 
-                 ORDER BY es.updated_at DESC`,
-                [eventId]
-            );
-
-            return rows;
-        } catch (error) {
-            throw error;
-        } finally {
-            connection.release();
-        }
-    }
-
-    /**
-     * Get event states by user handler
-     */
-    static async getEventStatesByUser(userHandler: any) {
-        const pool = createPool();
-        const connection = await pool.getConnection();
-        try {
-            const [rows] = await connection.execute(
-                `SELECT 
-                es.*, 
-                e.name as event_name, 
-                e.length, 
-                e.type as event_type_id,
-                etu.access_level
-             FROM eventState es 
-             INNER JOIN events e ON es.eventId = e.id 
-             INNER JOIN eventToUser etu ON e.id = etu.event_id
-             WHERE etu.user_handler = ? 
-             ORDER BY es.updated_at DESC`,
-                [userHandler]
-            );
-
-            return rows;
-        } catch (error) {
-            throw error;
-        } finally {
-            connection.release();
-        }
-    }
-    
-    /**
-     * Get event states by state value
-     */
-    static async getEventStatesByState(state: any) {
-        const pool = createPool();
-        const connection = await pool.getConnection();
-        try {
-            const [rows] = await connection.execute(
-                `SELECT es.*, e.name as event_name 
-                 FROM eventState es 
-                 INNER JOIN events e ON es.eventId = e.id 
-                 WHERE es.event_state_id = ? 
-                 ORDER BY es.updated_at DESC`,
-                [state]
-            );
-
-            return rows;
-        } catch (error) {
-            throw error;
-        } finally {
-            connection.release();
-        }
-    }
-
-    /**
-     * Delete event state
-     */
-    static async deleteEventState(eventId: any) {
-        const pool = createPool();
-        const connection = await pool.getConnection();
-        try {
-            await connection.beginTransaction();
-
-            const [result] = await connection.execute(
-                'DELETE FROM eventState WHERE eventId = ?',
-                [eventId]
-            );
-
-            if (result.affectedRows === 0) {
-                throw new Error('Event state not found');
-            }
-
-            await connection.commit();
-
-            return {
-                eventId,
-                deleted: true
-            };
-        } catch (error) {
-            await connection.rollback();
-            throw error;
-        } finally {
-            connection.release();
-        }
-    }
-
-    /**
-     * Get event state summary for a user
-     */
-    static async getUserEventStateSummary(userHandler: any) {
-        const pool = createPool();
-        const connection = await pool.getConnection();
-        try {
-            const [rows] = await connection.execute(
-                `SELECT 
-                    es.event_state_id, 
-                    COUNT(*) as count,
-                    MAX(es.updated_at) as last_updated
-                 FROM eventState es
-                 INNER JOIN eventToUser etu ON es.eventId = etu.event_id
-                 WHERE etu.user_handler = ? 
-                 GROUP BY es.event_state_id 
-                 ORDER BY es.event_state_id`,
-                [userHandler]
-            );
-
-            return rows;
-        } catch (error) {
-            throw error;
-        } finally {
-            connection.release();
-        }
-    }
-    
-    /**
-     * Get last event state change for an event
-     */
-    static async getLastEventStateChange(eventId: any) {
-        const pool = createPool();
-        const connection = await pool.getConnection();
-        try {
-            const [rows] = await connection.execute(
-                `SELECT event_state_id, updated_at 
-                 FROM eventState 
-                 WHERE eventId = ?`,
-                [eventId]
-            );
-
-            if (rows.length === 0) {
-                return null;
-            }
-
-            return rows[0];
-        } catch (error) {
-            throw error;
-        } finally {
-            connection.release();
-        }
-    }
 
     static async buildTikEvents(connection, events: MinimalEventProps | MinimalEventProps[]): Promise<EventStateResItem[]> {
         events = ensureArray(events);

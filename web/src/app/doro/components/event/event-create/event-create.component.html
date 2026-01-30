@@ -62,8 +62,9 @@
             [class.is-invalid]="submitted && !eventData.state"
           >
             <option value="" disabled selected>Выберите статус</option>
-            <option *ngFor="let stateItem of eventStates" [value]="stateItem.id">
-              {{ stateItem.name }}
+            <option *ngFor="let stateItem of eventStates" [value]="stateItem.id"
+            [disabled]="stateItem.id !== 0">
+              {{ stateItem.name }} @if(stateItem.id !== 0){ <span>[v2.2]</span> }
             </option>
           </select>
           <div class="invalid-feedback" *ngIf="submitted && !eventData.state">
@@ -83,7 +84,8 @@
             [class.is-invalid]="submitted && !eventData.type"
           >
             <option value="" disabled selected>Выберите тип</option>
-            <option *ngFor="let type of eventTypes" [value]="type.id">
+            <option *ngFor="let type of eventTypes" [value]="type.id"
+            >
               {{ type.name }}
             </option>
           </select>
@@ -99,16 +101,17 @@
             <div *ngFor="let access of accessLevels" class="form-check">
               <input 
                 type="radio" 
-                [id]="'access_' + access.value" 
+                [id]="'access_' + access.id" 
                 name="base_access" 
-                [value]="access.value" 
+                [value]="access.id" 
                 [(ngModel)]="eventData.base_access"
                 class="form-check-input"
               >
-              <label [for]="'access_' + access.value" class="form-check-label">
+              <label [for]="'access_' + access.id" class="form-check-label">
                 <!-- <span class="access-icon">{{ access.icon }}</span> -->
-                <strong>{{ access.label }}</strong>
-                <small class="access-description">{{ access.description }}</small>
+                <!-- <strong></strong> -->
+                {{ access.name }}
+                <!-- <small class="access-description">{{ access.description }}</small> -->
               </label>
             </div>
           </div>
@@ -123,7 +126,7 @@
           <strong>Событие создано!</strong>
           <div>ID: {{ createdEventId }}</div>
           <div>Название: {{ createdEventName }}</div>
-          <div>Доступ: {{ getAccessLabel(eventData.base_access) }}</div>
+          <!-- <div>Доступ: {{ getAccessLabel(eventData.base_access_id) }}</div> -->
         </div>
 
         <!-- Кнопки -->

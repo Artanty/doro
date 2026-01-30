@@ -26,6 +26,7 @@ schedules
 
 todo:
 delete event state col
+delete events base_access col
 -
 когда cur становится равен len - событие заканчивается,
 tik делает запрос в doro@back чтобы валидировать это состояние и получить следующее событие.
