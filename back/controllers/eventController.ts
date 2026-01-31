@@ -14,6 +14,7 @@ import { OuterSyncService } from './outer-sync.service';
 import { ACCESS_CASE, getAccessibleEvent } from '../db-actions/get-accessible-event';
 import { createEvent } from '../db-actions/create-event';
 import { upsertEventAccess } from '../db-actions/upsert-event-access';
+import { updateEvent } from '../db-actions/update-event';
 
 dotenv.config();
 
@@ -158,11 +159,12 @@ export class EventController {
 			schedule_position?: number | null,
 			base_access_id?: number
 		},
-		userHandler: string // For permission check
+		userHandler: string
 	) {
 		const pool = createPool();
 		const connection = await pool.getConnection();
-		let getAccessibleEventResult;
+		let getAccessibleEventResult,
+			updateOuterEntriesResult;
 		try {
 			await connection.beginTransaction();
 
@@ -171,63 +173,28 @@ export class EventController {
 				throw new Error(getAccessibleEventResult.error!);
 			}
 
-			// Build dynamic UPDATE query
-			const updateFields: string[] = [];
-			const updateValues: any[] = [];
-			const updatedAt = new Date().toISOString().slice(0, 19).replace('T', ' ');
-
-			// Always update updated_at
-			updateFields.push('updated_at = ?');
-			updateValues.push(updatedAt);
-
-			// Add each provided field to update
-			if (updates.name !== undefined) {
-				updateFields.push('name = ?');
-				updateValues.push(updates.name);
-			}
-			if (updates.length !== undefined) {
-				updateFields.push('length = ?');
-				updateValues.push(updates.length);
-			}
-			if (updates.type !== undefined) {
-				updateFields.push('type = ?');
-				updateValues.push(updates.type);
-			}
-			if (updates.schedule_id !== undefined) {
-				updateFields.push('schedule_id = ?');
-				updateValues.push(updates.schedule_id);
-			}
-			if (updates.schedule_position !== undefined) {
-				updateFields.push('schedule_position = ?');
-				updateValues.push(updates.schedule_position);
-			}
-			if (updates.base_access_id !== undefined) {
-				updateFields.push('base_access_id = ?');
-				updateValues.push(updates.base_access_id);
-			}
-
-			// If no fields to update besides updated_at, return early
-			if (updateFields.length === 1) {
-				await connection.commit();
-				return false; // Nothing was updated
-			}
-
-			// 3. Execute dynamic update
-			const query = `UPDATE events SET ${updateFields.join(', ')} WHERE id = ?`;
-			updateValues.push(eventId);
-
-			const [result] = await connection.execute(query, updateValues);
+			const updateEventResult = await updateEvent(connection, eventId, updates, userHandler);
 
 			await connection.commit();
+			
+			if (updateEventResult.success) {
+				ConfigManager.setConfigHash(); 
+				const hashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert');
+				dd(hashPayload)
+				updateOuterEntriesResult = await OuterSyncService.updateOuterEntries(hashPayload);
+			}
 
 			return {
 				data: {
-					success: result.affectedRows > 0,
+					success: updateEventResult.result,
 				},
 				debug: {
 					[thisProjectResProp()]: {
 						getAccessibleEventResult,
-						updateEventResult: result,
+						updateEventResult,
+					},
+					[tikResProp()]: {
+						updateOuterEntriesResult
 					}
 				}
 			}

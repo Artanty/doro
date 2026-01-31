@@ -245,10 +245,9 @@ export class EventStateController {
             }
 
             const eventProps: EventPropsPure = eventWithAccessResult.result[0];
-            dd('eventProps')
-            dd(eventProps)
+            
             const eventStatus: EventStatus = await this.calculateEventStatus(connection, eventProps);
-            dd(eventStatus);
+            // dd(eventStatus);
             if (eventStatus.status === eventProgress.STOPPED || eventStatus.status === eventProgress.PAUSED) {
                 dd('CHANGING STATE (PLAYING) OF EXISTING EVENT')
                 

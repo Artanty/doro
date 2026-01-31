@@ -12,6 +12,13 @@ export interface OuterEntry {
 	len?: number,
 	stt?: number
 }
+export interface OuterHash {
+	id: string,
+	cur: number,
+}
+
+export type EntryWithTikAction<T> = T & { [EVENT_TIK_ACTION_PROP]: string };
+
 
 export class OuterSyncService {
 	
@@ -30,7 +37,7 @@ export class OuterSyncService {
 		return `${entityPrefix}_${id}`;
 	}
 
-	public static buildOuterHash() {
+	public static buildOuterHash(): OuterHash {
 		return {
 			id: this.buildOuterEntityId('configHash', 1), // 1 - id
 			cur: ConfigManager.configHash,
@@ -52,9 +59,9 @@ export class OuterSyncService {
 	}
     
 
-	public static buildUpdateOuterHashPayload(action: string) {
+	public static buildUpdateOuterHashPayload(action: string): EntryWithTikAction<OuterHash>[] {
 
-		return this.addOuterActionInEvents(this.buildOuterHash(), action);
+		return this.addOuterActionInEvents<OuterHash>(this.buildOuterHash(), action);
 	}
 
 	public static buildNewOuterEventPayload(
@@ -68,7 +75,9 @@ export class OuterSyncService {
 	static addOuterActionInEvents<T extends Record<string, any>>(
 		events: T | T[], 
 		action: string
-	): (T & { [EVENT_TIK_ACTION_PROP]: string })[] {
+		// ): (T & { [EVENT_TIK_ACTION_PROP]: string })[] {
+	): EntryWithTikAction<T>[] {
+		
 		const eventsArray = Array.isArray(events) ? events : [events];
     
 		return eventsArray.map(event => ({
@@ -145,6 +154,6 @@ export class OuterSyncService {
 		dd('updateOuterEntries result:')
 		dd(parseServerResponse(tikResponse))
 		
-		return tikResponse;
+		return parseServerResponse(tikResponse);
 	}
 }

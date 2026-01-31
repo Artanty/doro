@@ -34,7 +34,7 @@ export class CompareConfigHashAction {
 			result = this._appStateService.configHash.value !== newConfigHash;
 		}
 		this.prevValues = valuesTuple
-
+		dd('isNeed refresh: ' + result)
 		return result;
 	}
 }

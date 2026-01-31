@@ -44,11 +44,11 @@ router.post('/update', async (req, res) => {
   try {
     const { id, ...rest } = req.body;
     const user = getUserFromRequest(req);
-    const itemId = await EventController.updateEvent(
+    const result = await EventController.updateEvent(
       id, rest, user
     );
 
-    res.json({ success: true });
+    res.json(result);
   } catch (error) {
     handleError(res as unknown as Response, error) 
   }

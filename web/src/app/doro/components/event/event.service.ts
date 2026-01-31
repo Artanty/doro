@@ -42,7 +42,18 @@ export class EventService {
       id: eventId,
       schedule_id: scheduleId
     }
-    return this.updateEventApi(payload)
+    return this.updateEventApi(payload).pipe(
+      tap(() => {
+        /**
+         * Принудительно обновляем состояние текущего клиента
+         * путём изменения локального configHash.
+         * В большинстве случаев хэши совпадут, так как флоу:
+         * doro@web -> doro@back (set hash=1) -> tik@back -> tik@web -> doro@web (get hash=1)
+         * doro@web -> doro@back (set hash=1) -> doro@web (get hash=1)
+         * Не совпадут они только из-за разной скорости соединения с серверами.
+         * */
+        this._appStateService.configHash.next(999);
+      }))
       
   }
   public listenEvents() {
