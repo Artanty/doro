@@ -1,4 +1,9 @@
-0=inactive, 1=active, 2=paused
+export enum eventProgress {
+  'STOPPED' = 0,
+  'PLAYING' = 1,
+  'PAUSED' = 2,
+  'COMPLETED' = 3
+}
 
 -- Create eventTypes table first (due to foreign key dependency)
 CREATE TABLE eventTypes (

@@ -172,7 +172,7 @@ export class EventController {
 			if (!getAccessibleEventResult.success) {
 				throw new Error(getAccessibleEventResult.error!);
 			}
-
+// todo mb just try to update using userHandler?
 			const updateEventResult = await updateEvent(connection, eventId, updates, userHandler);
 
 			await connection.commit();

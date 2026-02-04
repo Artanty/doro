@@ -33,7 +33,9 @@ app.use('/event', validateUserAccessToken, injectConfigHashMiddleware, eventRout
 app.use('/event-state', validateUserAccessToken, injectConfigHashMiddleware, eventStateRoutes);
 app.use('/schedule', validateUserAccessToken, injectConfigHashMiddleware, scheduleRoutes);
 app.use('/save-temp', saveTempRoutes);
-app.use('/service', [validateApiKey, validateUserAccessToken], shareEventStateRoute);
+// app.use('/service', shareEventStateRoute); //[validateApiKey, validateUserAccessToken]
+// app.use('/service', [validateApiKey, validateUserAccessToken], shareEventStateRoute);
+app.use('/service', validateUserAccessToken, validateUserAccessToken, shareEventStateRoute);
 
 app.get('/get-updates', async (req, res) => {
   res.json({

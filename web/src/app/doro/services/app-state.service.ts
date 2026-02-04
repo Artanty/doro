@@ -3,6 +3,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { obs$ } from '../utilites/observable-variable';
 import { BusEvent } from 'typlib';
 import { Nullable } from '../utilites/utility.types';
+import { Schedule } from '../components/event/event.model';
 
 
 @Injectable({
@@ -11,6 +12,21 @@ import { Nullable } from '../utilites/utility.types';
 export class AppStateService {
   public configHash = obs$<number>(0);
   public recentEvent = obs$<Nullable<number>>(null);
+  // public recentSchedule = obs$<Nullable<Schedule>>(null);
+  // public sessionSchedule = obs$<Nullable<Schedule>>(null);
+  public currentSchedule = obs$<Nullable<Schedule>>(null);
+
+  /**
+   * При загрузке - берем недавний
+   * При работе - сохраненный
+   * */
+  // public getActualSchedule(): Observable<Schedule> {
+  //   if (this.sessionSchedule.value) {
+  //     return this.sessionSchedule.listenReq;
+  //   }
+    
+  //   return this.recentSchedule.listenReq;
+  // }
   // public userAction = obs$<Nullable<UserAction>>(null)
   // public isLoggedIn = obs$<boolean>(false)
   // public userProfile = obs$<Nullable<UserData>>(null)

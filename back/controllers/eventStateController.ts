@@ -13,18 +13,19 @@ import { ConfigManager } from './config-manager';
 import { OuterSyncService } from './outer-sync.service';
 import { upsertEventState } from '../db-actions/upsert-event-state';
 import { addEventStateHistory } from '../db-actions/add-event-state-history';
-import { getAccessibleEvent } from '../db-actions/get-accessible-event';
-import { createEvent } from '../db-actions/create-event';
+import { ACCESS_CASE, getAccessibleEvent } from '../db-actions/get-accessible-event';
+import { createEvent, DbActionResult } from '../db-actions/create-event';
 import { upsertEventAccess } from '../db-actions/upsert-event-access';
 import { getRecentEvent } from '../db-actions/get-recent-event';
 import { getScheduleWithEvents } from '../db-actions/get-schedules-with-events';
+import { getEventState } from '../db-actions/get-event-state';
 
 dotenv.config();
 
 export interface EventStatus {
     status: number
     currentSeconds: number
-    progressPercentage: number
+
 }
 
 export interface EventProps {
@@ -61,29 +62,26 @@ export class EventStateController {
     /**
      * Create or update event state and add history entry
      */
-    static async createOrUpdateEventState(userHandler: any, eventId: any, state: any): Promise<any> {
-        dd('userHandler')
-        dd(userHandler)
+    static async createOrUpdateEventState(
+        userHandler: any, 
+        eventId: any, 
+        state: any,
+    ): Promise<any> {
         const pool = createPool();
         const connection = await pool.getConnection();
-        
+        let getAccessibleEventResult,
+            upsertStateResult,
+            addEventStateHistoryResult,
+            tikResponse;
         try {
             await connection.beginTransaction();
 
-            // Check if event exists and user has access
-            const [eventWithAccess] = await connection.execute(
-                `SELECT e.id, e.length, etu.access_level FROM events e 
-                 INNER JOIN eventToUser etu ON e.id = etu.event_id 
-                 WHERE e.id = ? AND etu.user_handler = ?
-                 LIMIT 1`,
-                [eventId, userHandler]
-            );
-
-            if (eventWithAccess.length === 0) {
-                throw new Error('Event not found or access denied');
+            getAccessibleEventResult = await getAccessibleEvent(connection, eventId, userHandler, ACCESS_CASE.UPDATE);
+            if (!getAccessibleEventResult.success) {
+                throw new Error(getAccessibleEventResult.error!);
             }
 
-            const upsertStateResult = await upsertEventState(connection, eventId, state) // todo add false return if no updated
+            upsertStateResult = await upsertEventState(connection, eventId, state) // todo add false return if no updated
             
             if (!upsertStateResult.isStateUpdated) {
                 await connection.commit();
@@ -96,39 +94,17 @@ export class EventStateController {
                     stateChanged: false
                 };
             }
+           
+            addEventStateHistoryResult = await addEventStateHistory(connection, eventId, state)
 
-            await addEventStateHistory(connection, eventId, state)
-
-            const eventProps: EventPropsPure = eventWithAccess[0];
-            dd(eventProps)
-            // { id: 195, length: 25 }  ensureArray
+            const eventProps: EventPropsPure = getAccessibleEventResult.result[0];
+           
             const updatedEventsWithStatus: EventStateResItem[] = await this.buildTikEvents(connection, eventProps);
-            dd(updatedEventsWithStatus)
-            // {
-            //   id: 195,
-            //   length: 25,
-            //   status: 2,
-            //   currentSeconds: 9,
-            //   progressPercentage: 36
-            // }
             await connection.commit();
 
             const tikAction = 'update';
             const updatedEventStatusWithTikAction = OuterSyncService.addOuterActionInEvents(updatedEventsWithStatus, tikAction);
-            dd(updatedEventStatusWithTikAction)
-            // [
-            //   {
-            //     id: 195,
-            //     length: 25,
-            //     status: 2,
-            //     currentSeconds: 9,
-            //     progressPercentage: 36,
-            //     tikAction: 'update'
-            //   }
-            // ]
-
-            // request to tik@back
-            let tikResponse;
+            
             tikResponse = await axios.post(`${process.env['TIK_BACK_URL']}/updateEventsState`,
                 {
                     poolId: 'current_user_id',
@@ -148,7 +124,6 @@ export class EventStateController {
                 //   }
                 // }
             );
-            // todo STOPPED HERE           
             return {
                 [thisProjectResProp()]: {
                     success: true,
@@ -162,7 +137,9 @@ export class EventStateController {
                 },
                 debug: {
                     [thisProjectResProp()]: {
-                        upsertStateResult: upsertStateResult
+                        getAccessibleEventResult,
+                        upsertStateResult,
+                        addEventStateHistoryResult,
                     },
                     [tikResProp()]: parseServerResponse(tikResponse),
                 }
@@ -180,24 +157,25 @@ export class EventStateController {
      * Get events with current status and elapsed seconds
      */
     static async getEventsWithStatus(userHandler: any) {
+        dd('getEventsWithStatus')
         const pool = createPool();
         const connection = await pool.getConnection();
         try {
             const [events] = await connection.execute(
                 `SELECT 
-                    e.id,
-                    e.name,
-                    e.length,
-                    et.name as event_type,
-                    es.state as current_state,
-                    es.updated_at as last_state_change,
-                    etu.access_level
-                 FROM events e
-                 INNER JOIN eventToUser etu ON e.id = etu.event_id
-                 INNER JOIN eventTypes et ON e.type = et.id
-                 LEFT JOIN eventState es ON e.id = es.eventId
-                 WHERE etu.user_handler = ?
-                 ORDER BY e.created_at DESC`,
+                        e.id,
+                        e.name,
+                        e.length,
+                        et.name as event_type,
+                        es.event_state_id as current_state,
+                        es.updated_at as last_state_change,
+                        etu.access_level
+                     FROM events e
+                     INNER JOIN eventToUser etu ON e.id = etu.event_id
+                     INNER JOIN eventTypes et ON e.type = et.id
+                     LEFT JOIN eventState es ON e.id = es.eventId
+                     WHERE etu.user_handler = ?
+                     ORDER BY e.created_at DESC`,
                 [userHandler]            
             );
 
@@ -215,7 +193,16 @@ export class EventStateController {
             const productEntriesForTik: any[] = [...eventsWithTikAction, configHashEntry];
 
             console.log(productEntriesForTik)
-            return productEntriesForTik;
+            // return productEntriesForTik;
+            return { 
+                data: productEntriesForTik,
+                debug: {
+                    events: JSON.stringify(events[0]),
+                    eventsWithStatus: JSON.stringify(eventsWithStatus[0]),
+                    eventsWithTikAction,
+                    productEntriesForTik,
+                }
+            }
         } catch (error) {
             throw error;
         } finally {
@@ -245,9 +232,9 @@ export class EventStateController {
             }
 
             const eventProps: EventPropsPure = eventWithAccessResult.result[0];
-            
-            const eventStatus: EventStatus = await this.calculateEventStatus(connection, eventProps);
-            // dd(eventStatus);
+            // : EventStatus
+            const { eventStatus } = await this.calculateEventStatus(connection, eventProps);
+            dd(eventStatus);
             if (eventStatus.status === eventProgress.STOPPED || eventStatus.status === eventProgress.PAUSED) {
                 dd('CHANGING STATE (PLAYING) OF EXISTING EVENT')
                 
@@ -362,16 +349,20 @@ export class EventStateController {
         let getSchduleWithEventsResult;
 
         getRecentEventResult = await getRecentEvent(connection, userHandler);
+        dd('getRecentEventResult')
+        dd(getRecentEventResult)
         const [recentEvent] = getRecentEventResult.result;
 
         if (recentEvent.schedule_id) {
             getSchduleWithEventsResult = await getScheduleWithEvents(connection, userHandler, recentEvent.schedule_id)
+            dd('getSchduleWithEventsResult')
+            dd(getSchduleWithEventsResult)
         }
 
         return {
             data: {
                 recentEvent,
-                recentSchedule: getSchduleWithEventsResult.result,
+                recentSchedule: getSchduleWithEventsResult?.result,
             },
             debug: {
                 [thisProjectResProp()]: {
@@ -384,27 +375,50 @@ export class EventStateController {
     /**
      * Calculate event status and current seconds based on state and history
      */
-    static async calculateEventStatus(connection, event: MinimalEventProps): Promise<EventStatus> {
+    static async calculateEventStatus(connection, event: MinimalEventProps): Promise<{ eventStatus: EventStatus, debug: any }> {
+        dd('calculateEventStatus')
+        const debug = {};
         const eventId = event.id;
         const eventLengthSeconds = event.length;
-        
-        // Get current state from eventState table (not from events table)
-        const [currentStateResult] = await connection.execute(
-            `SELECT event_state_id FROM eventState WHERE eventId = ?`,
-            [eventId]
-        );
-        
-        const currentState = currentStateResult.length > 0 ? currentStateResult[0].event_state_id : null;
-
-        // If event is stopped/inactive
-        if (currentState === 0 || currentState === null) {
-            return {
-                status: eventProgress.STOPPED,
-                currentSeconds: 0,
-                progressPercentage: 0
-            };
+        let currentStateResult: DbActionResult<number>;
+        dd('calculateEventStatus - 1')
+        // const [currentStateResult] = await connection.execute(
+        //     `SELECT event_state_id FROM eventState WHERE eventId = ?`,
+        //     [eventId]
+        // );
+        dd('calculateEventStatus - 2')
+        currentStateResult = await getEventState(connection, event);
+        dd('currentStateResult:')
+        dd(currentStateResult)
+        if (!currentStateResult.success) {
+            throw new Error(currentStateResult.error ?? 'undefined error, check wtf')
         }
 
+        const currentState = currentStateResult.result;
+
+        if (currentState === eventProgress.STOPPED) {
+            dd('calculateEventStatus - 3')
+            return {
+                eventStatus: {
+                    status: eventProgress.STOPPED,
+                    currentSeconds: 0,    
+                },
+                debug: {
+                    currentStateResult
+                }
+                
+                
+            };
+        } else if (currentState === eventProgress.COMPLETED) {
+            dd('calculateEventStatus - 4')
+            return {
+                eventStatus: {
+                    status: eventProgress.COMPLETED,
+                    currentSeconds: 0,
+                }, debug
+            };
+        }
+        dd('calculateEventStatus - 5')
         // Get all state history for this event
         const [history] = await connection.execute(
             `SELECT event_state_id, created_at 
@@ -415,22 +429,30 @@ export class EventStateController {
         );
 
         if (history.length === 0) {
+            dd('calculateEventStatus - 6')
+            // todo: исключить неактивные события из запроса tik@back
+            // throw new Error('event:' + event.id + ' невозможно, пустая история бывает только при создании, и (v3) при добавлении сразу с проигрыванием.')
             return {
-                status: eventProgress.STOPPED,
-                currentSeconds: 0,
-                progressPercentage: 0
+                eventStatus: {
+                    status: eventProgress.STOPPED,
+                    currentSeconds: 0,
+                }, debug
             };
         }
 
         let totalActiveSeconds = 0;
         let activeStartTime: Date | null = null;
-
+        dd('calculateEventStatus - 7')
         // Calculate total active time from history
         for (const record of history) {
-            if (record.event_state_id === 1 && activeStartTime === null) {
+            if (record.event_state_id === eventProgress.PLAYING && activeStartTime === null) {
                 // Start of active period - create UTC date
                 activeStartTime = new Date(record.created_at + 'Z');
-            } else if ((record.event_state_id === 0 || record.event_state_id === 2) && activeStartTime !== null) {
+            } else if (
+                (record.event_state_id === eventProgress.STOPPED || 
+                    record.event_state_id === eventProgress.PAUSED) && 
+                activeStartTime !== null
+            ) {
                 // End of active period - calculate duration with UTC date
                 const activeEndTime = new Date(record.created_at + 'Z');
                 const diff = activeEndTime.getTime() - activeStartTime.getTime();
@@ -439,9 +461,9 @@ export class EventStateController {
                 activeStartTime = null;
             }
         }
-
+        dd('calculateEventStatus - 8')
         // If currently active and we have an open active period
-        if (currentState === 1 && activeStartTime !== null) {
+        if (currentState === eventProgress.PLAYING && activeStartTime !== null) {
             const currentTime = new Date();
             // Get current time in UTC
             const currentUTC = Date.UTC(
@@ -460,26 +482,28 @@ export class EventStateController {
 
         // Cap at event length
         const currentSeconds = Math.min(totalActiveSeconds, eventLengthSeconds);
-        const progressPercentage = (currentSeconds / eventLengthSeconds) * 100;
 
-        if (currentState === 1) {
+        if (currentState === eventProgress.PLAYING) {
             return {
-                status: currentSeconds >= eventLengthSeconds ? eventProgress.COMPLETED : eventProgress.PLAYING,
-                currentSeconds: currentSeconds,
-                progressPercentage: progressPercentage
+                eventStatus: {
+                    status: currentSeconds >= eventLengthSeconds ? eventProgress.COMPLETED : eventProgress.PLAYING,
+                    currentSeconds: currentSeconds,
+                }, debug
             };
-        } else if (currentState === 2) {
+        } else if (currentState === eventProgress.PAUSED) {
             return {
-                status: eventProgress.PAUSED,
-                currentSeconds: currentSeconds,
-                progressPercentage: progressPercentage
+                eventStatus: {
+                    status: eventProgress.PAUSED,
+                    currentSeconds: currentSeconds,
+                }, debug
             };
         }
 
         return {
-            status: eventProgress.STOPPED,
-            currentSeconds: 0,
-            progressPercentage: 0
+            eventStatus: {
+                status: eventProgress.STOPPED,
+                currentSeconds: 0,
+            }, debug
         };
     }
 
@@ -529,7 +553,7 @@ export class EventStateController {
         dd(events)
         const eventsWithStatus = await Promise.all(
             events.map(async (eventProps: MinimalEventProps) => {
-                const eventStatus = await this.calculateEventStatus(connection, eventProps);
+                const { eventStatus } = await this.calculateEventStatus(connection, eventProps);
                 const res: EventStateResItem = {
                     id: buildOuterEntityId('event', eventProps.id),
                     cur: eventStatus.currentSeconds,

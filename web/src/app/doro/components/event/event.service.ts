@@ -51,6 +51,7 @@ export class EventService {
          * doro@web -> doro@back (set hash=1) -> tik@back -> tik@web -> doro@web (get hash=1)
          * doro@web -> doro@back (set hash=1) -> doro@web (get hash=1)
          * Не совпадут они только из-за разной скорости соединения с серверами.
+         * Такое решение делает предсказуемое зеркальное поведение у всех клиентов.
          * */
         this._appStateService.configHash.next(999);
       }))
@@ -131,10 +132,18 @@ export class EventService {
           const { recentEvent, recentSchedule } = res.data;
           if (recentEvent) {
             events = [recentEvent];
+            // ? неправильно держать recentEvent в глобальном стейте,
+            // когда клиент обновляет состояние вслед за 
+            // изменениями другого клиента, но находится в другом интерфейсе
+            // данное изменение для него неактуально.
+
+            // данные, полученные в ответ на запрос - провоцируют не консистентное состояние.
+            // сразу после зпроса состояние бэка может быть изменено - решего с пом хэша
             this._appStateService.recentEvent.next(recentEvent.id);
           }
           if (recentSchedule) {
             events = recentSchedule.events ?? [];
+            this._appStateService.currentSchedule.next(recentSchedule)
           }
           this.events$.next(events);
         }),

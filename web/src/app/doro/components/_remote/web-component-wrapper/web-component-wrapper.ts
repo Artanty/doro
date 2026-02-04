@@ -13,6 +13,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { Observable, shareReplay, Subscription } from 'rxjs';
 import { waitForWebComponent } from './web-component-utils';
+import { dd } from 'src/app/doro/helpers/dd';
 
 @Component({
   selector: 'app-web-component-wrapper',
@@ -112,6 +113,11 @@ export class WebComponentWrapperComponent implements AfterViewInit, OnChanges, O
       // Subscribe for future updates
       const subscription = sharedObservable.subscribe(value => {
         if (this.element) {
+          /**
+           * [items] Observable<Item[]> при использовании gui директивы
+           * превращается в:
+           * @Input() items: Item[] в конечном компоненте
+           * */
           (this.element as any)[key] = value;
           // console.log(`Updated ${key} to:`, value);
         }

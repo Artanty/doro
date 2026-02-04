@@ -1,9 +1,10 @@
 import { dd } from "../utils/dd";
 import { getUTCDatetime } from "../utils/get-utc-datetime";
+import { Nullable } from "../utils/utility.types";
 
-export interface DbActionResult {
+export interface DbActionResult<T = any> {
 	success: boolean;
-	result: any;
+	result: Nullable<T>;
 	error: null | string;
 }
 

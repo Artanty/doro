@@ -22,16 +22,36 @@
 	</ul>	
 </div>
  -->
+ 
+ <div class="header">
+ 	<div class="scheduleName">
+ 		<div gui type="dropdown"
+	        [inputs]="{
+	          buttonIcon: 'mu mu-calendar',
+	          items: scheduleMenuItems$
+	        }"
+	        [outputs]="{
+	          itemSelected: switchToSchedule.bind(this)
+	        }"
+	      ></div>
+
+ 		@if(currentSchedule$ | async; as schedule) {
+ 			{{schedule.name}}
+ 		}
+ 	</div>
+ 	<div class="actions">
+ 		<span (click)="loadAllEvents()">all events</span> | 
+ 		<span (click)="goToCreateEvent()">create event</span>
+ 	</div>
+ </div>
 
 @if (events$ | async; as events) {
 	<div class="list-wrapper">
 	  <ul>
-
 	  	@for(event of events; track event) {
-	  		<!-- <pre>{{event | json }}</pre> -->
 	  		<app-event-list-event 
 		      [eventProps]="event"
-		      >
+		     >
 		    </app-event-list-event>	
 		} @empty {
 		    <li class="noEvents">

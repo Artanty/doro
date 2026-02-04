@@ -4,6 +4,10 @@ import { dd } from "../utils/dd";
 import { parseServerResponse } from "../utils/parseServerResponse";
 import { ConfigManager } from "./config-manager";
 import { EventStateController, EventStateResItem } from "./eventStateController";
+import { upsertEventState } from "../db-actions/upsert-event-state";
+import createPool from "../core/db_connection";
+import { thisProjectResProp } from "../utils/getResProp";
+import { addEventStateHistory } from "../db-actions/add-event-state-history";
 
 export interface OuterEntry {
 	id: string,
@@ -22,7 +26,6 @@ export type EntryWithTikAction<T> = T & { [EVENT_TIK_ACTION_PROP]: string };
 
 export class OuterSyncService {
 	
-
 	public static buildOuterEntityId(
 		type: 'event' | 'configHash', 
 		id: string | number
@@ -155,5 +158,61 @@ export class OuterSyncService {
 		dd(parseServerResponse(tikResponse))
 		
 		return parseServerResponse(tikResponse);
+	}
+
+	/**
+	 * todo: check required api key
+	 * */
+	public static async updateEventStateByOuterApp(
+		eventId: number,
+		state: any,
+	) {
+		const pool = createPool();
+		const connection = await pool.getConnection();
+		let upsertStateResult,
+			addEventStateHistoryResult;
+		try {
+			await connection.beginTransaction();
+
+			upsertStateResult = await upsertEventState(connection, eventId, state)
+            
+			if (upsertStateResult.isStateUpdated) {
+				addEventStateHistoryResult = await addEventStateHistory(connection, eventId, state)    
+			}
+
+			await connection.commit();
+
+			return {
+				[thisProjectResProp()]: {
+					success: true,
+				},
+				debug: {
+					[thisProjectResProp()]: {
+						upsertStateResult,
+						addEventStateHistoryResult,
+					},
+				}
+			};
+
+		} catch (error) {
+			await connection.rollback();
+			return {
+				data: {
+					success: false,
+				},
+				debug: {
+					[thisProjectResProp()]: {
+						upsertStateResult
+					}
+				}
+			};
+		} finally {
+			connection.release();
+		}
+	}
+
+	public static entryAdapter(outerPayload: any): { eventId: number, state: number } {
+		const { eventId, state } = outerPayload;
+		return { eventId, state }
 	}
 }

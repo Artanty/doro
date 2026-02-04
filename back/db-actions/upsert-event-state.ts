@@ -14,6 +14,7 @@ export const upsertEventState = async (
 	const res = {
 		isStateUpdated: false,
 		result: null,
+		debug: {}
 	}
 	
 	const [currentState] = await connection.execute(
@@ -35,7 +36,21 @@ export const upsertEventState = async (
 
 		res.isStateUpdated = true;
 		res.result = result;
-	}
 
+	}
+	res.debug = {
+		currentState,
+		calculatedPreviousState: previousState,
+		newState: state
+	}
 	return res;
+}
+
+// 0=inactive, 1=active, 2=paused, etc.
+
+export enum eventProgress {
+	'STOPPED' = 0,
+	'PLAYING' = 1,
+	'PAUSED' = 2,
+	'COMPLETED' = 3
 }

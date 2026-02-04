@@ -1,3 +1,15 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+
+  & .scheduleName {
+    display: flex;
+    justify-content: space-between;
+  }
+}
+
 .color-badge {
   display: inline-block;
   width: 20px;

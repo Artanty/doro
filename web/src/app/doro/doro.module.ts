@@ -104,7 +104,9 @@ export const CHILD_ROUTES = [
     ReactiveFormsModule,
     FormsModule,
     AudioComponent,
-    RouterModule.forChild(CHILD_ROUTES),
+    RouterModule.forChild(
+      CHILD_ROUTES
+    ),
     // HttpClientModule,
     GuiDirective
     
@@ -158,7 +160,7 @@ export class DoroModule implements DoBootstrap {
     private _setConfigHashAction: SetConfigHashAction,
     private eventService: EventService,
   ) {
-    console.log('DoroModule');
+    console.log('doro module constructor');
     // this.eventBusListener$.subscribe((res: BusEvent) => {
     //   console.log('DORO BUS LISTENER');
     // });
@@ -171,10 +173,6 @@ export class DoroModule implements DoBootstrap {
         filter((res) => res.event === 'SET_CONFIG_HASH'),
       )
       .subscribe((res: BusEvent) => {
-         
-        // dd('res to set as hash config: ')
-        if (res)
-          dd(res)
         this._setConfigHashAction.init(res);
       });
 

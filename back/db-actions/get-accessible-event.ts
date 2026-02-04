@@ -33,41 +33,24 @@ export const getAccessibleEvent = async (
 ): Promise<DbActionResult> => {
 
 	let isOwner = false,
-		isPublicAccessible = false,
+		isPublicAccessible,
 		sharedAccessResult;
 
 	const res = {
 		success: false,
 		result: {},
 		error: null,
-		debug: {
-			isOwner,
-			isPublicAccessible,
-			sharedAccessResult,
-		}
+		debug: {}
 	}
-
-	
-	
 	try {
-		// // Check if event exists and user has access
-		// const [eventWithAccess] = await connection.execute(
-		// 	`SELECT e.*
-		//         FROM events e
-		//         INNER JOIN eventToUser etu ON e.id = etu.event_id
-		//         WHERE e.id = ? AND etu.user_handler = ?
-		//         LIMIT 1`,
-		// 	[eventId, userHandler]
-		// );
-		// if (eventWithAccess.length < 1) {
-		// 	throw new Error('no eventWithAccess entry found')
-		// }
 		const [event] = await connection.execute(
 			`SELECT * FROM events WHERE id = ?`,
 			[eventId]
 		);
-
+		dd(event)
+		dd(userHandler)
 		isOwner = event[0].created_by === userHandler;
+		dd(isOwner)
 		if (!isOwner) {
 			isPublicAccessible = event[0].base_access_id >= accessLevel;
 			if (!isPublicAccessible) {
@@ -83,6 +66,11 @@ export const getAccessibleEvent = async (
 		}
 		res.success = true;
 		res.result = event;
+		res.debug = {
+			isOwner,
+			isPublicAccessible,
+			sharedAccessResult,
+		}
 
 		return res;
 	} catch (error: any) {

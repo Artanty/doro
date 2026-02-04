@@ -1,3 +1,18 @@
+<div class="topRow">
+  <button gui type="button"
+          [inputs]="{
+            label: 'К списку',
+            routerLink: 'doro/event-list'
+          }"
+        ></button>
+        <button gui type="button"
+          [inputs]="{
+            label: 'Новое',
+            routerLink: 'doro/event-create'
+          }"
+        ></button>
+</div>
+
 @if (eventState$ | async; as eventState) {
   <li>
     <div>

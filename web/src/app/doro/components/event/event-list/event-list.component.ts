@@ -1,13 +1,16 @@
 import { ChangeDetectorRef, Component, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 // import { hexColor } from '../../../utilites/hex-color';
 import { CommonModule } from '@angular/common';
-import { EventProps, EventWithState } from '../event.model';
+import { EventProps, EventWithState, Schedule } from '../event.model';
 import { EventService } from '../event.service';
 import { Router } from '@angular/router';
 import { GuiDirective } from '../../_remote/web-component-wrapper/gui.directive';
-import { BehaviorSubject, debounceTime, delay, Observable, shareReplay, take, tap } from 'rxjs';
+import { BehaviorSubject, combineLatest, debounceTime, delay, distinctUntilChanged, map, Observable, of, shareReplay, startWith, switchMap, take, tap } from 'rxjs';
 import { EventListEventComponent } from '../event-list-event/event-list-event.component';
 import { dd } from 'src/app/doro/helpers/dd';
+import { AppStateService } from 'src/app/doro/services/app-state.service';
+import { Nullable } from 'src/app/doro/utilites/utility.types';
+import { ScheduleService } from '../schedule.service';
 
 @Component({
   selector: 'app-event-list',
@@ -23,89 +26,82 @@ import { dd } from 'src/app/doro/helpers/dd';
 })
 export class EventListComponent implements OnInit {
   public events$: Observable<EventProps[]>;
+  public currentSchedule$: Observable<Nullable<Schedule>>;
  
-  constructor(
-    private eventService: EventService,
-    private cdr: ChangeDetectorRef,
-    private router: Router
-  ) {
-    this.events$ = this.eventService.listenEvents().pipe(
-      // debounceTime(50),
-      // shareReplay(1),
-      // delay(500),
-      tap(res => {
-        dd('UPDATE NOW')
-        
-        dd(res)
-        // setTimeout(() => {}, 1000); // crutch to update state
-        
-        setTimeout(() => {
-          this.cdr.detectChanges()
-        }, 1000); // crutch to update state
-      })
-    );
-  }
-
   menuItems = [
     { id: 'DELETE', name: 'Удалить' },
   ];
   // onItemSelect(user: any, selectedAction: any) {
   //   // this.itemActionAway.emit({ user, selectedAction: selectedAction.id })
   // }
+  scheduleMenuItems$: Observable<Schedule[]>;
 
   ngOnInit() {
-    // this.eventService.loadEvents().pipe(take(1)).subscribe();
-
     this.eventService.loadRecentEventOrSchedule().subscribe();
   }
 
-  // public playEvent(eventId: number) {
-  //   this.eventService.playEvent(eventId).subscribe(res => {
-  //     const { state } = res;
-  //     const events = this.events$.getValue().map(el => {
-  //       if (el.eventId === eventId) {
-  //         el.state = state;
-  //       }
-  //       return el;
-  //     })
-  //     this.events$.next(JSON.parse(JSON.stringify(events)))
-  //     this.cdr.detectChanges()
-  //   })
-  // }
+  constructor(
+    private eventService: EventService,
+    private cdr: ChangeDetectorRef,
+    private router: Router,
+    private _appStateService: AppStateService,
+    private _scheduleService: ScheduleService
+  ) {
+    this.events$ = this.eventService.listenEvents()
+      .pipe(
+        tap(res => {
+          setTimeout(() => {
+            this.cdr.detectChanges()
+          }, 1000); // crutch to update state
+        })
+      );
+    this.currentSchedule$ = this._appStateService.currentSchedule.listen;
 
-  // public pauseEvent(eventId: number) {
-  //   this.eventService.pauseEvent(eventId).subscribe(res => {
-  //     const { state } = res;
-  //     const events = this.events$.getValue().map(el => {
-  //       if (el.eventId === eventId) {
-  //         el.state = state;
-  //       }
-  //       return el;
-  //     })
-  //     this.events$.next(JSON.parse(JSON.stringify(events)))
-  //     this.cdr.detectChanges()
-  //   })
-  // }
+    this.scheduleMenuItems$ = combineLatest([
+      this._scheduleService.getSchedules(),
+      this.currentSchedule$  
+    ]).pipe(
+      map(([
+        allSchedules, 
+        currentSchedule
+      ]) => {
+        if (!currentSchedule) {
+          return allSchedules;
+        }
+        return allSchedules.filter(schedule => 
+          schedule.id !== currentSchedule.id
+        );
+      })
+    )
+  }
 
-  public deleteEvent(data: any) {
-    // [id, event]: [number, Event]
-    const [id, event]: [number, Event] = data;
-    event.stopPropagation();
-    // console.log('delete clicked')
-    // this.eventService.deleteEvent(id).subscribe({
-    //   next: () => this._loadEvents(),
-    //   error: (err) => console.error('Error deleting keyword:', err)
-    // });
+  public switchToSchedule(data: any) {
+    const scheduleId = data.id
+    this._scheduleService.getScheduleWithEvents(scheduleId).subscribe(res => {
+      if (res === true) {
+        this._appStateService.currentSchedule.next(data);
+      }
+    })
   }
 
   public goToCreateEvent() {
-    this.router.navigateByUrl('doro/event-create');
-      
+    const scheduleId = this._appStateService.currentSchedule.value?.id;
+    const extras = scheduleId ?
+      { queryParams: { scheduleId: scheduleId } } :
+      undefined;
+    this.router.navigate(
+      ['doro/event-create'], 
+      extras
+    );
+  }
+
+  public loadAllEvents(): void {
+    this.eventService.loadEvents().pipe(take(1)).subscribe(() => {
+      this._appStateService.currentSchedule.next(null);
+    });
   }
 
   // public goToKeywordEdit(id: number) {
   //   this.router.navigateByUrl('/note/keyword-edit' + '/' + id)
   // }
-
- 
 }

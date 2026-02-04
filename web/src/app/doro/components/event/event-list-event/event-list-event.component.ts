@@ -43,11 +43,8 @@ export class EventListEventComponent implements OnInit, OnDestroy {
     private router: Router,
     private _scheduleService: ScheduleService
   ) {
-    // const service = this.injector.get(IconFallbackService);
-    // console.log(service)
     this.scheduleMenuItems$ = this._scheduleService.getSchedules().pipe(
       map(res => {
-        dd(this.eventProps)
         if (this.eventProps.schedule_id) {
           return res.filter(el => el.id !== this.eventProps.schedule_id);
         }
@@ -120,7 +117,6 @@ export class EventListEventComponent implements OnInit, OnDestroy {
     this.eventService.deleteEvent(this.eventProps.id);
   }
   addToSchedule(data: any) {
-    dd(data)
     const scheduleId = data.id;
     this.eventService.addToSchedule(this.eventProps.id, scheduleId).subscribe()
   }
@@ -151,7 +147,6 @@ export class EventListEventComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    dd('list item destroyed')
     this.destroy$.next();
     this.destroy$.complete();
   }

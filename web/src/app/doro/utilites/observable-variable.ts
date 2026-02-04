@@ -1,5 +1,5 @@
 import { BehaviorSubject, Observable } from 'rxjs';
-import { distinctUntilChanged, map } from 'rxjs/operators';
+import { distinctUntilChanged, filter, map } from 'rxjs/operators';
 
 export class ObservableVariable<T> {
   private subject: BehaviorSubject<T>;
@@ -62,6 +62,13 @@ export class ObservableVariable<T> {
   
   get listen(): Observable<T> {
     return this.subject.asObservable();
+  }
+
+  get listenReq(): Observable<NonNullable<T>> {
+    return this.subject.asObservable()
+      .pipe(filter(res => {
+        return res !== null && res !== undefined;
+      })) as Observable<NonNullable<T>>;
   }
   
   get distinct$(): Observable<T> {

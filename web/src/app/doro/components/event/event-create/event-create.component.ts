@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -7,6 +7,7 @@ import { Router } from '@angular/router';
 import { EventService } from '../event.service';
 import { AccessLevel, AccessLevelService } from '../access-level.service';
 import { EventType, EventTypeService } from '../event-type.service';
+import { dd } from 'src/app/doro/helpers/dd';
 
 @Component({
   selector: 'app-event-create',
@@ -16,6 +17,8 @@ import { EventType, EventTypeService } from '../event-type.service';
   styleUrl: './event-create.component.scss',
 })
 export class EventCreateComponent implements OnInit {
+  @Input() scheduleId?: string; // Automatically binds to the 'filter' query param
+
   // Данные события
   eventData = {
     name: '',
@@ -56,6 +59,7 @@ export class EventCreateComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    dd(this.scheduleId)
     this._eventTypeService.getEventTypes().subscribe(res => {
       this.eventTypes = res
     })
