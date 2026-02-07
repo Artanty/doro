@@ -183,7 +183,7 @@ export class OuterSyncService {
 			await connection.commit();
 
 			return {
-				[thisProjectResProp()]: {
+				data: {
 					success: true,
 				},
 				debug: {
@@ -202,7 +202,8 @@ export class OuterSyncService {
 				},
 				debug: {
 					[thisProjectResProp()]: {
-						upsertStateResult
+						upsertStateResult,
+						addEventStateHistoryResult
 					}
 				}
 			};
@@ -211,8 +212,8 @@ export class OuterSyncService {
 		}
 	}
 
-	public static entryAdapter(outerPayload: any): { eventId: number, state: number } {
-		const { eventId, state } = outerPayload;
-		return { eventId, state }
-	}
+	// public static entryAdapter(outerPayload: any): { eventId: number, state: number } {
+	// 	const { eventId, state } = outerPayload;
+	// 	return { eventId, state }
+	// }
 }

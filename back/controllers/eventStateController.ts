@@ -104,17 +104,22 @@ export class EventStateController {
 
             const tikAction = 'update';
             const updatedEventStatusWithTikAction = OuterSyncService.addOuterActionInEvents(updatedEventsWithStatus, tikAction);
-            
+            const tikUpdateEntryPayload = {
+                poolId: 'current_user_id',
+                data: updatedEventStatusWithTikAction,
+                projectId: 'doro@web',
+            }
             tikResponse = await axios.post(`${process.env['TIK_BACK_URL']}/updateEventsState`,
-                {
-                    poolId: 'current_user_id',
-                    data: updatedEventStatusWithTikAction,
-                    projectId: 'doro@web',
+                // {
+                //     poolId: 'current_user_id',
+                //     data: updatedEventStatusWithTikAction,
+                //     projectId: 'doro@web',
 
-                    // requesterProject,
-                    // requesterApiKey: apiKeyHeader,
-                    // requesterUrl
-                }
+                //     // requesterProject,
+                //     // requesterApiKey: apiKeyHeader,
+                //     // requesterUrl
+                // }
+                tikUpdateEntryPayload
                 // ,
                 //  {
                 //   headers: {
@@ -141,7 +146,10 @@ export class EventStateController {
                         upsertStateResult,
                         addEventStateHistoryResult,
                     },
-                    [tikResProp()]: parseServerResponse(tikResponse),
+                    [tikResProp()]: {
+                        request: tikUpdateEntryPayload,
+                        response: parseServerResponse(tikResponse),
+                    }
                 }
             };
 

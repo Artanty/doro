@@ -8,7 +8,7 @@ import cors from 'cors'
 import checkDBConnection from './core/db_check_connection'
 import { validateUserAccessToken } from './middlewares/validateUserAccessToken'
 import eventStateRoutes from './routes/eventStateRoutes'
-import shareEventStateRoute from './routes/service/shareEventState.route'
+
 import { validateApiKey } from './middlewares/validateApiKey'
 import { dd } from './utils/dd'
 import { ConfigManager } from './controllers/config-manager'
@@ -16,6 +16,7 @@ import { injectConfigHashMiddleware } from './middlewares/inject-config-hash.mid
 import { OuterSyncService } from './controllers/outer-sync.service'
 import accessLevelRoutes from './routes/access-level.routes'
 import scheduleRoutes from './routes/schedule.routes'
+import outerApiRoutes from './routes/outer-api.routes'
 
 dotenv.config();
 
@@ -35,7 +36,9 @@ app.use('/schedule', validateUserAccessToken, injectConfigHashMiddleware, schedu
 app.use('/save-temp', saveTempRoutes);
 // app.use('/service', shareEventStateRoute); //[validateApiKey, validateUserAccessToken]
 // app.use('/service', [validateApiKey, validateUserAccessToken], shareEventStateRoute);
-app.use('/service', validateUserAccessToken, validateUserAccessToken, shareEventStateRoute);
+// works:
+// app.use('/service', validateUserAccessToken, validateUserAccessToken, shareEventStateRoute);
+app.use('/service', validateApiKey, outerApiRoutes);
 
 app.get('/get-updates', async (req, res) => {
   res.json({
