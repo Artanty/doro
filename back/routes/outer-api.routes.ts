@@ -6,12 +6,10 @@ import { dd } from '../utils/dd';
 import { getUserFromRequest } from '../utils/getUserFromRequest';
 import { handleError } from '../utils/handleError';
 
-
 const router = express.Router();
-// [validateApiKey, validateUserAccessToken]
+
 router.post('/share-event-state', [validateUserAccessToken], async (req, res) => {
   try {
-    dd('/share-event-state')
     const user = getUserFromRequest(req);
     const data = await EventStateController.getEventsWithStatus(user);
     dd(data)
@@ -23,7 +21,6 @@ router.post('/share-event-state', [validateUserAccessToken], async (req, res) =>
 
 router.post('/receive-event-state', async (req, res) => {
   try {
-    dd('/receive-event-state')
     const { eventId, state } = req.body;
     const data = await OuterSyncService.updateEventStateByOuterApp(eventId, state);
     res.json(data);

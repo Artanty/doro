@@ -77,9 +77,12 @@ export class DoroComponent implements OnInit {
     // this.createEventSourceOnce();
     
     if (this.hostName === 'DORO-STANDALONE') {
-      this.router.navigateByUrl('/doro/timer/209')  
+      // this.router.navigateByUrl('/doro/timer/209');
+      this.router.navigateByUrl('/doro/schedule-create');
+      
     } else {
-      this.router.navigateByUrl('/doro/event-list')
+      this.router.navigateByUrl('/doro/schedule-create');
+      // this.router.navigateByUrl('/doro/event-list')
       // this.router.navigateByUrl('/doro/event-create')
     }
     

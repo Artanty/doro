@@ -46,6 +46,7 @@ import { ConfigHashTikEntry, mapBusEventToConfigHashTikEntry } from './helpers/g
 import { AccessLevelService } from './components/event/access-level.service';
 import { EventTypeService } from './components/event/event-type.service';
 import { ScheduleService } from './components/event/schedule.service';
+import { ScheduleCreateComponent } from './components/schedule/schedule-create/schedule-create.component';
 
 
 // function initConfigActivator(counterServ: CounterService) {
@@ -66,6 +67,9 @@ export const CHILD_ROUTES = [
       },
       {
         path: 'event-create', component: EventCreateComponent
+      },
+      {
+        path: 'schedule-create', component: ScheduleCreateComponent
       },
       {
         path: 'timer/:id', 
@@ -95,7 +99,8 @@ export const CHILD_ROUTES = [
     EventListEventComponent,
     TimerComponent,
     TimerWrapperComponent,
-    EventCreateComponent
+    EventCreateComponent,
+    ScheduleCreateComponent
   ],
   imports: [
     CommonModule,

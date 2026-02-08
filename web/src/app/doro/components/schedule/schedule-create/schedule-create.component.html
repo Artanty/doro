@@ -1,0 +1,62 @@
+<input gui type="number"
+  [inputs]="{
+    label: 'Работа',
+    max: 60,
+    value: scheduleConfig.work
+  }"
+  [outputs]="{
+    valueChange: onWorkInputChange.bind(this)
+  }"
+>
+<input gui type="number"
+  [inputs]="{
+    label: 'Отдых',
+    max: 60,
+    value: scheduleConfig.rest
+  }"
+  [outputs]="{
+    valueChange: onRestInputChange.bind(this)
+  }"
+>
+<input gui type="number"
+  [inputs]="{
+    label: 'Большой отдых',
+    max: 60,
+    value: scheduleConfig.bigRest
+  }"
+  [outputs]="{
+    valueChange: onBigRestInputChange.bind(this)
+  }"
+>
+<input gui type="number"
+  [inputs]="{
+    label: 'Большой отдых через',
+    max: 10,
+    value: scheduleConfig.bigRestStep
+  }"
+  [outputs]="{
+    valueChange: onBigRestStepInputChange.bind(this)
+  }"
+>
+<input gui type="number"
+  [inputs]="{
+    label: 'Циклы',
+    max: 10,
+    value: scheduleConfig.cycles
+  }"
+  [outputs]="{
+    valueChange: onCyclesInputChange.bind(this)
+  }"
+>
+<div [style.height.px]="'20'"></div>
+<button gui
+  type="submit" 
+  [inputs]="{
+    label: isLoading ? 'Создание...' : 'Создать таймер',
+    disabled: isLoading,
+  }"
+  [outputs]="{click: onSubmit.bind(this)}"
+>
+  <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+  Сохранить
+</button>
