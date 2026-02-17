@@ -130,7 +130,7 @@ export class EventStateController {
                 // }
             );
             return {
-                [thisProjectResProp()]: {
+                data: {
                     success: true,
                     
                     updatedEvents: [{

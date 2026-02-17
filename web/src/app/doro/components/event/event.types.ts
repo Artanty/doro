@@ -87,14 +87,9 @@ export interface Schedule {
 	created_by: string;
 	created_at: Date | string;
 	updated_at: Date | string;
-	events?: EventProps[];
+	// events?: EventProps[];
 }
 
-export interface GetRecentRes {
-	data: {
-		recentEvent?: EventProps,
-		recentSchedule?: Schedule,
-	}
-}
+
 
 export type EventStateResItemStateless = Omit<EventStateResItem, 'stt'> & { prc: number }

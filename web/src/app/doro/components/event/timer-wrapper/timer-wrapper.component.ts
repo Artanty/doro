@@ -3,7 +3,7 @@ import { Subject, Observable, takeUntil, map, startWith, tap, catchError, EMPTY,
 import { EventStates } from 'src/app/doro/constants';
 import { dd } from 'src/app/doro/helpers/dd';
 
-import { EventProps, EventViewState, EventState, EventStateResItem, EventStateResItemStateless } from '../event.model';
+import { EventProps, EventViewState, EventState, EventStateResItem, EventStateResItemStateless } from '../event.types';
 import { EventService } from '../event.service';
 import { ActivatedRoute } from '@angular/router';
 import { countPrc } from 'src/app/doro/utilites/count-percent.util';

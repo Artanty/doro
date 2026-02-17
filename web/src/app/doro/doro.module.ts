@@ -41,12 +41,13 @@ import { EventCreateComponent } from './components/event/event-create/event-crea
 import { CompareConfigHashAction } from './services/compare-config-hash.action';
 import { SetConfigHashAction } from './services/set-config-hash.action';
 import { filterStreamDataEntries } from './helpers/filterStreamDataEntries';
-import { EventStateResItem } from './components/event/event.model';
+import { EventStateResItem } from './components/event/event.types';
 import { ConfigHashTikEntry, mapBusEventToConfigHashTikEntry } from './helpers/getConfigHashFromBusEvent';
 import { AccessLevelService } from './components/event/access-level.service';
 import { EventTypeService } from './components/event/event-type.service';
 import { ScheduleService } from './components/event/schedule.service';
 import { ScheduleCreateComponent } from './components/schedule/schedule-create/schedule-create.component';
+import { EventMapperService } from './components/event/event.mapper';
 
 
 // function initConfigActivator(counterServ: CounterService) {
@@ -150,7 +151,8 @@ export const CHILD_ROUTES = [
     EventService,
     AccessLevelService,
     EventTypeService,
-    ScheduleService
+    ScheduleService,
+    EventMapperService
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })

@@ -1,13 +1,16 @@
 import { ChangeDetectorRef, Inject, Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, distinctUntilChanged, filter, map, Observable, of, throwError, catchError, switchMap, tap, Subject, take, delay } from 'rxjs';
-import { EventProps, EventState, EventStateReq, EventStateRes, EventStateResItem, EventWithState, GetRecentRes, GetUserEventsRes, SetPlayEventStateReq } from './event.model';
+import { EventProps, EventState, EventStateReq, EventStateRes, EventStateResItem, EventWithState, GetUserEventsRes, SetPlayEventStateReq } from './event.types';
 import { dd } from '../../helpers/dd';
 import { basicEventTypePrefix, devPoolId, EventProgressType, EventStates } from '../../constants';
 import { BusEvent, EVENT_BUS_LISTENER, EVENT_BUS_PUSHER } from 'typlib';
 
 import { filterStreamDataEntries } from '../../helpers/filterStreamDataEntries';
 import { AppStateService } from '../../services/app-state.service';
+import { obs$ } from '../../utilites/observable-variable';
+import { GetRecentRes } from './event.dto';
+import { EventMapperService } from './event.mapper';
 // import { validateShareKeyword } from './edit-keyword/edit-keyword.validation';
 
 @Injectable(
@@ -20,12 +23,14 @@ export class EventService {
   private tikBaseUrl = `${process.env['TIK_BACK_URL']}`;
 
   public events$ = new BehaviorSubject<EventProps[]>([]);
+  
 
   constructor(
     private http: HttpClient,
     @Inject(EVENT_BUS_LISTENER)
     private readonly eventBusListener$: Observable<BusEvent>,
-    private _appStateService: AppStateService
+    private _appStateService: AppStateService,
+    private _eventMapperService: EventMapperService
   ) {
     this.eventBusListener$.subscribe(res => {
       // dd(res)
@@ -131,7 +136,7 @@ export class EventService {
           let events: EventProps[] = [];
           const { recentEvent, recentSchedule } = res.data;
           if (recentEvent) {
-            events = [recentEvent];
+            events = [this._eventMapperService.eventDtoToModel(recentEvent)];
             // ? неправильно держать recentEvent в глобальном стейте,
             // когда клиент обновляет состояние вслед за 
             // изменениями другого клиента, но находится в другом интерфейсе
@@ -142,7 +147,10 @@ export class EventService {
             this._appStateService.recentEvent.next(recentEvent.id);
           }
           if (recentSchedule) {
-            events = recentSchedule.events ?? [];
+            if (recentSchedule.events) {
+              events = recentSchedule.events.map(el => this._eventMapperService.eventDtoToModel(el));  
+            }
+            
             this._appStateService.currentSchedule.next(recentSchedule)
           }
           this.events$.next(events);
@@ -154,7 +162,7 @@ export class EventService {
         map(() => true),
       )
   }
-
+  // staticEventsState$
   public getRecentEventOrSchedule() {
     return this.http.post<any>(`${this.doroBaseUrl}/event-state/get-recent-event-or-schedule`, null)
       .pipe(

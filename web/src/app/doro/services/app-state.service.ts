@@ -3,7 +3,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { obs$ } from '../utilites/observable-variable';
 import { BusEvent } from 'typlib';
 import { Nullable } from '../utilites/utility.types';
-import { Schedule } from '../components/event/event.model';
+import { Schedule } from '../components/event/event.types';
 
 
 @Injectable({
@@ -15,7 +15,7 @@ export class AppStateService {
   // public recentSchedule = obs$<Nullable<Schedule>>(null);
   // public sessionSchedule = obs$<Nullable<Schedule>>(null);
   public currentSchedule = obs$<Nullable<Schedule>>(null);
-
+  public staticEventsState$ = obs$<Record<number, number>>({});
   /**
    * При загрузке - берем недавний
    * При работе - сохраненный

@@ -16,7 +16,7 @@ export const getRecentEvent = async (
 	try {
 		const [queryResult] = await connection.execute(
 			`SELECT 
-		        e.*
+		        e.*, es.event_state_id
 		      FROM events e
 		      INNER JOIN eventState es ON e.id = es.eventId
 		      WHERE e.created_by = ?

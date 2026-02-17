@@ -1,7 +1,7 @@
 import { inject } from "@angular/core";
 import { ResolveFn, ActivatedRouteSnapshot, RouterStateSnapshot } from "@angular/router";
 import { switchMap, map } from "rxjs";
-import { EventProps } from "../event.model";
+import { EventProps } from "../event.types";
 import { EventService } from "../event.service";
 
 export const eventResolver: ResolveFn<EventProps | undefined> = (

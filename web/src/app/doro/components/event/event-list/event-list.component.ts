@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 // import { hexColor } from '../../../utilites/hex-color';
 import { CommonModule } from '@angular/common';
-import { EventProps, EventWithState, Schedule } from '../event.model';
+
 import { EventService } from '../event.service';
 import { Router } from '@angular/router';
 import { GuiDirective } from '../../_remote/web-component-wrapper/gui.directive';
@@ -11,6 +11,7 @@ import { dd } from 'src/app/doro/helpers/dd';
 import { AppStateService } from 'src/app/doro/services/app-state.service';
 import { Nullable } from 'src/app/doro/utilites/utility.types';
 import { ScheduleService } from '../schedule.service';
+import { EventProps, Schedule } from '../event.types';
 
 @Component({
   selector: 'app-event-list',

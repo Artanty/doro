@@ -11,10 +11,10 @@ router.post('/set-event-state', async (req, res) => {
   try {
     const { eventId, state } = req.body;
     const user = getUserFromRequest(req);
-    const itemId = await EventStateController.createOrUpdateEventState(
+    const result = await EventStateController.createOrUpdateEventState(
       user, eventId, state
     );
-    res.status(201).json({ eventState: itemId });
+    res.status(201).json(result);
   } catch (error: unknown) {
     res.status(500).json({ error: (error as any)?.message ? (error as any).message : error });
   }

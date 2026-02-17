@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Injector, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { Observable, Subject, takeUntil, filter, startWith, distinctUntilChanged, map, tap, withLatestFrom, catchError, EMPTY, finalize } from 'rxjs';
-import { EventProps, EventState, EventStateResItem, EventStateResItemStateless, EventViewState, EventWithState } from '../event.model';
+
 import { EventService, } from '../event.service';
 import { CommonModule } from '@angular/common';
 import { GuiDirective } from '../../_remote/web-component-wrapper/gui.directive';
@@ -8,6 +8,7 @@ import { dd } from 'src/app/doro/helpers/dd';
 import { EventStates } from 'src/app/doro/constants';
 import { Router } from '@angular/router';
 import { Schedule, ScheduleService } from '../schedule.service';
+import { EventProps, EventViewState, EventStateResItem, EventStateResItemStateless, EventState } from '../event.types';
 
 @Component({
   selector: 'app-event-list-event',
