@@ -19,44 +19,13 @@ import { upsertEventAccess } from '../db-actions/upsert-event-access';
 import { getRecentEvent } from '../db-actions/get-recent-event';
 import { getScheduleWithEvents } from '../db-actions/get-schedules-with-events';
 import { getEventState } from '../db-actions/get-event-state';
+import { EventPropsPure, EventStateResItem, EventStatus, MinimalEventProps } from '../types/event-state.types';
+import { getEventStateHistory } from '../db-actions/get-event-state-history';
+import { EventPropsDbItem } from '../types/event.types';
+import { ControllerResult } from '../types/controller.types';
+import { EventWithStateDTO, GetRecentEventOrScheduleRes } from '../types/event-state.api.types';
 
 dotenv.config();
-
-export interface EventStatus {
-    status: number
-    currentSeconds: number
-
-}
-
-export interface EventProps {
-    "id": number
-    "name": string
-    "length": number
-    "event_type": string
-    "last_state_change": string
-    "access_level": string
-}
-
-export interface MinimalEventProps {
-    id: number,
-    length: number
-}
-
-export interface EventPropsPure {
-    "id": number
-    "name": string
-    "length": number
-    "type": string
-    "created_at": string
-}
-
-//todo: rename to entry
-export interface EventStateResItem {
-    id: string,
-    cur: number,
-    len: number,
-    stt: number
-}
 
 export class EventStateController {
     /**
@@ -349,33 +318,52 @@ export class EventStateController {
         }
     }
 
-    static async getRecentEventOrSchedule(userHandler) {
+    static async getRecentEventOrSchedule(
+        userHandler
+    ): Promise<ControllerResult<GetRecentEventOrScheduleRes>> {
         const pool = createPool();
         const connection = await pool.getConnection();
 
-        let getRecentEventResult;
+        let getRecentEventResult: DbActionResult<EventPropsDbItem>;
         let getSchduleWithEventsResult;
 
         getRecentEventResult = await getRecentEvent(connection, userHandler);
-        dd('getRecentEventResult')
-        dd(getRecentEventResult)
-        const [recentEvent] = getRecentEventResult.result;
 
+        if (getRecentEventResult.error) {
+            throw new Error('getRecentEventResult.error: ' + getRecentEventResult.error);
+        }
+        const recentEvent = getRecentEventResult.result!;
+
+        const minimalEventProps: MinimalEventProps = { id: recentEvent.id, length: recentEvent.length }
+        
+        const { eventStatus } = await this.calculateEventStatus(connection, minimalEventProps);
+
+        const eventWithState: EventWithStateDTO = { ...recentEvent, eventState: eventStatus }
+        
         if (recentEvent.schedule_id) {
-            getSchduleWithEventsResult = await getScheduleWithEvents(connection, userHandler, recentEvent.schedule_id)
-            dd('getSchduleWithEventsResult')
-            dd(getSchduleWithEventsResult)
+            getSchduleWithEventsResult = await getScheduleWithEvents(connection, userHandler, recentEvent.schedule_id);
+            
+            const eventsWithState = await Promise.all(
+                getSchduleWithEventsResult.result.events.map(async eachEvent => {
+                    const eachEventMinimalProps: MinimalEventProps = { id: eachEvent.id, length: eachEvent.length };
+                    const { eventStatus: eachEventStatus } = await this.calculateEventStatus(connection, eachEventMinimalProps);
+                    const eachEventWithState: EventWithStateDTO = { ...eachEvent, eventState: eachEventStatus };
+                    return eachEventWithState;
+                })
+            );
+    
+            getSchduleWithEventsResult.result.events = eventsWithState;
         }
 
         return {
             data: {
-                recentEvent,
+                recentEvent: eventWithState,
                 recentSchedule: getSchduleWithEventsResult?.result,
             },
             debug: {
                 [thisProjectResProp()]: {
-                    getRecentEventResult,
-                    getSchduleWithEventsResult
+                    getRecentEventResult, //todo add state result
+                    getSchduleWithEventsResult //todo add state result ?
                 },
             }
         }
@@ -383,21 +371,16 @@ export class EventStateController {
     /**
      * Calculate event status and current seconds based on state and history
      */
-    static async calculateEventStatus(connection, event: MinimalEventProps): Promise<{ eventStatus: EventStatus, debug: any }> {
-        dd('calculateEventStatus')
+    static async calculateEventStatus(
+        connection, event: MinimalEventProps
+    ): Promise<{ eventStatus: EventStatus, debug: any }> {
         const debug = {};
         const eventId = event.id;
         const eventLengthSeconds = event.length;
         let currentStateResult: DbActionResult<number>;
-        dd('calculateEventStatus - 1')
-        // const [currentStateResult] = await connection.execute(
-        //     `SELECT event_state_id FROM eventState WHERE eventId = ?`,
-        //     [eventId]
-        // );
-        dd('calculateEventStatus - 2')
+        
         currentStateResult = await getEventState(connection, event);
-        dd('currentStateResult:')
-        dd(currentStateResult)
+
         if (!currentStateResult.success) {
             throw new Error(currentStateResult.error ?? 'undefined error, check wtf')
         }
@@ -405,7 +388,6 @@ export class EventStateController {
         const currentState = currentStateResult.result;
 
         if (currentState === eventProgress.STOPPED) {
-            dd('calculateEventStatus - 3')
             return {
                 eventStatus: {
                     status: eventProgress.STOPPED,
@@ -413,44 +395,29 @@ export class EventStateController {
                 },
                 debug: {
                     currentStateResult
-                }
-                
-                
+                }  
             };
         } else if (currentState === eventProgress.COMPLETED) {
-            dd('calculateEventStatus - 4')
             return {
                 eventStatus: {
                     status: eventProgress.COMPLETED,
                     currentSeconds: 0,
-                }, debug
+                }, 
+                debug
             };
         }
-        dd('calculateEventStatus - 5')
-        // Get all state history for this event
-        const [history] = await connection.execute(
-            `SELECT event_state_id, created_at 
-             FROM eventStateHistory 
-             WHERE eventId = ? 
-             ORDER BY created_at ASC`,
-            [eventId]
-        );
+         
+        const historyResult = await getEventStateHistory(connection, eventId);
+        
+        if (!historyResult.success) {
+            throw new Error(historyResult.error ?? 'history undefined error, check wtf')
+        }
 
-        if (history.length === 0) {
-            dd('calculateEventStatus - 6')
-            // todo: исключить неактивные события из запроса tik@back
-            // throw new Error('event:' + event.id + ' невозможно, пустая история бывает только при создании, и (v3) при добавлении сразу с проигрыванием.')
-            return {
-                eventStatus: {
-                    status: eventProgress.STOPPED,
-                    currentSeconds: 0,
-                }, debug
-            };
-        }
+        const history = historyResult.result!;
 
         let totalActiveSeconds = 0;
         let activeStartTime: Date | null = null;
-        dd('calculateEventStatus - 7')
+        
         // Calculate total active time from history
         for (const record of history) {
             if (record.event_state_id === eventProgress.PLAYING && activeStartTime === null) {
@@ -469,7 +436,7 @@ export class EventStateController {
                 activeStartTime = null;
             }
         }
-        dd('calculateEventStatus - 8')
+        
         // If currently active and we have an open active period
         if (currentState === eventProgress.PLAYING && activeStartTime !== null) {
             const currentTime = new Date();

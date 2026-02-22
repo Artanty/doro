@@ -15,7 +15,9 @@ module.exports = {
     scriptType: 'text/javascript'
   },
   optimization: {
-    runtimeChunk: false
+    runtimeChunk: false,
+    // splitChunks: false  // Add this
+
   },
   resolve: {
     alias: {

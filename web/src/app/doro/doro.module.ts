@@ -70,7 +70,11 @@ export const CHILD_ROUTES = [
         path: 'event-create', component: EventCreateComponent
       },
       {
-        path: 'schedule-create', component: ScheduleCreateComponent
+        path: 'schedule-create', 
+        // component: ScheduleCreateComponent
+        loadChildren: () => import('./pages/create-schedule/create-schedule.module')
+          .then(m => m.CreateScheduleModule)
+          
       },
       {
         path: 'timer/:id', 

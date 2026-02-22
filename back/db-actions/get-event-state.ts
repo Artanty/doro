@@ -1,6 +1,7 @@
 
 
-import { MinimalEventProps } from "../controllers/eventStateController";
+
+import { MinimalEventProps } from "../types/event-state.types";
 import { dd } from "../utils/dd";
 import { Nullable } from "../utils/utility.types";
 import { DbActionResult } from "./create-event";

@@ -1,13 +1,15 @@
 
 
+import { EventPropsDbItem } from "../types/event.types";
 import { dd } from "../utils/dd";
 import { DbActionResult } from "./create-event";
 
 export const getRecentEvent = async (
 	connection, 
 	userHandler,
-): Promise<DbActionResult> => {
-	const res = {
+): Promise<DbActionResult<EventPropsDbItem>> => {
+	
+	const res: DbActionResult<EventPropsDbItem> = {
 		success: false,
 		result: null,
 		error: null
@@ -16,7 +18,7 @@ export const getRecentEvent = async (
 	try {
 		const [queryResult] = await connection.execute(
 			`SELECT 
-		        e.*, es.event_state_id
+		        e.*
 		      FROM events e
 		      INNER JOIN eventState es ON e.id = es.eventId
 		      WHERE e.created_by = ?
@@ -25,7 +27,7 @@ export const getRecentEvent = async (
 		);
                 
 		res.success = true;
-		res.result = queryResult;
+		res.result = queryResult[0];
 
 		return res;
 	} catch (error: any) {

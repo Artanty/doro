@@ -3,11 +3,12 @@ import { EVENT_TIK_ACTION_PROP } from "../core/constants";
 import { dd } from "../utils/dd";
 import { parseServerResponse } from "../utils/parseServerResponse";
 import { ConfigManager } from "./config-manager";
-import { EventStateController, EventStateResItem } from "./eventStateController";
+import { EventStateController } from "./eventStateController";
 import { upsertEventState } from "../db-actions/upsert-event-state";
 import createPool from "../core/db_connection";
 import { thisProjectResProp } from "../utils/getResProp";
 import { addEventStateHistory } from "../db-actions/add-event-state-history";
+import { EventStateResItem } from "../types/event-state.types";
 
 export interface OuterEntry {
 	id: string,
