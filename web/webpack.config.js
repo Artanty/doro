@@ -11,12 +11,14 @@ sharedMappings.register(
 module.exports = {
   output: {
     uniqueName: "doro",
-    publicPath: "auto",
+    publicPath: "http://localhost:4201/",
+    chunkLoadingGlobal: 'webpackJsonp_doro', // Add unique chunk loading global
     scriptType: 'text/javascript'
   },
   optimization: {
     runtimeChunk: false,
     // splitChunks: false  // Add this
+    chunkIds: 'named' // Better for debugging
 
   },
   resolve: {
@@ -51,12 +53,61 @@ module.exports = {
         // "@angular/router": { singleton: true, strictVersion: true, requiredVersion: 'auto' },
         // "typlib": { singleton: true, strictVersion: true, requiredVersion: 'auto' },
         // ...sharedMappings.getDescriptors()
-        "@angular/core": { singleton: true, strictVersion: true, requiredVersion: '17.0.5', eager: true },
-        "@angular/common": { singleton: true, strictVersion: true, requiredVersion: '17.0.5', eager: true },
-        // "@angular/common/http": { singleton: true, strictVersion: true, requiredVersion: '17.0.5', eager: true },
-        "@angular/router": { singleton: true, strictVersion: true, requiredVersion: '17.0.5', eager: true },
-        "typlib": { singleton: true, strictVersion: true, requiredVersion: 'auto', eager: true },
-        ...sharedMappings.getDescriptors()
+        // "@angular/core": { singleton: true, strictVersion: true, requiredVersion: '17.0.5', eager: true },
+        // "@angular/common": { singleton: true, strictVersion: true, requiredVersion: '17.0.5', eager: true },
+        // // "@angular/common/http": { singleton: true, strictVersion: true, requiredVersion: '17.0.5', eager: true },
+        // "@angular/router": { singleton: true, strictVersion: true, requiredVersion: '17.0.5', eager: true },
+        // "typlib": { singleton: true, strictVersion: true, requiredVersion: 'auto', eager: true },
+        // ...sharedMappings.getDescriptors()
+        "@angular/core": { 
+          singleton: true, 
+          strictVersion: true, 
+          requiredVersion: '17.0.5', 
+          eager: true 
+        },
+        "@angular/common": { 
+          singleton: true, 
+          strictVersion: true, 
+          requiredVersion: '17.0.5', 
+          eager: true 
+        },
+        "@angular/common/http": { 
+          singleton: true, 
+          strictVersion: true, 
+          requiredVersion: '17.0.5', 
+          eager: true 
+        },
+        "@angular/router": { 
+          singleton: true, 
+          strictVersion: true, 
+          requiredVersion: '17.0.5', 
+          eager: true 
+        },
+        "@angular/compiler": {
+          singleton: true,
+          strictVersion: true,
+          requiredVersion: '17.0.5',
+          eager: true
+        },
+        "@angular/platform-browser": {
+          singleton: true,
+          strictVersion: true,
+          requiredVersion: '17.0.5',
+          eager: true
+        },
+        "rxjs": {
+          singleton: true,
+          strictVersion: true,
+          requiredVersion: '~7.8.0',
+          eager: true
+        },
+        "typlib": { 
+          singleton: true, 
+          strictVersion: false, // Change to false if version mismatches occur
+          requiredVersion: 'auto', 
+          eager: true 
+        },
+        ...sharedMappings.getDescriptors(),
       }),
 
     }),

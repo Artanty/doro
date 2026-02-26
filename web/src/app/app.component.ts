@@ -1,7 +1,5 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, Inject, ViewChild, ViewContainerRef } from '@angular/core';
-import { TTab } from './doro/models/app.model';
-import { StoreService } from './doro/services/store.service';
 
 @Component({
   selector: 'app-root',
@@ -14,7 +12,6 @@ export class AppComponent {
 
   constructor(
     @Inject(HttpClient) private http: HttpClient,
-    @Inject(StoreService) private StoreServ: StoreService
   ) {}
 
   async load(): Promise<void> {
@@ -35,15 +32,9 @@ export class AppComponent {
         console.log(result);
       });
   }
-
-  test2(testCase: TTab) {
-    this.StoreServ.setViewState(testCase);
+  test2(data: any) {
+    console.log(`${process.env['SERVER_URL']}`);
   }
-
-  rem() {
-    //
-  }
-
   custom() {
     console.log(`${process.env['SERVER_URL']}`);
   }

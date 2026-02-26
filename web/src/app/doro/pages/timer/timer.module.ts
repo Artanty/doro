@@ -1,19 +1,26 @@
 import { CUSTOM_ELEMENTS_SCHEMA, NgModule, NO_ERRORS_SCHEMA } from "@angular/core";
-import { CreateScheduleComponent } from "./create-schedule.component";
+
 import { RouterModule } from "@angular/router";
 import { CommonModule } from "@angular/common";
 import { ReactiveFormsModule, FormsModule } from "@angular/forms";
 import { GuiDirective } from "../../components/_remote/web-component-wrapper/gui.directive";
+import { TimerWrapperComponent } from "./components/timer-wrapper/timer-wrapper.component";
+import { TimerComponent } from "./components/timer/timer.component";
+import { eventResolver } from "./components/timer-wrapper/event.resolver";
 
 export const CHILD_ROUTES = [
 	{
-		path: '', 
-		component: CreateScheduleComponent,
+		path: ':id', 
+		component: TimerWrapperComponent,
+		resolve: {
+			event: eventResolver
+		}
 	}
 ]
 @NgModule({
 	declarations: [
-		CreateScheduleComponent
+		TimerComponent,
+		TimerWrapperComponent
 	],
 	imports: [
 		CommonModule,
@@ -26,8 +33,9 @@ export const CHILD_ROUTES = [
 	],
 	exports: [RouterModule],
 	providers: [],
+	// schemas: [NO_ERRORS_SCHEMA],
 })
-export class CreateScheduleModule {
+export class TimerModule {
 	constructor() {}
 
 }

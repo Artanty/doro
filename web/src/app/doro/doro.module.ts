@@ -11,52 +11,25 @@ import {
 } from '@angular/core';
 import { createCustomElement } from '@angular/elements';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+
+import { EventService } from './services/event.service';
 import { RouterModule } from '@angular/router';
-import { AudioComponent } from '../audio/audio.component';
-import { MyCustomElementComponent } from '../my-custom-element/my-custom-element.component';
-import { EndEventScreenComponent } from './components/end-event-screen/end-event-screen.component';
-import { FormArrayComponent } from './components/form-array/form-array.component';
-import { LoadingComponent } from './components/loading/loading.component';
-import { NavigationComponent } from './components/navigation/navigation.component';
-import { NoiseComponent } from './components/noise/noise.component';
-import { ScrollDirective } from './directives/scroll.directive';
-import { DoroComponent } from './doro.component';
-import { CounterService } from './services/counter.service';
-import { SseService } from './services/sse.service';
-import { CounterConfigComponent } from './widgets/counter-config/counter-config.component';
-import { CounterComponent } from './widgets/counter/counter.component';
-
-import { BusEvent, EVENT_BUS, EVENT_BUS_LISTENER, EVENT_BUS_PUSHER } from 'typlib';
-import { BehaviorSubject, filter, map, Observable, of, switchMap, take, tap } from 'rxjs';
-import { dd } from './helpers/dd';
-import { EventListComponent } from './components/event/event-list/event-list.component';
-import { EventService } from './components/event/event.service';
-
-import { EventListEventComponent } from './components/event/event-list-event/event-list-event.component';
+import { BehaviorSubject, Observable, filter, map, switchMap, of } from 'rxjs';
+import { EVENT_BUS_LISTENER, BusEvent, EVENT_BUS, EVENT_BUS_PUSHER } from 'typlib';
 import { GuiDirective } from './components/_remote/web-component-wrapper/gui.directive';
-import { TimerComponent } from './components/event/timer/timer.component';
-import { TimerWrapperComponent } from './components/event/timer-wrapper/timer-wrapper.component';
-import { eventResolver } from './components/event/timer-wrapper/event.resolver';
-import { EventCreateComponent } from './components/event/event-create/event-create.component';
-import { CompareConfigHashAction } from './services/compare-config-hash.action';
-import { SetConfigHashAction } from './services/set-config-hash.action';
+import { DoroComponent } from './doro.component';
+import { dd } from './helpers/dd';
 import { filterStreamDataEntries } from './helpers/filterStreamDataEntries';
-import { EventStateResItem } from './components/event/event.types';
-import { ConfigHashTikEntry, mapBusEventToConfigHashTikEntry } from './helpers/getConfigHashFromBusEvent';
-import { AccessLevelService } from './components/event/access-level.service';
-import { EventTypeService } from './components/event/event-type.service';
-import { ScheduleService } from './components/event/schedule.service';
-import { ScheduleCreateComponent } from './components/schedule/schedule-create/schedule-create.component';
-import { EventMapperService } from './components/event/event.mapper';
-
-
-// function initConfigActivator(counterServ: CounterService) {
-//   return () => counterServ.scheduleConfigActivator();
-// }
-
-// function initEventSource(sseServ: SseService) {
-//   return () => sseServ.createEventSource();
-// }
+import { mapBusEventToConfigHashTikEntry, ConfigHashTikEntry } from './helpers/getConfigHashFromBusEvent';
+import { eventResolver } from './pages/timer/components/timer-wrapper/event.resolver';
+import { TimerWrapperComponent } from './pages/timer/components/timer-wrapper/timer-wrapper.component';
+import { TimerComponent } from './pages/timer/components/timer/timer.component';
+import { AccessLevelService } from './services/access-level.service';
+import { CompareConfigHashAction } from './services/compare-config-hash.action';
+import { EventTypeService } from './services/event-type.service';
+import { EventMapperService } from './services/event.mapper';
+import { ScheduleService } from './services/schedule.service';
+import { SetConfigHashAction } from './services/set-config-hash.action';
 
 export const CHILD_ROUTES = [
   {
@@ -64,24 +37,30 @@ export const CHILD_ROUTES = [
     component: DoroComponent,
     children: [
       {
-        path: 'event-list', component: EventListComponent
+        path: 'event-list', 
+        loadChildren: () => import('./pages/event-list/event-list.module')
+          .then(m => m.EventListModule)
       },
       {
-        path: 'event-create', component: EventCreateComponent
+        path: 'create-event', 
+        loadChildren: () => import('./pages/create-event/create-event.module')
+          .then(m => m.CreateEventModule)
       },
       {
-        path: 'schedule-create', 
-        // component: ScheduleCreateComponent
+        path: 'create-schedule', 
         loadChildren: () => import('./pages/create-schedule/create-schedule.module')
           .then(m => m.CreateScheduleModule)
-          
       },
       {
-        path: 'timer/:id', 
-        component: TimerWrapperComponent,
-        resolve: {
-          event: eventResolver
-        }
+        path: 'schedule-list', 
+        loadChildren: () => import('./pages/schedule-list/schedule-list.module')
+          .then(m => m.ScheduleListModule)
+      },
+      {
+        path: 'timer', 
+        loadChildren: () => import('./pages/timer/timer.module')
+          .then(m => m.TimerModule)
+          
       },
     ]
   },
@@ -90,50 +69,20 @@ export const CHILD_ROUTES = [
 @NgModule({
   declarations: [
     DoroComponent,
-    CounterComponent,
-    MyCustomElementComponent,
-    // EventListComponent,
-    // NavigationComponent,
-    // CounterConfigComponent,
-    // NoiseComponent,
-    LoadingComponent,
-    // FormArrayComponent,
-    // EndEventScreenComponent,
-    // ScrollDirective,
-    EventListComponent,
-    EventListEventComponent,
-    TimerComponent,
-    TimerWrapperComponent,
-    EventCreateComponent,
-    ScheduleCreateComponent
   ],
   imports: [
     CommonModule,
-    // BrowserModule,
-    // BrowserAnimationsModule,
     ReactiveFormsModule,
     FormsModule,
-    AudioComponent,
+    
     RouterModule.forChild(
       CHILD_ROUTES
     ),
-    // HttpClientModule,
     GuiDirective
     
   ],
-  // exports: [DoroComponent, MyCustomElementComponent, LoadingComponent],
   exports: [DoroComponent],
   providers: [
-    // provideHttpClient(
-    //   // DI-based interceptors must be explicitly enabled.
-    //   withInterceptorsFromDi(),
-    // ),
-    // {
-    //   provide: APP_INITIALIZER,
-    //   useFactory: initConfigActivator,
-    //   deps: [CounterService],
-    //   multi: true,
-    // },
     {
       provide: EVENT_BUS_LISTENER,
       useFactory: (eventBus$: BehaviorSubject<BusEvent>) => {
@@ -209,12 +158,12 @@ export class DoroModule implements DoBootstrap {
     
   }
   ngDoBootstrap(appRef: ApplicationRef) {
-    // console.log('DoroModule ngDoBootstrap');
-    const customElement = createCustomElement(MyCustomElementComponent, {
-      injector: this.injector,
-    });
-    customElements.define('my-custom-element', customElement);
-    appRef.bootstrap(CounterComponent);
+    // // console.log('DoroModule ngDoBootstrap');
+    // const customElement = createCustomElement(MyCustomElementComponent, {
+    //   injector: this.injector,
+    // });
+    // customElements.define('my-custom-element', customElement);
+    // appRef.bootstrap(CounterComponent);
   }
 
   private _sendAuthDoneEvent(): void { 

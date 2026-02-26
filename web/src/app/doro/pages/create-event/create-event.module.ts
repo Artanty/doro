@@ -1,19 +1,19 @@
-import { CUSTOM_ELEMENTS_SCHEMA, NgModule, NO_ERRORS_SCHEMA } from "@angular/core";
-import { CreateScheduleComponent } from "./create-schedule.component";
-import { RouterModule } from "@angular/router";
 import { CommonModule } from "@angular/common";
-import { ReactiveFormsModule, FormsModule } from "@angular/forms";
+import { NgModule } from "@angular/core";
+import { RouterModule } from "@angular/router";
 import { GuiDirective } from "../../components/_remote/web-component-wrapper/gui.directive";
+import { CreateEventComponent } from "./create-event.component";
+import { FormsModule } from "@angular/forms";
 
 export const CHILD_ROUTES = [
 	{
 		path: '', 
-		component: CreateScheduleComponent,
+		component: CreateEventComponent,
 	}
 ]
 @NgModule({
 	declarations: [
-		CreateScheduleComponent
+		CreateEventComponent
 	],
 	imports: [
 		CommonModule,
@@ -21,13 +21,14 @@ export const CHILD_ROUTES = [
 			CHILD_ROUTES
 		),
 		// ReactiveFormsModule,
-		// FormsModule,
+		FormsModule,
 		GuiDirective
 	],
 	exports: [RouterModule],
 	providers: [],
+	// schemas: [NO_ERRORS_SCHEMA],
 })
-export class CreateScheduleModule {
+export class CreateEventModule {
 	constructor() {}
 
 }

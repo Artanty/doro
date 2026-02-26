@@ -1,6 +1,6 @@
-import { EventStatus } from "./event-state.types";
-import { EventPropsDbItem } from "./event.types";
-import { Schedule } from "./schedule.types";
+import { Schedule } from "../services/event.types"
+type EventStatus = any
+type EventPropsDbItem = any
 
 export type EventWithStateDTO = 
 	EventPropsDbItem & { eventState: EventStatus }

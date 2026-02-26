@@ -12,6 +12,7 @@ export interface CreateScheduleReq {
 @Component({
 	selector: 'app-create-schedule',
 	templateUrl: './create-schedule.component.html',
+	standalone: false,
 })
 export class CreateScheduleComponent implements OnInit {
 	public isLoading = false;

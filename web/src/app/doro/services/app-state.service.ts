@@ -1,10 +1,7 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { obs$ } from '../utilites/observable-variable';
-import { BusEvent } from 'typlib';
-import { Nullable } from '../utilites/utility.types';
-import { Schedule } from '../components/event/event.types';
-
+import { Injectable } from "@angular/core";
+import { Schedule } from "./event.types";
+import { obs$ } from "../helpers/observable-variable";
+import { Nullable } from "../helpers/utility.types";
 
 @Injectable({
   providedIn: 'root'

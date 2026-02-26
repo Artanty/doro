@@ -1,0 +1,110 @@
+<h1>timer</h1>
+<div class="demo-container">
+  <!-- SVG Circle -->
+  <div class="wrapper">
+    <svg class="svg-donut" width="206" height="206" viewBox="0 0 206 206">
+      <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <!-- Background circle -->
+        <circle 
+          stroke="#e0e0e0" 
+          stroke-width="6" 
+          fill="none" 
+          cx="103" 
+          cy="103" 
+          r="100">
+        </circle>
+        
+        <!-- Progress circle with SVG transform attribute -->
+        <circle 
+          class="donut" 
+          [attr.stroke-dasharray]="getDashArray()" 
+          stroke="#FF3B30" 
+          stroke-width="6" 
+          stroke-linecap="round" 
+          cx="103" 
+          cy="103" 
+          r="100"
+          [attr.transform]="getTransform()">
+        </circle>
+      </g>
+    </svg>
+    <div class="innerWrapper">
+      <!-- Percentage Display -->
+      <!-- <div class="percentage">{{ percentage }}%</div> -->
+      <div class="eventIcon">
+        @if(eventType === eventTypes.WORK) {
+          <i title="work" class="mu mu-show"></i>
+        } @else {
+          <i title="rest" class="mu mu-audio"></i>
+        }
+      </div>
+      <div class="remainingTime">
+        @if(timeLeft >= 3600) {
+          <span>{{ timeLeft * 1000 | date:'HH:mm:ss':'UTC' }}</span>
+        } 
+        @else {
+          <span>{{ timeLeft * 1000 | date:'mm:ss':'UTC' }}</span>
+        }
+      </div>
+
+      <div class="scheduleProgress">
+        @for(isDone of scheduleEvents; track isDone; let idx = $index) {
+          <div class="scheduleProgress__square" [class.isDone]="isDone === 1">
+              
+          </div>
+        }
+      </div>
+
+      <div class="eventName">
+        @if(eventType === eventTypes.WORK) {
+          <span>work</span>
+        } @else {
+          <span>rest</span>
+        }
+      </div>
+
+    </div>
+    
+  </div>
+  
+  <!-- <div class="controls">
+    <button (click)="setPercentage(20)">20%</button>
+    <button (click)="setPercentage(50)">50%</button>
+    <button (click)="setPercentage(75)">75%</button>
+    <button (click)="setPercentage(100)">100%</button>
+    <button (click)="setPercentage(0)">Reset</button>
+  </div>
+  
+  
+  <div class="slider-container">
+    <label for="percentage-slider">Adjust Percentage: {{ percentage }}%</label>
+    <input 
+      type="range" 
+      id="percentage-slider" 
+      min="0" 
+      max="100" 
+      [value]="percentage"
+      (input)="onSliderChange($event)"
+      class="percentage-slider">
+  </div>
+  
+  
+  <div class="info-box">
+    <h3>How stroke-dasharray works:</h3>
+    <p>For a circle with radius = 100:</p>
+    <ul>
+      <li>Circumference = 2 × π × 100 ≈ <strong>628.32</strong></li>
+      <li><code>stroke-dasharray="dash, gap"</code></li>
+      <li>dash = (percentage/100) × 628.32</li>
+      <li>gap = 628.32 - dash</li>
+      <li>Example 50%: <code>stroke-dasharray="314.16, 314.16"</code></li>
+      <li>Example 100%: <code>stroke-dasharray="628.32, 0"</code></li>
+    </ul>
+    
+    <div class="current-values">
+      <p><strong>Current values ({{ percentage }}%):</strong></p>
+      <code>stroke-dasharray="{{ getDashArray() }}"</code>
+      <p>Transform: {{ getTransform() }}</p>
+    </div>
+  </div> -->
+</div>

@@ -16,12 +16,9 @@ import { map, Observable } from "rxjs";
 export class EventStateApiService {
 	// private doroBaseUrl = `${process.env['DORO_BACK_URL']}`;
 
-	// constructor(
-	// 	private http: HttpClient,
-    
-	// ) {
-    
-	// }
+	constructor(
+		private http: HttpClient,
+	) {}
 
 	// getAccessLevels(): Observable<AccessLevel[]> {
 	// 	return this.http
