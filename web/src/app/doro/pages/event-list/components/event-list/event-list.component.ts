@@ -80,7 +80,7 @@ export class EventListComponent implements OnInit {
       { queryParams: { scheduleId: scheduleId } } :
       undefined;
     this.router.navigate(
-      ['doro/event-create'], 
+      ['doro/create-event'], 
       extras
     );
   }
