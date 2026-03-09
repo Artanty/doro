@@ -2,7 +2,9 @@ import { getUTCDatetime } from "../utils/get-utc-datetime";
 
 export interface UpsertEventStateActionRes {
 	isStateUpdated: boolean,
-	result: any
+	result: any,
+	error?: string;
+	debug?: any;
 }
 
 export const upsertEventState = async (
@@ -44,13 +46,4 @@ export const upsertEventState = async (
 		newState: state
 	}
 	return res;
-}
-
-// 0=inactive, 1=active, 2=paused, etc.
-
-export enum eventProgress {
-	'STOPPED' = 0,
-	'PLAYING' = 1,
-	'PAUSED' = 2,
-	'COMPLETED' = 3
 }

@@ -71,13 +71,24 @@ CREATE TABLE eventState (
     id INT PRIMARY KEY AUTO_INCREMENT,
     event_state_id INT NOT NULL COMMENT 'References eventStateDictionary.id'
     eventId INT NOT NULL UNIQUE,
-    state INT NOT NULL COMMENT 'State number (0=inactive, 1=active, 2=paused, etc.)',
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL,
     FOREIGN KEY (eventId) REFERENCES events(id) ON DELETE CASCADE,
     FOREIGN KEY (eventStateDictionaryId) eventStateDictionary(id),
     INDEX idx_state (state),
     INDEX idx_event_state (eventId, state)
+);
+
+CREATE TABLE eventStateHooks (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    event_id INT NOT NULL,
+    trigger_event_state_id INT NOT NULL COMMENT 'State that triggers this hook (0=STOPPED,1=PLAYING,2=PAUSED,3=COMPLETED)',
+    action_type VARCHAR(50) NOT NULL COMMENT 'webhook, notification, email, script, chain_event, etc.',
+    action_config JSON NOT NULL COMMENT 'Configuration parameters for the action type',
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
+    FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
+    INDEX idx_event_trigger (event_id, trigger_event_state_id)
 );
 
 

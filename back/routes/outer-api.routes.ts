@@ -8,7 +8,7 @@ import { handleError } from '../utils/handleError';
 
 const router = express.Router();
 
-router.post('/share-event-state', [validateUserAccessToken], async (req, res) => {
+router.post('/get-event-state', [validateUserAccessToken], async (req, res) => {
   try {
     const user = getUserFromRequest(req);
     const data = await EventStateController.getEventsWithStatus(user);
@@ -19,7 +19,7 @@ router.post('/share-event-state', [validateUserAccessToken], async (req, res) =>
   }
 });
 
-router.post('/receive-event-state', async (req, res) => {
+router.post('/set-event-state', async (req, res) => {
   try {
     const { eventId, state } = req.body;
     const data = await OuterSyncService.updateEventStateByOuterApp(eventId, state);

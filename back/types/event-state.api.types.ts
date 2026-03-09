@@ -3,7 +3,10 @@ import { EventPropsDbItem } from "./event.types";
 import { Schedule } from "./schedule.types";
 
 export type EventWithStateDTO = 
-	EventPropsDbItem & { eventState: EventStatus }
+	EventPropsDbItem & { 
+		eventState: EventStatus,
+		eventStateHooks: []
+	}
 
 export type ScheduleWithEventsDTO = 
 	Schedule & { events: EventWithStateDTO }

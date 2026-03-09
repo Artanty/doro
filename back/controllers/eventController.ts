@@ -15,26 +15,31 @@ import { ACCESS_CASE, getAccessibleEvent } from '../db-actions/get-accessible-ev
 import { createEvent } from '../db-actions/create-event';
 import { upsertEventAccess } from '../db-actions/upsert-event-access';
 import { updateEvent } from '../db-actions/update-event';
+import { CreateEventStateHookParams, createEventStateHooks } from '../db-actions/create-event-state-hooks';
+import { addEventStateHistory } from '../db-actions/add-event-state-history';
 
 dotenv.config();
 
 /**
  * v2.1: initial state - only eventProgress.STOPPED
- * тотлько пользователь может запускать ивенты.
+ * только пользователь может запускать ивенты.
  * */
 export class EventController {
+
 	static async createEvent(
 		name: string, 
 		length: number, 
 		type: number, 
 		userHandler: string,
 		base_access: number,
-		state: number
+		state: number,
+		hooks: CreateEventStateHookParams[]
 	) {
 		const pool = createPool();
 		const connection = await pool.getConnection();
 
 		let createEventResult,
+			createEventStateHookResult,
 			upsertEventAccessResult,
 			upsertEventStateResult;
 		try {
@@ -46,10 +51,12 @@ export class EventController {
 			}
 			const eventId = createEventResult.result;
 
+			createEventStateHookResult = await createEventStateHooks(connection, eventId, hooks);
+
 			upsertEventAccessResult = await upsertEventAccess(connection, eventId, userHandler, 3);
 
 			upsertEventStateResult = await upsertEventState(connection, eventId, state) // todo add false return if no updated
-
+			
 			/**
 			 * Нужно чтобы doro@web подтянул новое cобытие.
 			 * Для этого обновляем хэш, который doro@web впоследствии получит от tik@web
@@ -69,6 +76,15 @@ export class EventController {
 				data: {
 					id: eventId
 				},
+				debug: {
+					[thisProjectResProp()]: {
+						createEventResult,
+						createEventStateHookResult,
+						upsertEventAccessResult,
+						upsertEventStateResult,
+						
+					},
+				}
 			};
 		} catch (error) { 
 			console.log(error)
@@ -172,7 +188,7 @@ export class EventController {
 			if (!getAccessibleEventResult.success) {
 				throw new Error(getAccessibleEventResult.error!);
 			}
-// todo mb just try to update using userHandler?
+			// todo mb just try to update using userHandler?
 			const updateEventResult = await updateEvent(connection, eventId, updates, userHandler);
 
 			await connection.commit();

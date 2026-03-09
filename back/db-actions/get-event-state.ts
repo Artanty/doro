@@ -6,12 +6,13 @@ import { dd } from "../utils/dd";
 import { Nullable } from "../utils/utility.types";
 import { DbActionResult } from "./create-event";
 
+export type GetEventStateResult = any;
 export const getEventState = async (
 	connection, 
 	event: MinimalEventProps,
-): Promise<DbActionResult<number>> => {
+): Promise<DbActionResult<GetEventStateResult>> => {
 	
-	const res: DbActionResult<number> = {
+	const res: DbActionResult<GetEventStateResult> = {
 		success: false,
 		result: null,
 		error: null
@@ -28,7 +29,7 @@ export const getEventState = async (
 			throw new Error('no event state')
 		}
 
-		res.result = queryResult[0]?.event_state_id as number;        
+		res.result = queryResult[0];//?.event_state_id as number;        
 		res.success = true;
 
 		return res;

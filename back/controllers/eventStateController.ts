@@ -18,12 +18,14 @@ import { createEvent, DbActionResult } from '../db-actions/create-event';
 import { upsertEventAccess } from '../db-actions/upsert-event-access';
 import { getRecentEvent } from '../db-actions/get-recent-event';
 import { getScheduleWithEvents } from '../db-actions/get-schedules-with-events';
-import { getEventState } from '../db-actions/get-event-state';
+import { getEventState, GetEventStateResult } from '../db-actions/get-event-state';
 import { EventPropsPure, EventStateResItem, EventStatus, MinimalEventProps } from '../types/event-state.types';
 import { getEventStateHistory } from '../db-actions/get-event-state-history';
 import { EventPropsDbItem } from '../types/event.types';
 import { ControllerResult } from '../types/controller.types';
 import { EventWithStateDTO, GetRecentEventOrScheduleRes } from '../types/event-state.api.types';
+import { getEventStateHooks } from '../db-actions/get-event-state-hooks';
+import { createEventStateHooks } from '../db-actions/create-event-state-hooks';
 
 dotenv.config();
 
@@ -199,6 +201,8 @@ export class EventStateController {
         let createdEventId,
             upsertStateResult,
             addHistoryResult,
+            getEventStateHooksResult,
+            createEventStateHookResult,
             upsertEventAccessResult;
         try {
             await connection.beginTransaction();
@@ -224,16 +228,19 @@ export class EventStateController {
                 const length = eventProps.length;
                 const type = Number(eventProps.type);
                 const accessLevel = 'owner';
+                // todo add hooks?
 
                 const createEventResult = await createEvent(connection, name, length, type, userHandler);
                 if (createEventResult.error) {
                     throw new Error(createEventResult.error);
                 }
                 createdEventId = createEventResult.result;
-
+                getEventStateHooksResult = await getEventStateHooks(connection, eventId);
+                createEventStateHookResult = await createEventStateHooks(connection, eventId, getEventStateHooksResult.hooks);
                 upsertEventAccessResult = await upsertEventAccess(connection, createdEventId, userHandler, accessLevel)
                 upsertStateResult = await upsertEventState(connection, createdEventId, state)
                 addHistoryResult = await addEventStateHistory(connection, createdEventId, state)
+                //no need history on create
             } else {
                 throw new Error('wrong state of event')
             }
@@ -325,6 +332,7 @@ export class EventStateController {
         const connection = await pool.getConnection();
 
         let getRecentEventResult: DbActionResult<EventPropsDbItem>;
+        let getEventStateHooksResult;
         let getSchduleWithEventsResult;
 
         getRecentEventResult = await getRecentEvent(connection, userHandler);
@@ -338,7 +346,13 @@ export class EventStateController {
         
         const { eventStatus } = await this.calculateEventStatus(connection, minimalEventProps);
 
-        const eventWithState: EventWithStateDTO = { ...recentEvent, eventState: eventStatus }
+        getEventStateHooksResult = await getEventStateHooks(connection, { eventId: recentEvent.id });
+
+        const eventWithState: EventWithStateDTO = { 
+            ...recentEvent, 
+            eventState: eventStatus,
+            eventStateHooks: getEventStateHooksResult.success ? getEventStateHooksResult.hooks : [],
+        }
         
         if (recentEvent.schedule_id) {
             getSchduleWithEventsResult = await getScheduleWithEvents(connection, userHandler, recentEvent.schedule_id);
@@ -347,7 +361,12 @@ export class EventStateController {
                 getSchduleWithEventsResult.result.events.map(async eachEvent => {
                     const eachEventMinimalProps: MinimalEventProps = { id: eachEvent.id, length: eachEvent.length };
                     const { eventStatus: eachEventStatus } = await this.calculateEventStatus(connection, eachEventMinimalProps);
-                    const eachEventWithState: EventWithStateDTO = { ...eachEvent, eventState: eachEventStatus };
+                    const getEachEventStateHooksResult = await getEventStateHooks(connection, { eventId: eachEvent.id });
+                    const eachEventWithState: EventWithStateDTO = { 
+                        ...eachEvent, 
+                        eventState: eachEventStatus,
+                        eventStateHooks: getEachEventStateHooksResult.success ? getEachEventStateHooksResult.hooks : []
+                    };
                     return eachEventWithState;
                 })
             );
@@ -363,6 +382,7 @@ export class EventStateController {
             debug: {
                 [thisProjectResProp()]: {
                     getRecentEventResult, //todo add state result
+                    getEventStateHooksResult,
                     getSchduleWithEventsResult //todo add state result ?
                 },
             }
@@ -377,7 +397,7 @@ export class EventStateController {
         const debug = {};
         const eventId = event.id;
         const eventLengthSeconds = event.length;
-        let currentStateResult: DbActionResult<number>;
+        let currentStateResult: DbActionResult<GetEventStateResult>;
         
         currentStateResult = await getEventState(connection, event);
 
@@ -385,7 +405,8 @@ export class EventStateController {
             throw new Error(currentStateResult.error ?? 'undefined error, check wtf')
         }
 
-        const currentState = currentStateResult.result;
+        const currentStateObj = currentStateResult.result!;
+        const currentState = currentStateObj.event_state_id;
 
         if (currentState === eventProgress.STOPPED) {
             return {
@@ -413,8 +434,10 @@ export class EventStateController {
             throw new Error(historyResult.error ?? 'history undefined error, check wtf')
         }
 
-        const history = historyResult.result!;
-
+        const history = historyResult.result!.length 
+            ? historyResult.result!
+            : [currentStateObj];
+        // если не STOPPED и не COMPLETED, значит точно было запущено
         let totalActiveSeconds = 0;
         let activeStartTime: Date | null = null;
         

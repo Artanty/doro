@@ -16,7 +16,7 @@ export const getEventStateHistory = async (
 	}
 	
 	try {
-		const [queryResult] = await connection.execute(
+		let [queryResult] = await connection.execute(
 			`SELECT event_state_id, created_at 
              FROM eventStateHistory 
              WHERE eventId = ? 
@@ -25,7 +25,8 @@ export const getEventStateHistory = async (
 		);
 
 		if (!queryResult?.[0]) {
-			throw new Error('no event state history')
+			// throw new Error('no event state history of: ' + eventId)
+			queryResult = []
 		}
 
 		res.result = queryResult;        

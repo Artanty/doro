@@ -9,7 +9,10 @@ import createPool from "../core/db_connection";
 import { thisProjectResProp } from "../utils/getResProp";
 import { addEventStateHistory } from "../db-actions/add-event-state-history";
 import { EventStateResItem } from "../types/event-state.types";
+import { getEventStateHooksByState } from "../db-actions/get-event-state-hooks";
+import { EventStateHookController } from "./event-state-hook.controller";
 
+export type EntryType = 'event' | 'configHash' | 'transition'
 export interface OuterEntry {
 	id: string,
 	[EVENT_TIK_ACTION_PROP]: string,
@@ -28,12 +31,13 @@ export type EntryWithTikAction<T> = T & { [EVENT_TIK_ACTION_PROP]: string };
 export class OuterSyncService {
 	
 	public static buildOuterEntityId(
-		type: 'event' | 'configHash', 
+		type: EntryType, 
 		id: string | number
 	): string {
 		const entitiesMap = {
 			event: 'e',
-			configHash: 'h'
+			configHash: 'h',
+			transition: 't'
 		}
 
 		const entityPrefix = entitiesMap[type]
@@ -52,10 +56,11 @@ export class OuterSyncService {
 	 * Предполагается, что new event не требует запроса в БД для вычисления своего состояния.
 	 * */
 	public static buildNewOuterEvent(
-		id: string | number, length: number, state: number
+		id: string | number, length: number, state: number,
+		entryType: EntryType
 	): EventStateResItem {
 		return {
-			id: this.buildOuterEntityId('event', id),
+			id: this.buildOuterEntityId(entryType, id),
 			cur: 0, // v2 событие может быть создано с плейхэдом не в нулевой точке.
 			len: length,
 			stt: state
@@ -69,11 +74,14 @@ export class OuterSyncService {
 	}
 
 	public static buildNewOuterEventPayload(
-		id: string | number, length: number, state: number
+		id: string | number, 
+		length: number, 
+		state: number, 
+		entryType: EntryType = 'event'
 	) {
 		// todo: мб убрать add и оставить только upsert?
 		// разница только в дебаг-отчете, который и без этого корректно сложится
-		return this.addOuterActionInEvents(this.buildNewOuterEvent(id, length, state), 'add');
+		return this.addOuterActionInEvents(this.buildNewOuterEvent(id, length, state, entryType), 'add');
 	}
 
 	static addOuterActionInEvents<T extends Record<string, any>>(
@@ -163,6 +171,66 @@ export class OuterSyncService {
 
 	/**
 	 * todo: check required api key
+	 * 
+	 * 1) изменить стейт ивента на "закончено"
+	 * 2) добавить в историю стейта -"-
+	 * 3) глянуть, что в хуке на "закончить"
+	 * 4) инициализировать хук через tik@
+	 * т. е. отправить в ответ создание соответствующего тик-ентри.
+	 * 
+	 * пример. работа закончена, смотрим хук, там предложка следующего события.
+	 * отправляем в тик@ ентри с названием nextEvent, 
+	 * ЧТО ВАЖНО.
+	 * этот nextEvent - тоже является событием, у которого есть длительность.
+	 * все клиенты должны видеть стейт показа компонента nextEvent до тех пор
+	 *  пока не будет выбрано следующее действие.
+	 * поэтому надо его как-то зафризить.
+	 * ПЛЮС.
+	 * Если сейчас есть 2 события, которые закончены - все они должны предлагать что делать дальше.
+	 * то есть нужна табличка? с предложкой(транзишэнами), у которой будет флаг комплит.
+	 * ЧТО ЕСЛИ
+	 * транзишн - это ивент с типом 3 ?
+	 * значит он может быть 
+	 * - создан как событие
+	 * - отправлен в тик по обычной схеме. можно дать ему другой префикс.
+	 * А МОЖНО
+	 * создать таблицу transitions
+	 * и добавлять туда записи с привязкой к id ивента.
+	 * ЧТО ЛУЧШЕ?
+	 * тип 3 - юзаем текущую инфраструктуру
+	 * transitions - имеем четкую привязку, но завязаны один к одному, значит это не плюс а минус.
+	 * ИТОГ
+	 * юзаем events.
+	 * где-то нужно держать инфу - кто вызвал этот тразишон, окончание какого события. 
+	 * ГДЕ?
+	 * ++
+	 * А ТАКЖЕ у нас есть таблица хуков, где ясно при каком условии вызывается хук.
+	 * он уже создан заранее. остается его кинуть в тик.
+	 * плюс добавить ему флаг? стейт?
+	 * если флаг, то актив-неактив
+	 * что значит, что он может быть отключен? оно надо так? придется дефолт какой-то показывать.
+	 * оно не надо так. мы специально создаем дефолт, чтобы дальше избавиться от ветвления кода.
+	 * если стейт - то:
+	 * реади? комплит?
+	 * реади- не надо. комплит - надо, чтобы убрать.
+	 * НЕТ
+	 * хук не имеет таблицы стейта и не предназначен для этого.
+	 * спользуем ивентс.
+	 * как
+	 * ивент заканчивается, тик идет в доро бэк, там дефолтный хук, 
+	 * который создает событие с типом 3 и расписанием вызвавшего его ивента.
+	 * тип 3 будет отвечать за то, что он смотрит, какое событие 
+	 * в расписании закончилось недавней всего и какое предложить следующее.
+	 * особытие типа 3 НЕ может иметь стейт ПАУЗА или СТОП
+	 * особытие типа 3 НЕ может иметь длительность, точнее ее нужно настроить.
+	 * особытие типа 3 НЕ сохраняется в таблице event state history?
+	 * для простых расписаний не актуально. для проектных - норм, что после недели движ возобновляется.
+	 * по умолчани. 24 часа. 
+	 * когда мы загружаемся после падения всех серверов
+	 * смотрим что есть событие с типом 3 в текущем расписании и оно не является законченным.
+	 * v4 также проверить, чтобы в расписании не тикали никакие другие события.
+	 * вычисляем, что должно быть предложено юзеру, предлагаем.
+	 *  
 	 * */
 	public static async updateEventStateByOuterApp(
 		eventId: number,
@@ -171,7 +239,10 @@ export class OuterSyncService {
 		const pool = createPool();
 		const connection = await pool.getConnection();
 		let upsertStateResult,
-			addEventStateHistoryResult;
+			addEventStateHistoryResult,
+			getEventStateHooksResult,
+			runEventStateHooksResult;
+		let outerEntries = [];
 		try {
 			await connection.beginTransaction();
 
@@ -181,12 +252,25 @@ export class OuterSyncService {
 				addEventStateHistoryResult = await addEventStateHistory(connection, eventId, state)    
 			}
 
+			getEventStateHooksResult = await getEventStateHooksByState(connection, eventId, state);
+			if (getEventStateHooksResult.success) {
+				runEventStateHooksResult = await EventStateHookController.runHooks(connection, getEventStateHooksResult.hooks)
+			}
+
 			await connection.commit();
 
+			dd(runEventStateHooksResult)
+
+			if (runEventStateHooksResult.success) {
+				outerEntries = runEventStateHooksResult.result
+			}
+
+			await ConfigManager.setConfigHash();
+			const hashPayload = this.buildUpdateOuterHashPayload('upsert');
+
 			return {
-				data: {
-					success: true,
-				},
+				success: true,
+				result: [...outerEntries, ...hashPayload], 
 				debug: {
 					[thisProjectResProp()]: {
 						upsertStateResult,
@@ -198,9 +282,8 @@ export class OuterSyncService {
 		} catch (error) {
 			await connection.rollback();
 			return {
-				data: {
-					success: false,
-				},
+				success: false,
+				error,
 				debug: {
 					[thisProjectResProp()]: {
 						upsertStateResult,
