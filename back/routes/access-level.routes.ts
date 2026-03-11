@@ -1,9 +1,5 @@
 import express from 'express'
-import { EventController } from '../controllers/eventController';
 import { handleError } from '../utils/handleError'
-import { getUserFromRequest } from '../utils/getUserFromRequest';
-
-import { dd } from '../utils/dd';
 import { AccessLevelController } from '../controllers/access-level.controller';
 
 const router = express.Router();

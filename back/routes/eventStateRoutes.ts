@@ -1,5 +1,5 @@
 import express from 'express'
-import { EventController } from '../controllers/eventController';
+import { EventController } from '../controllers/event.controller';
 import { handleError } from '../utils/handleError'
 import { getUserFromRequest } from '../utils/getUserFromRequest';
 
@@ -19,26 +19,16 @@ router.post('/set-event-state', async (req, res) => {
     res.status(500).json({ error: (error as any)?.message ? (error as any).message : error });
   }
 });
-// unused
-router.post('/list-by-user', async (req, res) => {
-  try {
-    const user = getUserFromRequest(req);
-    const data = await EventStateController.getUserEventStates(user);
-    res.json(data);
-  } catch (error) {
-    handleError(res as unknown as Response, error) 
-  }
-});
 
-router.post('/list-by-user-with-status', async (req, res) => {
-  try {
-    const user = getUserFromRequest(req);
-    const data = await EventStateController.getEventsWithStatus(user);
-    res.json(data);
-  } catch (error) {
-    handleError(res as unknown as Response, error) 
-  }
-});
+// router.post('/list-by-user-with-status', async (req, res) => {
+//   try {
+//     const user = getUserFromRequest(req);
+//     const data = await EventStateController.getEventsWithStatus(user);
+//     res.json(data);
+//   } catch (error) {
+//     handleError(res as unknown as Response, error) 
+//   }
+// });
 
 router.post('/play', async (req, res) => {
   try {
@@ -60,44 +50,5 @@ router.post('/get-recent-event-or-schedule', async (req, res) => {
     handleError(res as unknown as Response, error) 
   }
 });
-
-router.post('/get-event-state', async (req, res) => {
-  // try {
-  //   const { id } = req.body;
-  //   const user = getUserFromRequest(req);
-  //   const data = await EventController.getEventById(user, id);
-  //   res.json(data);
-  // } catch (error) {
-  //   handleError(res as unknown as Response, error) 
-  // }
-});
-  
-// router.post('/update', async (req, res) => {
-//   try {
-//     const { id, name, length, type } = req.body;
-//     const user = getUserFromRequest(req);
-//     const itemId = await EventController.updateEvent(
-//       id, name, length, type, user
-//     );
-
-//     res.json({ success: true });
-//   } catch (error) {
-//     handleError(res as unknown as Response, error) 
-//   }
-// });
-
-// router.post('/delete', async (req, res) => {
-//   try {
-//     const { id } = req.body;
-//     const user = getUserFromRequest(req);
-//     const success = await EventController.deleteEvent(
-//       id, user
-//     );
-    
-//     res.json({ success: true });
-//   } catch (error) {
-//     handleError(res as unknown as Response, error) 
-//   }
-// });
 
 export default router;

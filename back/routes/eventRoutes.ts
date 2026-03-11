@@ -1,9 +1,7 @@
 import express from 'express'
-import { EventController } from '../controllers/eventController';
+import { EventController } from '../controllers/event.controller';
 import { handleError } from '../utils/handleError'
 import { getUserFromRequest } from '../utils/getUserFromRequest';
-
-import { dd } from '../utils/dd';
 const router = express.Router();
 
 router.post('/create', async (req, res) => {
@@ -19,22 +17,11 @@ router.post('/create', async (req, res) => {
   }
 });
 
-router.post('/list', async (req, res) => {
+router.post('/get', async (req, res) => {
   try {
     const user = getUserFromRequest(req);
-    const result = await EventController.getUserEvents(user);
+    const result = await EventController.getEvents(user);
     res.json(result);
-  } catch (error) {
-    handleError(res as unknown as Response, error) 
-  }
-});
-
-router.post('/get-one', async (req, res) => {
-  try {
-    const { id } = req.body;
-    const user = getUserFromRequest(req);
-    const data = await EventController.getEventById(user, id);
-    res.json(data);
   } catch (error) {
     handleError(res as unknown as Response, error) 
   }

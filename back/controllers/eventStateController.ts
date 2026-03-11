@@ -2,7 +2,7 @@ import { EVENT_TIK_ACTION_PROP, eventProgress } from '../core/constants';
 import createPool from '../core/db_connection';
 import axios from 'axios';
 import dotenv from 'dotenv';
-import { EventController } from './eventController';
+
 import { dd } from '../utils/dd';
 import { ensureArray } from '../utils/ensureArray';
 import { parseServerResponse } from '../utils/parseServerResponse';
@@ -26,6 +26,8 @@ import { ControllerResult } from '../types/controller.types';
 import { EventWithStateDTO, GetRecentEventOrScheduleRes } from '../types/event-state.api.types';
 import { getEventStateHooks } from '../db-actions/get-event-state-hooks';
 import { createEventStateHooks } from '../db-actions/create-event-state-hooks';
+import { buildTikEvents } from './helpers/build-tik-events';
+import { calculateEventStatus } from './helpers/calculate-event-status.ts';
 
 dotenv.config();
 
@@ -70,7 +72,7 @@ export class EventStateController {
 
             const eventProps: EventPropsPure = getAccessibleEventResult.result[0];
            
-            const updatedEventsWithStatus: EventStateResItem[] = await this.buildTikEvents(connection, eventProps);
+            const updatedEventsWithStatus: EventStateResItem[] = await buildTikEvents(connection, eventProps);
             await connection.commit();
 
             const tikAction = 'update';
@@ -159,7 +161,7 @@ export class EventStateController {
             );
 
             // Process each event to determine status and current seconds
-            const eventsWithStatus = await this.buildTikEvents(connection, events);
+            const eventsWithStatus = await buildTikEvents(connection, events);
 
             const eventsWithTikAction = OuterSyncService.addOuterActionInEvents(eventsWithStatus, 'add');
 
@@ -214,7 +216,7 @@ export class EventStateController {
 
             const eventProps: EventPropsPure = eventWithAccessResult.result[0];
             // : EventStatus
-            const { eventStatus } = await this.calculateEventStatus(connection, eventProps);
+            const { eventStatus } = await calculateEventStatus(connection, eventProps);
             dd(eventStatus);
             if (eventStatus.status === eventProgress.STOPPED || eventStatus.status === eventProgress.PAUSED) {
                 dd('CHANGING STATE (PLAYING) OF EXISTING EVENT')
@@ -256,7 +258,7 @@ export class EventStateController {
             // dd(createdEventId)
             // dd(eventId)
             // build event for tik
-            const updatedEventsStatus: EventStateResItem[] = await EventStateController.buildTikEvents(connection, eventPropsForCalc);
+            const updatedEventsStatus: EventStateResItem[] = await buildTikEvents(connection, eventPropsForCalc);
             await connection.commit();
             // dd(updatedEventsStatus)
             const tikAction = eventProgress.COMPLETED ? 'add' : 'update';
@@ -344,7 +346,7 @@ export class EventStateController {
 
         const minimalEventProps: MinimalEventProps = { id: recentEvent.id, length: recentEvent.length }
         
-        const { eventStatus } = await this.calculateEventStatus(connection, minimalEventProps);
+        const { eventStatus } = await calculateEventStatus(connection, minimalEventProps);
 
         getEventStateHooksResult = await getEventStateHooks(connection, { eventId: recentEvent.id });
 
@@ -360,7 +362,7 @@ export class EventStateController {
             const eventsWithState = await Promise.all(
                 getSchduleWithEventsResult.result.events.map(async eachEvent => {
                     const eachEventMinimalProps: MinimalEventProps = { id: eachEvent.id, length: eachEvent.length };
-                    const { eventStatus: eachEventStatus } = await this.calculateEventStatus(connection, eachEventMinimalProps);
+                    const { eventStatus: eachEventStatus } = await calculateEventStatus(connection, eachEventMinimalProps);
                     const getEachEventStateHooksResult = await getEventStateHooks(connection, { eventId: eachEvent.id });
                     const eachEventWithState: EventWithStateDTO = { 
                         ...eachEvent, 
@@ -387,183 +389,5 @@ export class EventStateController {
                 },
             }
         }
-    }
-    /**
-     * Calculate event status and current seconds based on state and history
-     */
-    static async calculateEventStatus(
-        connection, event: MinimalEventProps
-    ): Promise<{ eventStatus: EventStatus, debug: any }> {
-        const debug = {};
-        const eventId = event.id;
-        const eventLengthSeconds = event.length;
-        let currentStateResult: DbActionResult<GetEventStateResult>;
-        
-        currentStateResult = await getEventState(connection, event);
-
-        if (!currentStateResult.success) {
-            throw new Error(currentStateResult.error ?? 'undefined error, check wtf')
-        }
-
-        const currentStateObj = currentStateResult.result!;
-        const currentState = currentStateObj.event_state_id;
-
-        if (currentState === eventProgress.STOPPED) {
-            return {
-                eventStatus: {
-                    status: eventProgress.STOPPED,
-                    currentSeconds: 0,    
-                },
-                debug: {
-                    currentStateResult
-                }  
-            };
-        } else if (currentState === eventProgress.COMPLETED) {
-            return {
-                eventStatus: {
-                    status: eventProgress.COMPLETED,
-                    currentSeconds: 0,
-                }, 
-                debug
-            };
-        }
-         
-        const historyResult = await getEventStateHistory(connection, eventId);
-        
-        if (!historyResult.success) {
-            throw new Error(historyResult.error ?? 'history undefined error, check wtf')
-        }
-
-        const history = historyResult.result!.length 
-            ? historyResult.result!
-            : [currentStateObj];
-        // если не STOPPED и не COMPLETED, значит точно было запущено
-        let totalActiveSeconds = 0;
-        let activeStartTime: Date | null = null;
-        
-        // Calculate total active time from history
-        for (const record of history) {
-            if (record.event_state_id === eventProgress.PLAYING && activeStartTime === null) {
-                // Start of active period - create UTC date
-                activeStartTime = new Date(record.created_at + 'Z');
-            } else if (
-                (record.event_state_id === eventProgress.STOPPED || 
-                    record.event_state_id === eventProgress.PAUSED) && 
-                activeStartTime !== null
-            ) {
-                // End of active period - calculate duration with UTC date
-                const activeEndTime = new Date(record.created_at + 'Z');
-                const diff = activeEndTime.getTime() - activeStartTime.getTime();
-                const durationSeconds = Math.floor(diff / 1000);
-                totalActiveSeconds += durationSeconds;
-                activeStartTime = null;
-            }
-        }
-        
-        // If currently active and we have an open active period
-        if (currentState === eventProgress.PLAYING && activeStartTime !== null) {
-            const currentTime = new Date();
-            // Get current time in UTC
-            const currentUTC = Date.UTC(
-                currentTime.getUTCFullYear(),
-                currentTime.getUTCMonth(),
-                currentTime.getUTCDate(),
-                currentTime.getUTCHours(),
-                currentTime.getUTCMinutes(),
-                currentTime.getUTCSeconds(),
-                currentTime.getUTCMilliseconds()
-            );
-            const diff = currentUTC - activeStartTime.getTime();
-            const currentActiveSeconds = Math.floor(diff / 1000);
-            totalActiveSeconds += currentActiveSeconds;
-        }
-
-        // Cap at event length
-        const currentSeconds = Math.min(totalActiveSeconds, eventLengthSeconds);
-
-        if (currentState === eventProgress.PLAYING) {
-            return {
-                eventStatus: {
-                    status: currentSeconds >= eventLengthSeconds ? eventProgress.COMPLETED : eventProgress.PLAYING,
-                    currentSeconds: currentSeconds,
-                }, debug
-            };
-        } else if (currentState === eventProgress.PAUSED) {
-            return {
-                eventStatus: {
-                    status: eventProgress.PAUSED,
-                    currentSeconds: currentSeconds,
-                }, debug
-            };
-        }
-
-        return {
-            eventStatus: {
-                status: eventProgress.STOPPED,
-                currentSeconds: 0,
-            }, debug
-        };
-    }
-
-    /**
-     * Get user's eventStates with sorting (active first, then paused, then last changed)
-     */
-    static async getUserEventStates(userHandler: any, limit = 50) {
-        console.log(userHandler)
-        const pool = createPool();
-        const connection = await pool.getConnection();
-        try {
-            const [rows] = await connection.execute(
-                `SELECT 
-                    es.*, 
-                    e.name as event_name, 
-                    e.length, 
-                    e.type,
-                    et.name as event_type_name,
-                    etu.access_level
-                 FROM eventState es 
-                 INNER JOIN events e ON es.eventId = e.id 
-                 INNER JOIN eventToUser etu ON e.id = etu.event_id
-                 INNER JOIN eventTypes et ON e.type = et.id
-                 WHERE etu.user_handler = ? 
-                 ORDER BY 
-                     CASE 
-                         WHEN es.event_state_id = 1 THEN 1  -- Active first
-                         WHEN es.event_state_id = 2 THEN 2  -- Paused second
-                         ELSE 3                    -- Other states
-                     END,
-                     es.updated_at DESC
-                 LIMIT ?`,
-                [userHandler, limit]
-            );
-            return {
-                data: rows.filter(el => el.type === 3)
-            };
-        } catch (error) {
-            throw error;
-        } finally {
-            connection.release();
-        }
-    }
-
-
-    static async buildTikEvents(connection, events: MinimalEventProps | MinimalEventProps[]): Promise<EventStateResItem[]> {
-        events = ensureArray(events);
-        dd(events)
-        const eventsWithStatus = await Promise.all(
-            events.map(async (eventProps: MinimalEventProps) => {
-                const { eventStatus } = await this.calculateEventStatus(connection, eventProps);
-                const res: EventStateResItem = {
-                    id: buildOuterEntityId('event', eventProps.id),
-                    cur: eventStatus.currentSeconds,
-                    len: eventProps.length,
-                    stt: eventStatus.status
-                }
-
-                return res;
-            })
-        );
-        dd(eventsWithStatus)
-        return eventsWithStatus;
     }
 }
