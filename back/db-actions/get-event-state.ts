@@ -7,6 +7,7 @@ import { Nullable } from "../utils/utility.types";
 import { DbActionResult } from "./create-event";
 
 export type GetEventStateResult = any;
+
 export const getEventState = async (
 	connection, 
 	event: MinimalEventProps,
@@ -21,7 +22,7 @@ export const getEventState = async (
 	try {
 
 		const [queryResult] = await connection.execute(
-			`SELECT event_state_id FROM eventState WHERE eventId = ?`,
+			`SELECT * FROM eventState WHERE eventId = ?`,
 			[event.id]
 		);
 

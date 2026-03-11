@@ -19,7 +19,7 @@ router.post('/set-event-state', async (req, res) => {
     res.status(500).json({ error: (error as any)?.message ? (error as any).message : error });
   }
 });
-
+// unused
 router.post('/list-by-user', async (req, res) => {
   try {
     const user = getUserFromRequest(req);
@@ -61,16 +61,16 @@ router.post('/get-recent-event-or-schedule', async (req, res) => {
   }
 });
 
-// router.post('/get-one', async (req, res) => {
-//   try {
-//     const { id } = req.body;
-//     const user = getUserFromRequest(req);
-//     const data = await EventController.getEventById(user, id);
-//     res.json(data);
-//   } catch (error) {
-//     handleError(res as unknown as Response, error) 
-//   }
-// });
+router.post('/get-event-state', async (req, res) => {
+  // try {
+  //   const { id } = req.body;
+  //   const user = getUserFromRequest(req);
+  //   const data = await EventController.getEventById(user, id);
+  //   res.json(data);
+  // } catch (error) {
+  //   handleError(res as unknown as Response, error) 
+  // }
+});
   
 // router.post('/update', async (req, res) => {
 //   try {

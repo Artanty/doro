@@ -99,13 +99,13 @@ export class EventService {
       )
   }
 
-  deleteEventApi(data: { id: number }): Observable<number[]> {
+  deleteEventApi(data: { id: number }): Observable<boolean> {
     return this.http.post<any>(`${this.doroBaseUrl}/event/delete`, data)
       .pipe(
         map(res => {
-          if (res.data.success && res.data.ids) {
-            return res.data.ids
-          } else {
+          if (res.data.success) {
+            return true;
+          } else {  
             throw new Error('deleteEventApi wrong response')
           }
         })
@@ -208,9 +208,9 @@ export class EventService {
 
   public deleteEvent(id: number) {
     this.deleteEventApi({ id: id }).pipe(
-      tap((idsToDelete: number[]) => {
+      tap(() => {
         const currentEvents = this.events$.getValue();
-        const updatedEvents = currentEvents.filter(e => !idsToDelete.includes(e.id));
+        const updatedEvents = currentEvents.filter(e => e.id !== id);
         this.events$.next(updatedEvents);
       }),
       catchError(error => {
@@ -218,20 +218,6 @@ export class EventService {
         return throwError(() => new Error(`Failed to delete event ${id}: ${error.message}`));
       }),
     ).subscribe()
-  }
-
-  public deleteEvent2(id: number) {
-    return this.deleteEventApi({ id: id }).pipe(
-      tap((idsToDelete: number[]) => {
-        const currentEvents = this.events$.getValue();
-        const updatedEvents = currentEvents.filter(e => !idsToDelete.includes(e.id));
-        this.events$.next(updatedEvents);
-      }),
-      catchError(error => {
-        console.error('Failed to delete event:', error);
-        return throwError(() => new Error(`Failed to delete event ${id}: ${error.message}`));
-      }),
-    )
   }
 
   public pauseEvent(eventId: number) {

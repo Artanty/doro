@@ -536,8 +536,9 @@ export class EventStateController {
                  LIMIT ?`,
                 [userHandler, limit]
             );
-
-            return rows;
+            return {
+                data: rows.filter(el => el.type === 3)
+            };
         } catch (error) {
             throw error;
         } finally {

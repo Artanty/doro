@@ -17,6 +17,8 @@ import { upsertEventAccess } from '../db-actions/upsert-event-access';
 import { updateEvent } from '../db-actions/update-event';
 import { CreateEventStateHookParams, createEventStateHooks } from '../db-actions/create-event-state-hooks';
 import { addEventStateHistory } from '../db-actions/add-event-state-history';
+import { MinimalEventProps } from '../types/event-state.types';
+import { deleteEvent } from '../db-actions/delete-event';
 
 dotenv.config();
 
@@ -114,13 +116,12 @@ export class EventController {
 				// [userHandler]
 
 				// todo: разделить запрос своих ивентов и шаредных?
-				`SELECT e.*, et.name as type_name, etu.access_level,
+				`SELECT e.*, etu.access_level,
 			           CASE 
 			               WHEN e.base_access_id IN (1, 2, 3) THEN TRUE
 			               ELSE FALSE
 			           END as has_access
 			    FROM events e
-			    INNER JOIN eventTypes et ON e.type = et.id
 			    LEFT JOIN eventToUser etu 
 			        ON e.id = etu.event_id AND etu.user_handler = ?
 			    ORDER BY e.created_at DESC`,
@@ -144,18 +145,31 @@ export class EventController {
 
 	// Get specific event by ID (with access check)
 	static async getEventById(userHandler: string, eventId: number) {
+		dd(eventId)
 		const pool = createPool();
 		const connection = await pool.getConnection();
+		let getAccessibleEventResult,
+			calculateEventStatusResult;
 		try {
-			const [rows] = await connection.execute(
-				`SELECT e.*, et.name as type_name, etu.access_level 
-				 FROM events e
-				 INNER JOIN eventTypes et ON e.type = et.id
-				 INNER JOIN eventToUser etu ON e.id = etu.event_id
-				 WHERE e.id = ? AND etu.user_handler = ?`,
-				[eventId, userHandler]
-			);
-			return rows.length > 0 ? rows[0] : null;
+			getAccessibleEventResult = await getAccessibleEvent(connection, eventId, userHandler, ACCESS_CASE.UPDATE);
+			if (!getAccessibleEventResult.success) {
+				throw new Error(getAccessibleEventResult.error!);
+			}
+
+			const minimalEventProps: MinimalEventProps = { id: eventId, length: getAccessibleEventResult.result[0].length }
+			calculateEventStatusResult = await EventStateController.calculateEventStatus(connection, minimalEventProps);
+			// upsertStateResult = await upsertEventState(connection, eventId, state) // todo add false return if no updated
+
+			// dd(rows)
+			return {
+				data: {
+					event: getAccessibleEventResult.result[0],
+					state: calculateEventStatusResult
+				},
+				debug: {
+					// states: 
+				}
+			}
 		} catch (error) { 
 			console.log(error)
 			throw error;
@@ -225,35 +239,23 @@ export class EventController {
 	}
 	// Delete event (only if user has owner access)
 	static async deleteEvent(eventId: number, userHandler: string) {
-		let getAccessibleEventResult;
-
 		const pool = createPool();
 		const connection = await pool.getConnection();
+
+		let getAccessibleEventResult,
+			deleteEventResult;
 		try {
 			await connection.beginTransaction();
-
-			// // Check if user has owner access
-			// const [accessRows] = await connection.execute(
-			// 	`SELECT access_level FROM eventToUser 
-			// 	 WHERE event_id = ? AND user_handler = ? 
-			// 	 AND access_level = 'owner'`,
-			// 	[eventId, userHandler]
-			// );
-
-			// if (accessRows.length === 0) {
-			// 	throw new Error('Only owner can delete event');
-			// }
 
 			getAccessibleEventResult = await getAccessibleEvent(connection, eventId, userHandler, ACCESS_CASE.DELETE);
 			if (!getAccessibleEventResult.success) {
 				throw new Error(getAccessibleEventResult.error!);
 			}
 
-			// Delete event (eventToUser entries will be automatically deleted due to ON DELETE CASCADE)
-			const [result] = await connection.execute(
-				'DELETE FROM events WHERE id = ?',
-				[eventId]
-			);
+			deleteEventResult = await deleteEvent(connection, eventId);
+			if (!deleteEventResult.success) {
+				throw new Error(deleteEventResult.error!);
+			}
 
 			await connection.commit();
 
@@ -268,13 +270,12 @@ export class EventController {
 			
 			return {
 				data: {
-					success: result.affectedRows > 0,
-					ids: [eventId]
+					success: deleteEventResult.success,
 				},
 				debug: {
 					[thisProjectResProp()]: {
-						success: result.affectedRows > 0,
-						ids: [eventId]
+						getAccessibleEventResult,
+						deleteEventResult
 					},
 					[tikResProp()]: parseServerResponse(tikResponse),
 				}

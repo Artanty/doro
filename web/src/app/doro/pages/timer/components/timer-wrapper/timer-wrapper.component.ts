@@ -124,32 +124,6 @@ export class TimerWrapperComponent {
     return errorState;
   }
 
-  deleteEvent() {
-    // this.isDeleting$.next(true);
-    // this.cdr.detectChanges()
-    this.eventService.deleteEvent(this.eventProps.id);
-  }
-  deleteEvent2() {
-    // this.eventState.eventState = EventStates.PENDING
-
-
-    this.eventService.deleteEvent2(this.eventProps.id)
-      .pipe(
-        takeUntil(this.destroy$),
-        finalize(() => {
-          // this.isDeleting = false;
-          // this.cdr.detectChanges();
-        }),
-      )
-      .subscribe({
-        next: () => {
-          console.log('delete success');
-          // this.cdr.detectChanges();
-        },
-        error: (err) => console.error('Error deleting keyword:', err)
-      });
-  }
-
   ngOnChanges(changes: SimpleChanges): void {
     // dd('ngOnChanges triggered in ChildComponent');
     // if (changes['message']) {

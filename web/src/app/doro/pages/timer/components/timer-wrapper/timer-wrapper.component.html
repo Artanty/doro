@@ -47,7 +47,6 @@
       <ng-template #name let-data>
         <div class="name">
           {{ eventProps.id }} | {{ eventProps.name }}
-          <ng-container [ngTemplateOutlet]="deleteButton"></ng-container>
         </div>
       </ng-template>
 
@@ -89,35 +88,12 @@
         </div>
       </ng-template>
 
-      <ng-template #deleteButton>
-        <i title="delete" class="mu mu-i-cross" (click)="deleteEvent()"></i>
-      </ng-template>
-
-      
-
-
       <ng-container *ngIf="eventState.viewState === 'LOADING_VIEW_STATE'">
         <div *ngIf="eventState.eventState === EventStates.PENDING" class="timer">
           <pre>PENDING</pre>
         </div>
       </ng-container>
     </div>
-    <!-- <div class="action">
-
-      <div *ngIf="eventState.viewState === 'ERROR_VIEW_STATE'" class="timer">
-          <pre>ERROR</pre>
-          <pre>{{eventState.error}}</pre>
-        </div>
-
-      <div gui type="dropdown"
-        [inputs]="{
-          buttonIcon: 'mu mu-opts-v',
-          items: menuItems
-        }"
-        [outputs]="{
-          itemSelected: deleteEvent.bind(this)
-        }"
-      ></div>
-    </div> -->
+    
   </li>  
 }
