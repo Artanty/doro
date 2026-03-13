@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Injector, Input, SimpleChanges } from '@angular/core';
 import { Subject, Observable, takeUntil, map, startWith, tap, catchError, EMPTY, finalize, throwError } from 'rxjs';
-import { EventStates } from 'src/app/doro/constants';
+import { EventStates, EventTypePrefix } from 'src/app/doro/constants';
 import { dd } from 'src/app/doro/helpers/dd';
 import { ActivatedRoute } from '@angular/router';
 import { EventService } from 'src/app/doro/services/event.service';
@@ -71,7 +71,7 @@ export class TimerWrapperComponent {
       initalState = this._buildErrorState(new Error('no event id, mb forgot resolver'));
     }
     this.eventState$ = 
-      this.eventService.listenEventState(this.eventProps?.id)
+      this.eventService.listenEventState(EventTypePrefix.BASIC, this.eventProps?.id)
         .pipe(
           takeUntil(this.destroy$),
           map((res: EventStateResItem) => {

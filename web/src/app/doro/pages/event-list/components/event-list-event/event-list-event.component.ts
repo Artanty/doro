@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { Observable, Subject, takeUntil, filter, startWith, distinctUntilChanged, map, tap, withLatestFrom, catchError, EMPTY, finalize } from 'rxjs';
 
 
-import { EventStates } from 'src/app/doro/constants';
+import { EventStates, EventTypePrefix } from 'src/app/doro/constants';
 import { countPrc } from 'src/app/doro/helpers/count-percent.util';
 import { EventService } from 'src/app/doro/services/event.service';
 import { EventProps, EventViewState, EventStateResItem, EventStateResItemStateless, EventState } from 'src/app/doro/services/event.types';
@@ -79,11 +79,10 @@ export class EventListEventComponent implements OnInit, OnDestroy {
       eventState: -1 // pending
     }
     this.eventState$ = 
-      this.eventService.listenEventState(this.eventProps.id)
+      this.eventService.listenEventState(EventTypePrefix.BASIC, this.eventProps.id)
         .pipe(
           takeUntil(this.destroy$),
           map((res: EventStateResItem) => {
-            // dd(res)
             const { stt, ...rest } = res;
             const readyState: EventViewState<EventStateResItemStateless> = {
               viewState: 'READY_VIEW_STATE',

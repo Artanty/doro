@@ -2,9 +2,6 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable, Inject } from "@angular/core";
 import { BehaviorSubject, Observable, delay, tap, map, catchError, of, throwError, distinctUntilChanged, filter } from "rxjs";
 import { EVENT_BUS_LISTENER, BusEvent } from "typlib";
-
-
-import { basicEventTypePrefix } from "../constants";
 import { dd } from "../helpers/dd";
 import { filterStreamDataEntries } from "../helpers/filterStreamDataEntries";
 import { AppStateService } from "./app-state.service";
@@ -23,7 +20,6 @@ export class EventService {
   private tikBaseUrl = `${process.env['TIK_BACK_URL']}`;
 
   public events$ = new BehaviorSubject<EventProps[]>([]);
-  
 
   constructor(
     private http: HttpClient,
@@ -34,7 +30,8 @@ export class EventService {
   ) {
     this.eventBusListener$.subscribe(res => {
       // dd(res)
-    })
+    });
+    
   }
 
   public createEvent(payload: any) {
@@ -67,7 +64,7 @@ export class EventService {
   }
 
   getUserEventsApi(): Observable<GetUserEventsRes> {
-    return this.http.post<GetUserEventsRes>(`${this.doroBaseUrl}/event/list`, null);
+    return this.http.post<GetUserEventsRes>(`${this.doroBaseUrl}/event/get`, null);
   }
 
   setEventStateApi(data: EventStateReq): Observable<EventState> {
@@ -133,6 +130,7 @@ export class EventService {
     return this.http.post<GetRecentRes>(`${this.doroBaseUrl}/event-state/get-recent-event-or-schedule`, null)
       .pipe(
         tap((res: GetRecentRes) => {
+          dd(res)
           let events: EventProps[] = [];
           const { recentEvent, recentSchedule } = res.data;
           if (recentEvent) {
@@ -153,6 +151,7 @@ export class EventService {
             
             this._appStateService.currentSchedule.next(recentSchedule)
           }
+          dd(events)
           this.events$.next(events);
         }),
         catchError((err: any) => {
@@ -229,29 +228,9 @@ export class EventService {
     })
       .subscribe()
   }
-
   
-
-
-  private _connectionsState = new BehaviorSubject<Map<string, any>>(new Map());
-
-  private setConnectionState(connId: string, connValue: any): void {
-    const conns = this._connectionsState.getValue()
-    conns.set(connId, connValue)
-    this._connectionsState.next(conns)
-  }
-
-  public listenConnectionState(connId: string): Observable<string> {
-    return this._connectionsState.asObservable().pipe(
-      tap(console.log),
-      map(connectionsMap => connectionsMap.get(connId)),
-      distinctUntilChanged(),
-      filter(value => value !== undefined)
-    );
-  }
-  
-  public listenEventState(eventId: number): Observable<EventStateResItem> {
-    const receivedEventId = `${basicEventTypePrefix}_${eventId}`;
+  public listenEventState(eventTypePrefix: string, eventId: number): Observable<EventStateResItem> {
+    const receivedEventId = `${eventTypePrefix}_${eventId}`;
   
     return this.eventBusListener$.pipe(
       filter(filterStreamDataEntries),

@@ -15,6 +15,15 @@ export interface EventViewState<T = null> {
 	error?: any
 }
 
+export interface EventStateHook {
+	"id": number
+	"created_at": string
+	"updated_at": string
+	"action_type": string
+	"action_config": any
+	"trigger_event_state_id": number
+}
+
 export interface EventProps {
 	id: number;
 	name: string;
@@ -30,6 +39,7 @@ export interface EventProps {
 	base_access_id: number;
 	// access_level: "owner" | "editor" | "viewer"; //remove on backend
 	has_access: number; // 0 or 1 (boolean)
+	state_hooks: EventStateHook[]
 }
 
 export interface EventWithState { // todo rename

@@ -60,7 +60,11 @@ export const CHILD_ROUTES = [
         path: 'timer', 
         loadChildren: () => import('./pages/timer/timer.module')
           .then(m => m.TimerModule)
-          
+      },
+      {
+        path: 'next-event', 
+        loadChildren: () => import('./pages/next-event/next-event.module')
+          .then(m => m.NextEventModule)
       },
     ]
   },

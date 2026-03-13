@@ -1,9 +1,13 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Optional, Inject, OnInit } from "@angular/core";
 
-import { combineLatestWith, map, Observable, tap } from "rxjs";
+import { combineLatestWith, filter, map, Observable, tap } from "rxjs";
 import { BusEvent, EVENT_BUS_LISTENER, HOST_NAME } from "typlib";
 import { animate, style, transition, trigger } from "@angular/animations";
 import { Router } from "@angular/router";
+import { EventService } from "./services/event.service";
+import { filterTransitionEvents } from "./helpers/filterTransitionEvents";
+import { dd } from "./helpers/dd";
+import { NextEventService } from "./services/next-event.service";
 
 @Component({
   selector: 'app-doro',   
@@ -35,6 +39,8 @@ export class DoroComponent implements OnInit {
     // @Inject(EVENT_BUS_PUSHER)
     // private readonly eventBusPusher: (busEvent: BusEvent) => void,
     private router: Router,
+    private readonly _eventService: EventService,
+    private readonly _nextEventService: NextEventService,
     @Optional() @Inject(HOST_NAME) private hostName?: string,
   ) {}
 
@@ -48,5 +54,16 @@ export class DoroComponent implements OnInit {
       this.router.navigateByUrl('/doro/event-list')
       // this.router.navigateByUrl('/doro/event-create')
     }
+
+    this._eventService.listenEvents().pipe(
+      map(res => res.filter(filterTransitionEvents)),
+      filter(res => res && res.length > 0)
+    ).subscribe(res => {
+      this._nextEventService.onTransitionFound(res)
+    })
   }
+
+  // private listenTransitionEvent() {
+  //   this._eventService.listenEventState(EventTypePrefix.TRANSITION)
+  // }
 }

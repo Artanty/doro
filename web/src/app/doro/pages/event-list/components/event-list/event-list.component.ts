@@ -1,12 +1,14 @@
 import { ChangeDetectorRef, Component, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { Observable, tap, combineLatest, map, take } from 'rxjs';
+import { Observable, tap, combineLatest, map, take, filter } from 'rxjs';
 import { AppStateService } from 'src/app/doro/services/app-state.service';
 import { Schedule, ScheduleService } from 'src/app/doro/services/schedule.service';
 import { EventService } from 'src/app/doro/services/event.service';
 import { EventProps } from 'src/app/doro/services/event.types';
 import { Nullable } from 'src/app/doro/helpers/utility.types';
+import { filterBasicEvents } from 'src/app/doro/helpers/filterBasicEvents';
+import { dd } from 'src/app/doro/helpers/dd';
 
 @Component({
   selector: 'app-event-list',
@@ -39,6 +41,7 @@ export class EventListComponent implements OnInit {
   ) {
     this.events$ = this.eventService.listenEvents()
       .pipe(
+        map(res => res.filter(filterBasicEvents)),
         tap(res => {
           setTimeout(() => {
             this.cdr.detectChanges()

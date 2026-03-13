@@ -22,9 +22,13 @@ export type EventCommonStateType = typeof EventCommonState[keyof typeof EventCom
 export type EventStatesType = EventProgressType | EventCommonStateType;
 
 
-export const basicEventTypePrefix = 'e';
+export const EventTypePrefix = {
+	BASIC: 'e',
+	TRANSITION: 't'
+}
 
 export const eventTypes = {
-	REST: 3,
-	WORK: 2
+	WORK: 1,
+	REST: 2,
+	TRANSITION: 3,
 }

@@ -96,7 +96,16 @@ export class CreateEventComponent implements OnInit {
       type: Number(this.eventData.type),
       // Если private - придумать
       base_access: this.eventData.base_access,
-      state: this.eventData.state,      
+      state: this.eventData.state,
+      "hooks": [
+        {
+          "trigger_event_state_id": 3,
+          "action_type": "script",
+          "action_config": {
+            "scriptId": "nextEvent"
+          }
+        }
+      ]
     };
 
     this._eventService.createEvent(payload).pipe().subscribe({
