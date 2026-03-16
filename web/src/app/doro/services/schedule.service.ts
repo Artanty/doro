@@ -15,7 +15,8 @@ export interface Schedule {
 	updated_at: string;
 }
 
-@Injectable({ providedIn: 'root' })
+@Injectable()
+
 export class ScheduleService {
 	private doroBaseUrl = `${process.env['DORO_BACK_URL']}`;
 	_appStateService: any;
@@ -86,5 +87,16 @@ export class ScheduleService {
 	private _getEventsBySchedule(scheduleId: number): EventProps[] {
 		return this._eventService.events$.getValue()
 			.filter(event => event.schedule_id === scheduleId)
+	}
+
+	public getNextPositionInSchedule(scheduleId: number) {
+		const filtered = this._eventService.events$.getValue().filter(
+			e => e.schedule_id === scheduleId);
+
+		const sorted = filtered.sort((a, b) => {
+			return Number(a.schedule_position) - Number(b.schedule_position)
+		});
+		return sorted[0];
+		// schedule_position
 	}
 }

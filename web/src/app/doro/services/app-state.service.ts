@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { Schedule } from "./event.types";
+import { EventProps, Schedule } from "./event.types";
 import { obs$ } from "../helpers/observable-variable";
 import { Nullable } from "../helpers/utility.types";
 
@@ -7,6 +7,7 @@ import { Nullable } from "../helpers/utility.types";
   providedIn: 'root'
 })
 export class AppStateService {
+  public events = obs$<EventProps[]>([]);
   public configHash = obs$<number>(0);
   public recentEvent = obs$<Nullable<number>>(null);
   // public recentSchedule = obs$<Nullable<Schedule>>(null);

@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { Observable, tap, combineLatest, map, take, filter } from 'rxjs';
+import { Observable, tap, combineLatest, map, take, filter, Subject, BehaviorSubject } from 'rxjs';
 import { AppStateService } from 'src/app/doro/services/app-state.service';
 import { Schedule, ScheduleService } from 'src/app/doro/services/schedule.service';
 import { EventService } from 'src/app/doro/services/event.service';
@@ -19,7 +19,8 @@ import { dd } from 'src/app/doro/helpers/dd';
 export class EventListComponent implements OnInit {
   public events$: Observable<EventProps[]>;
   public currentSchedule$: Observable<Nullable<Schedule>>;
- 
+  scheduleFilter$ = new BehaviorSubject<Nullable<number>>(null);
+
   menuItems = [
     { id: 'DELETE', name: 'Удалить' },
   ];
@@ -33,7 +34,7 @@ export class EventListComponent implements OnInit {
    * 
    * */
   ngOnInit() {
-    this.eventService.loadEvents().subscribe();
+    // this.eventService.loadEvents().subscribe();
   }
 
   constructor(
@@ -43,15 +44,28 @@ export class EventListComponent implements OnInit {
     private _appStateService: AppStateService,
     private _scheduleService: ScheduleService
   ) {
-    this.events$ = this.eventService.listenEvents()
+    this.events$ = combineLatest([
+      this.eventService.listenEvents(),
+      this.scheduleFilter$ // Your second observable for schedule filtering
+    ])
       .pipe(
-        map(res => res.filter(filterBasicEvents)),
+        map(([events, scheduleFilter]) => {
+          let filteredEvents = events.filter(filterBasicEvents);
+        
+          if (scheduleFilter) {
+            filteredEvents = filteredEvents.filter(e => e.schedule_id === scheduleFilter);
+          }
+        
+          return filteredEvents;
+        }),
         tap(res => {
           setTimeout(() => {
             this.cdr.detectChanges()
+            dd(this.eventService.events$.getValue())
           }, 1000); // crutch to update state
         })
       );
+
     this.currentSchedule$ = this._appStateService.currentSchedule.listen as Observable<Nullable<Schedule>>;
 
     this.scheduleMenuItems$ = combineLatest([
@@ -73,12 +87,8 @@ export class EventListComponent implements OnInit {
   }
 
   public switchToSchedule(data: any) {
-    const scheduleId = data.id
-    this._scheduleService.getScheduleWithEvents(scheduleId).subscribe(res => {
-      if (res === true) {
-        this._appStateService.currentSchedule.next(data);
-      }
-    })
+    const scheduleId = Number(data.id)
+    this.scheduleFilter$.next(scheduleId);
   }
 
   public goToCreateEvent() {
@@ -92,13 +102,9 @@ export class EventListComponent implements OnInit {
     );
   }
 
-  public loadAllEvents(): void {
-    this.eventService.loadEvents().pipe(take(1)).subscribe(() => {
+  public loadEvents(daysInterval: number = 1): void {
+    this.eventService.loadEvents(daysInterval).pipe(take(1)).subscribe(() => {
       this._appStateService.currentSchedule.next(null);
     });
   }
-
-  // public goToKeywordEdit(id: number) {
-  //   this.router.navigateByUrl('/note/keyword-edit' + '/' + id)
-  // }
 }

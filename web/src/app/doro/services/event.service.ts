@@ -7,6 +7,7 @@ import { filterStreamDataEntries } from "../helpers/filterStreamDataEntries";
 import { AppStateService } from "./app-state.service";
 import { EventProps, GetUserEventsRes, EventStateReq, EventState, EventStateRes, SetPlayEventStateReq, EventStateResItem } from "./event.types";
 import { GetRecentRes } from "./event.types.api";
+import { ScheduleService } from "./schedule.service";
 
 @Injectable(
   // {
@@ -24,23 +25,19 @@ export class EventService {
     @Inject(EVENT_BUS_LISTENER)
     private readonly eventBusListener$: Observable<BusEvent>,
     private _appStateService: AppStateService,
+    // private _scheduleService: ScheduleService
+  ) {}
 
-  ) {
-    this.eventBusListener$.subscribe(res => {
-      // dd(res)
-    });
-  }
-
-  loadEvents(): Observable<boolean> {
+  loadEvents(daysInterval: number = 1): Observable<boolean> {
     const filters = {
-
+      interval: daysInterval
     }
-    return this.http.post<GetUserEventsRes>(`${this.doroBaseUrl}/event/get`, filters)
+    return this.http.post<GetUserEventsRes>(`${this.doroBaseUrl}/event/get`, { filters })
       .pipe(
         tap((res: GetUserEventsRes) => {
           const data: EventProps[] = res.data;
           if (!data) throw new Error('wrong response format');
-
+          dd(data)
           this.events$.next(data)
         }),
         catchError((err: any) => {
@@ -62,21 +59,15 @@ export class EventService {
   public addToSchedule(eventId: number, scheduleId: number): Observable<unknown> {
     const payload = {
       id: eventId,
-      schedule_id: scheduleId
+      schedule_id: scheduleId,
+      // schedule_position: this._scheduleService.getNextPositionInSchedule(scheduleId)
     }
-    return this.updateEventApi(payload).pipe(
-      tap(() => {
-        /**
-         * Принудительно обновляем состояние текущего клиента
-         * путём изменения локального configHash.
-         * В большинстве случаев хэши совпадут, так как флоу:
-         * doro@web -> doro@back (set hash=1) -> tik@back -> tik@web -> doro@web (get hash=1)
-         * doro@web -> doro@back (set hash=1) -> doro@web (get hash=1)
-         * Не совпадут они только из-за разной скорости соединения с серверами.
-         * Такое решение делает предсказуемое зеркальное поведение у всех клиентов.
-         * */
-        this._appStateService.configHash.next(999);
-      }))
+    dd(payload)
+    return of([])
+    // return this.updateEventApi(payload).pipe(
+    //   tap(() => {
+    //     this._appStateService.configHash.next(999);
+    //   }))
       
   }
   public listenEvents() {

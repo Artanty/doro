@@ -10,6 +10,10 @@ export const getEventCtl = async (userHandler: string, filters: any) => {
     const pool = createPool();
     const connection = await pool.getConnection();
     try {
+        // Set default values
+        const intervalDays = filters?.interval || 1;
+        const limit = filters?.limit || 200;
+
         const [rows] = await connection.execute(
             `SELECT 
         e.*, 
@@ -40,9 +44,10 @@ export const getEventCtl = async (userHandler: string, filters: any) => {
         LEFT JOIN eventToUser etu 
             ON e.id = etu.event_id AND etu.user_handler = ?
         LEFT JOIN eventState es ON e.id = es.eventId
-        WHERE e.created_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 1 DAY)
-        ORDER BY e.created_at DESC`,
-            [userHandler]
+        WHERE e.created_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? DAY)
+        ORDER BY e.created_at DESC
+        LIMIT ?`,
+            [userHandler, intervalDays, limit]
         );
 
         return {
@@ -50,6 +55,10 @@ export const getEventCtl = async (userHandler: string, filters: any) => {
             debug: {
                 [thisProjectResProp()]: {
                     data: rows,
+                    filters_applied: {
+                        interval_days: intervalDays,
+                        limit: limit
+                    }
                 },
             }
         };
@@ -59,4 +68,4 @@ export const getEventCtl = async (userHandler: string, filters: any) => {
     } finally {
         connection.release();
     }
-}	
+}
