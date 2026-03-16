@@ -9,7 +9,6 @@ import { EventMapperService } from "./event.mapper";
 import { GetRecentRes } from "./event.dto";
 import { EventProps, GetUserEventsRes, EventStateReq, EventState, EventStateRes, SetPlayEventStateReq, EventStateResItem } from "./event.types";
 
-
 @Injectable(
   // {
   //   providedIn: 'root'
@@ -135,21 +134,11 @@ export class EventService {
           const { recentEvent, recentSchedule } = res.data;
           if (recentEvent) {
             events = [this._eventMapperService.eventDtoToModel(recentEvent)];
-            // ? неправильно держать recentEvent в глобальном стейте,
-            // когда клиент обновляет состояние вслед за 
-            // изменениями другого клиента, но находится в другом интерфейсе
-            // данное изменение для него неактуально.
-
-            // данные, полученные в ответ на запрос - провоцируют не консистентное состояние.
-            // сразу после зпроса состояние бэка может быть изменено - решего с пом хэша
-            this._appStateService.recentEvent.next(recentEvent.id);
           }
           if (recentSchedule) {
             if (recentSchedule.events) {
               events = recentSchedule.events.map(el => this._eventMapperService.eventDtoToModel(el));  
             }
-            
-            this._appStateService.currentSchedule.next(recentSchedule)
           }
           dd(events)
           this.events$.next(events);

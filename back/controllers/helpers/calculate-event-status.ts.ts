@@ -2,14 +2,15 @@ import { eventProgress } from "../../core/constants";
 import { DbActionResult } from "../../db-actions/create-event";
 import { GetEventStateResult, getEventState } from "../../db-actions/get-event-state";
 import { getEventStateHistory } from "../../db-actions/get-event-state-history";
-import { MinimalEventProps, EventStatus } from "../../types/event-state.types";
+import { MinimalEventProps, EventStatus, ActionResult } from "../../types/event-state.types";
 
 /**
-     * Calculate event status and current seconds based on state and history
-     */
+* Calculate event status and current seconds based on state and history
+*/
 export const calculateEventStatus = async (
-    connection, event: MinimalEventProps
-): Promise<{ eventStatus: EventStatus, debug: any }> => {
+    connection, 
+    event: MinimalEventProps
+): Promise<ActionResult<EventStatus>> => {
     const debug = {};
     const eventId = event.id;
     const eventLengthSeconds = event.length;
@@ -26,7 +27,8 @@ export const calculateEventStatus = async (
 
     if (currentState === eventProgress.STOPPED) {
         return {
-            eventStatus: {
+            success: true,
+            result: {
                 status: eventProgress.STOPPED,
                 currentSeconds: 0,    
             },
@@ -36,7 +38,8 @@ export const calculateEventStatus = async (
         };
     } else if (currentState === eventProgress.COMPLETED) {
         return {
-            eventStatus: {
+            success: true,
+            result: {
                 status: eventProgress.COMPLETED,
                 currentSeconds: 0,
             }, 
@@ -99,14 +102,16 @@ export const calculateEventStatus = async (
 
     if (currentState === eventProgress.PLAYING) {
         return {
-            eventStatus: {
+            success: true,
+            result: {
                 status: currentSeconds >= eventLengthSeconds ? eventProgress.COMPLETED : eventProgress.PLAYING,
                 currentSeconds: currentSeconds,
             }, debug
         };
     } else if (currentState === eventProgress.PAUSED) {
         return {
-            eventStatus: {
+            success: true,
+            result: {
                 status: eventProgress.PAUSED,
                 currentSeconds: currentSeconds,
             }, debug
@@ -114,7 +119,8 @@ export const calculateEventStatus = async (
     }
 
     return {
-        eventStatus: {
+        success: true,
+        result: {
             status: eventProgress.STOPPED,
             currentSeconds: 0,
         }, debug

@@ -1,3 +1,5 @@
+import { EventStateHook } from "./event.types";
+
 export interface EventPropsDTO {
 	id: number;
 	name: string;
@@ -14,6 +16,7 @@ export interface EventPropsDTO {
 	// access_level: "owner" | "editor" | "viewer"; //remove on backend
 	has_access: number; // 0 or 1 (boolean)
 	event_state_id: number;
+	state_hooks: EventStateHook[]
 }
 
 export interface ScheduleDTO {

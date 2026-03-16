@@ -30,6 +30,7 @@ import { EventTypeService } from './services/event-type.service';
 import { EventMapperService } from './services/event.mapper';
 import { ScheduleService } from './services/schedule.service';
 import { SetConfigHashAction } from './services/set-config-hash.action';
+import { NextEventService } from './services/next-event.service';
 
 export const CHILD_ROUTES = [
   {
@@ -106,10 +107,12 @@ export const CHILD_ROUTES = [
       deps: [EVENT_BUS],
     },
     EventService,
+    NextEventService,
     AccessLevelService,
     EventTypeService,
     ScheduleService,
-    EventMapperService
+    EventMapperService,
+
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })

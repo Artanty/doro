@@ -20,16 +20,6 @@ router.post('/set-event-state', async (req, res) => {
   }
 });
 
-// router.post('/list-by-user-with-status', async (req, res) => {
-//   try {
-//     const user = getUserFromRequest(req);
-//     const data = await EventStateController.getEventsWithStatus(user);
-//     res.json(data);
-//   } catch (error) {
-//     handleError(res as unknown as Response, error) 
-//   }
-// });
-
 router.post('/play', async (req, res) => {
   try {
     const user = getUserFromRequest(req);

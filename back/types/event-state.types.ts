@@ -1,3 +1,5 @@
+import { Nullable } from "../utils/utility.types"
+
 export interface EventStatus {
     status: number
     currentSeconds: number
@@ -14,15 +16,8 @@ export interface EventProps {
 
 export interface MinimalEventProps {
     id: number,
-    length: number
-}
-
-export interface EventPropsPure {
-    "id": number
-    "name": string
-    "length": number
-    "type": string
-    "created_at": string
+    length: number,
+    "event_type": number
 }
 
 //todo: rename to entry
@@ -31,4 +26,11 @@ export interface EventStateResItem {
     cur: number,
     len: number,
     stt: number
+}
+
+export interface ActionResult<T> {
+    success: boolean;
+    result: Nullable<T>;
+    error?: null | string;
+    debug?: any
 }

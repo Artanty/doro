@@ -5,11 +5,15 @@ import { GuiDirective } from "../../components/_remote/web-component-wrapper/gui
 
 import { FormsModule } from "@angular/forms";
 import { NextEventComponent } from "./next-event.component";
+import { nextEventResolver } from "./next-event.resolver";
 
 export const CHILD_ROUTES = [
 	{
-		path: '', 
+		path: ':id', 
 		component: NextEventComponent,
+		resolve: {
+			event: nextEventResolver
+		}
 	}
 ]
 @NgModule({

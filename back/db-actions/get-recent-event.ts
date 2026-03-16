@@ -7,9 +7,9 @@ import { DbActionResult } from "./create-event";
 export const getRecentEvent = async (
 	connection, 
 	userHandler,
-): Promise<DbActionResult<EventPropsDbItem>> => {
+): Promise<DbActionResult<EventPropsDbItem[]>> => {
 	
-	const res: DbActionResult<EventPropsDbItem> = {
+	const res: DbActionResult<EventPropsDbItem[]> = {
 		success: false,
 		result: null,
 		error: null
@@ -21,14 +21,13 @@ export const getRecentEvent = async (
 		        e.*
 		      FROM events e
 		      INNER JOIN eventState es ON e.id = es.eventId
-		      WHERE e.created_by = ?
+		      WHERE e.created_by = ? 
+		      AND e.created_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 1 DAY)
 		      ORDER BY es.updated_at DESC
 		      LIMIT 1`, [userHandler]
 		);
-                
 		res.success = true;
-		res.result = queryResult[0];
-
+		res.result = queryResult;
 		return res;
 	} catch (error: any) {
 		dd(error.message)

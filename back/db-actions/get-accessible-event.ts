@@ -1,3 +1,4 @@
+import { EventPropsDbItem } from "../types/event.types";
 import { dd } from "../utils/dd";
 import { getUTCDatetime } from "../utils/get-utc-datetime";
 // WHEN base_access = 'owner' THEN 3
@@ -11,7 +12,7 @@ export const ACCESS_CASE = {
 
 interface DbActionResult {
 	success: boolean;
-	result: any;
+	result: EventPropsDbItem | null;
 	error: null | string;
 	debug?: any
 }
@@ -38,7 +39,7 @@ export const getAccessibleEvent = async (
 
 	const res = {
 		success: false,
-		result: {},
+		result: null,
 		error: null,
 		debug: {}
 	}

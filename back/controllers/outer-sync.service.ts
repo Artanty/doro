@@ -3,7 +3,6 @@ import { EVENT_TIK_ACTION_PROP } from "../core/constants";
 import { dd } from "../utils/dd";
 import { parseServerResponse } from "../utils/parseServerResponse";
 import { ConfigManager } from "./config-manager";
-import { EventStateController } from "./eventStateController";
 import { upsertEventState } from "../db-actions/upsert-event-state";
 import createPool from "../core/db_connection";
 import { thisProjectResProp } from "../utils/getResProp";
@@ -11,8 +10,9 @@ import { addEventStateHistory } from "../db-actions/add-event-state-history";
 import { EventStateResItem } from "../types/event-state.types";
 import { getEventStateHooksByState } from "../db-actions/get-event-state-hooks";
 import { EventStateHookController } from "./event-state-hook.controller";
+import { buildOuterEntityId, EntryType } from "../utils/buildOuterEntityId";
 
-export type EntryType = 'event' | 'configHash' | 'transition'
+
 export interface OuterEntry {
 	id: string,
 	[EVENT_TIK_ACTION_PROP]: string,
@@ -29,25 +29,10 @@ export type EntryWithTikAction<T> = T & { [EVENT_TIK_ACTION_PROP]: string };
 
 
 export class OuterSyncService {
-	
-	public static buildOuterEntityId(
-		type: EntryType, 
-		id: string | number
-	): string {
-		const entitiesMap = {
-			event: 'e',
-			configHash: 'h',
-			transition: 't'
-		}
-
-		const entityPrefix = entitiesMap[type]
-
-		return `${entityPrefix}_${id}`;
-	}
 
 	public static buildOuterHash(): OuterHash {
 		return {
-			id: this.buildOuterEntityId('configHash', 1), // 1 - id
+			id: buildOuterEntityId('configHash', 1), // 1 - id
 			cur: ConfigManager.configHash,
 		};
 	}
@@ -60,7 +45,7 @@ export class OuterSyncService {
 		entryType: EntryType
 	): EventStateResItem {
 		return {
-			id: this.buildOuterEntityId(entryType, id),
+			id: buildOuterEntityId(entryType, id),
 			cur: 0, // v2 событие может быть создано с плейхэдом не в нулевой точке.
 			len: length,
 			stt: state

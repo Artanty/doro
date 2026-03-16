@@ -9,12 +9,18 @@ export const buildTikEvents = async (connection, events: MinimalEventProps | Min
     dd(events)
     const eventsWithStatus = await Promise.all(
         events.map(async (eventProps: MinimalEventProps) => {
-            const { eventStatus } = await calculateEventStatus(connection, eventProps);
+            const { result: eventStatus } = await calculateEventStatus(connection, eventProps);
+
+            const eventType = eventProps.event_type === 3
+                ? 'transition'
+                : 'event'
+
             const res: EventStateResItem = {
-                id: buildOuterEntityId('event', eventProps.id),
-                cur: eventStatus.currentSeconds,
+
+                id: buildOuterEntityId(eventType, eventProps.id),
+                cur: eventStatus!.currentSeconds,
                 len: eventProps.length,
-                stt: eventStatus.status
+                stt: eventStatus!.status
             }
 
             return res;

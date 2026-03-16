@@ -1,4 +1,4 @@
-import { EventStatus } from "./event-state.types"
+import { EventStatus, MinimalEventProps } from "./event-state.types"
 
 export interface EventPropsDbItem {
 	"id": number
@@ -13,11 +13,10 @@ export interface EventPropsDbItem {
 	"base_access_id": number //todo remve
 }
 
-
-
-// export interface EventStateResItem { // todo: rename to entry
-// 	id: string,
-// 	cur: number,
-// 	len?: number,
-// 	stt?: EventProgressType
-// }
+export const toMinProps = (dbItem: EventPropsDbItem): MinimalEventProps => {
+	return {
+		"id": dbItem.id,
+		"length": dbItem.length,
+		"event_type": dbItem.type,
+	}
+}

@@ -2,13 +2,10 @@ import { EVENT_TIK_ACTION_PROP, eventProgress } from '../core/constants';
 import createPool from '../core/db_connection';
 import axios from 'axios';
 import dotenv from 'dotenv';
-
 import { dd } from '../utils/dd';
-import { ensureArray } from '../utils/ensureArray';
 import { parseServerResponse } from '../utils/parseServerResponse';
 import { buildOuterEntityId } from '../utils/buildOuterEntityId';
 import { thisProjectResProp, tikResProp } from '../utils/getResProp';
-import { getUTCDatetime } from '../utils/get-utc-datetime';
 import { ConfigManager } from './config-manager';
 import { OuterSyncService } from './outer-sync.service';
 import { upsertEventState } from '../db-actions/upsert-event-state';
@@ -17,11 +14,9 @@ import { ACCESS_CASE, getAccessibleEvent } from '../db-actions/get-accessible-ev
 import { createEvent, DbActionResult } from '../db-actions/create-event';
 import { upsertEventAccess } from '../db-actions/upsert-event-access';
 import { getRecentEvent } from '../db-actions/get-recent-event';
-import { getScheduleWithEvents } from '../db-actions/get-schedules-with-events';
-import { getEventState, GetEventStateResult } from '../db-actions/get-event-state';
-import { EventPropsPure, EventStateResItem, EventStatus, MinimalEventProps } from '../types/event-state.types';
-import { getEventStateHistory } from '../db-actions/get-event-state-history';
-import { EventPropsDbItem } from '../types/event.types';
+import { getScheduleWithEvents } from '../db-actions/get-schedules-with-events'
+import { EventStateResItem, EventStatus, MinimalEventProps } from '../types/event-state.types';
+import { EventPropsDbItem, toMinProps } from '../types/event.types';
 import { ControllerResult } from '../types/controller.types';
 import { EventWithStateDTO, GetRecentEventOrScheduleRes } from '../types/event-state.api.types';
 import { getEventStateHooks } from '../db-actions/get-event-state-hooks';
@@ -70,9 +65,9 @@ export class EventStateController {
            
             addEventStateHistoryResult = await addEventStateHistory(connection, eventId, state)
 
-            const eventProps: EventPropsPure = getAccessibleEventResult.result[0];
+            const eventProps: EventPropsDbItem = getAccessibleEventResult.result[0];
            
-            const updatedEventsWithStatus: EventStateResItem[] = await buildTikEvents(connection, eventProps);
+            const updatedEventsWithStatus: EventStateResItem[] = await buildTikEvents(connection, toMinProps(eventProps));
             await connection.commit();
 
             const tikAction = 'update';
@@ -147,15 +142,15 @@ export class EventStateController {
                         e.id,
                         e.name,
                         e.length,
-                        et.name as event_type,
+                        e.type as event_type,
                         es.event_state_id as current_state,
                         es.updated_at as last_state_change,
+                        e.created_at,
                         etu.access_level
                      FROM events e
                      INNER JOIN eventToUser etu ON e.id = etu.event_id
-                     INNER JOIN eventTypes et ON e.type = et.id
                      LEFT JOIN eventState es ON e.id = es.eventId
-                     WHERE etu.user_handler = ?
+                     WHERE etu.user_handler = ? AND e.created_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 1 DAY)
                      ORDER BY e.created_at DESC`,
                 [userHandler]            
             );
@@ -196,11 +191,13 @@ export class EventStateController {
      * if completed ('COMPLETED': 3) - duplicate event, then createOrUpdateEventState(1)
      * */
     static async playOrDuplicateEvent(userHandler: any, eventId: any) {
-        let eventWithAccessResult;
+        
         const state = eventProgress.PLAYING; // 1
         const pool = createPool();
         const connection = await pool.getConnection();
-        let createdEventId,
+        let getAccessibleEventResult,
+            calculateEventStatusResult,
+            createdEventId,
             upsertStateResult,
             addHistoryResult,
             getEventStateHooksResult,
@@ -209,14 +206,19 @@ export class EventStateController {
         try {
             await connection.beginTransaction();
 
-            eventWithAccessResult = await getAccessibleEvent(connection, eventId, userHandler, 1);
-            if (!eventWithAccessResult.success) {
-                throw new Error(eventWithAccessResult.error!);
+            getAccessibleEventResult = await getAccessibleEvent(connection, eventId, userHandler, 1);
+            if (!getAccessibleEventResult.success) {
+                throw new Error(getAccessibleEventResult.error!);
             }
 
-            const eventProps: EventPropsPure = eventWithAccessResult.result[0];
-            // : EventStatus
-            const { eventStatus } = await calculateEventStatus(connection, eventProps);
+            const eventProps: EventPropsDbItem = getAccessibleEventResult.result[0];
+            calculateEventStatusResult = await calculateEventStatus(connection, toMinProps(eventProps));
+            if (!calculateEventStatusResult.success) {
+                throw new Error(calculateEventStatusResult.error!);
+            }
+
+            const eventStatus: EventStatus = calculateEventStatusResult.result!
+          
             dd(eventStatus);
             if (eventStatus.status === eventProgress.STOPPED || eventStatus.status === eventProgress.PAUSED) {
                 dd('CHANGING STATE (PLAYING) OF EXISTING EVENT')
@@ -250,7 +252,8 @@ export class EventStateController {
             // eventProgress.COMPLETED - add event copy
             const eventPropsForCalc = { 
                 id: eventStatus.status === eventProgress.COMPLETED ? createdEventId : eventId, 
-                length: eventProps.length 
+                length: eventProps.length,
+                event_type: eventProps.type,
             }
             // dd(eventPropsForCalc)
             // dd(eventProgress.COMPLETED)
@@ -300,9 +303,8 @@ export class EventStateController {
                 },
                 debug: {
                     [thisProjectResProp()]: {
-                        eventWithAccessResult,
-
-                        success: true,
+                        getAccessibleEventResult,
+                        calculateEventStatusResult,
                         isDuplicate: eventStatus.status === eventProgress.COMPLETED,
                         actualEventId: eventProgress.COMPLETED ? createdEventId : eventId, //eventS!
                         addedEvents: [{
@@ -330,64 +332,92 @@ export class EventStateController {
     static async getRecentEventOrSchedule(
         userHandler
     ): Promise<ControllerResult<GetRecentEventOrScheduleRes>> {
+        
         const pool = createPool();
         const connection = await pool.getConnection();
 
-        let getRecentEventResult: DbActionResult<EventPropsDbItem>;
-        let getEventStateHooksResult;
-        let getSchduleWithEventsResult;
+        let getRecentEventResult,
+            calculateEventStatusResult,
+            getEventStateHooksResult,
+            getSchduleWithEventsResult;
 
-        getRecentEventResult = await getRecentEvent(connection, userHandler);
-
-        if (getRecentEventResult.error) {
-            throw new Error('getRecentEventResult.error: ' + getRecentEventResult.error);
-        }
-        const recentEvent = getRecentEventResult.result!;
-
-        const minimalEventProps: MinimalEventProps = { id: recentEvent.id, length: recentEvent.length }
-        
-        const { eventStatus } = await calculateEventStatus(connection, minimalEventProps);
-
-        getEventStateHooksResult = await getEventStateHooks(connection, { eventId: recentEvent.id });
-
-        const eventWithState: EventWithStateDTO = { 
-            ...recentEvent, 
-            eventState: eventStatus,
-            eventStateHooks: getEventStateHooksResult.success ? getEventStateHooksResult.hooks : [],
-        }
-        
-        if (recentEvent.schedule_id) {
-            getSchduleWithEventsResult = await getScheduleWithEvents(connection, userHandler, recentEvent.schedule_id);
+        try {
+            getRecentEventResult = await getRecentEvent(connection, userHandler);
             
-            const eventsWithState = await Promise.all(
-                getSchduleWithEventsResult.result.events.map(async eachEvent => {
-                    const eachEventMinimalProps: MinimalEventProps = { id: eachEvent.id, length: eachEvent.length };
-                    const { eventStatus: eachEventStatus } = await calculateEventStatus(connection, eachEventMinimalProps);
-                    const getEachEventStateHooksResult = await getEventStateHooks(connection, { eventId: eachEvent.id });
-                    const eachEventWithState: EventWithStateDTO = { 
-                        ...eachEvent, 
-                        eventState: eachEventStatus,
-                        eventStateHooks: getEachEventStateHooksResult.success ? getEachEventStateHooksResult.hooks : []
-                    };
-                    return eachEventWithState;
-                })
-            );
-    
-            getSchduleWithEventsResult.result.events = eventsWithState;
-        }
-
-        return {
-            data: {
-                recentEvent: eventWithState,
-                recentSchedule: getSchduleWithEventsResult?.result,
-            },
-            debug: {
-                [thisProjectResProp()]: {
-                    getRecentEventResult, //todo add state result
-                    getEventStateHooksResult,
-                    getSchduleWithEventsResult //todo add state result ?
-                },
+            if (getRecentEventResult.error) {
+                throw new Error('getRecentEventResult.error: ' + getRecentEventResult.error);
             }
+            if (getRecentEventResult.result.length === 0) {
+                throw new Error('NO RECENT ITEMS');
+            }
+            const recentEvent: EventPropsDbItem = getRecentEventResult.result?.[0];
+            
+            calculateEventStatusResult = await calculateEventStatus(connection, toMinProps(recentEvent));
+            if (!calculateEventStatusResult.success) {
+                throw new Error(calculateEventStatusResult.error!);
+            }
+
+            const eventStatus: EventStatus = calculateEventStatusResult.result!
+
+            getEventStateHooksResult = await getEventStateHooks(connection, { eventId: recentEvent.id });
+
+            const eventWithState: EventWithStateDTO = { 
+                ...recentEvent, 
+                eventState: eventStatus,
+                eventStateHooks: getEventStateHooksResult.success ? getEventStateHooksResult.hooks : [],
+            }
+            
+            if (recentEvent.schedule_id) {
+                getSchduleWithEventsResult = await getScheduleWithEvents(connection, userHandler, recentEvent.schedule_id);
+                
+                const eventsWithState = await Promise.all(
+                    getSchduleWithEventsResult.result.events.map(async eachEvent => {
+                        const eachEventMinimalProps: MinimalEventProps = { id: eachEvent.id, length: eachEvent.length, event_type: eachEvent.event_type };
+                        const { result: eachEventStatus } = await calculateEventStatus(connection, eachEventMinimalProps);
+                        const getEachEventStateHooksResult = await getEventStateHooks(connection, { eventId: eachEvent.id });
+                        const eachEventWithState: EventWithStateDTO = { 
+                            ...eachEvent, 
+                            eventState: eachEventStatus,
+                            eventStateHooks: getEachEventStateHooksResult.success ? getEachEventStateHooksResult.hooks : []
+                        };
+                        return eachEventWithState;
+                    })
+                );
+        
+                getSchduleWithEventsResult.result.events = eventsWithState;
+            }
+
+            
+            return {
+                data: {
+                    recentEvent: eventWithState,
+                    recentSchedule: getSchduleWithEventsResult?.result,
+                },
+                debug: {
+                    [thisProjectResProp()]: {
+                        getRecentEventResult,
+                        calculateEventStatusResult,
+                        getEventStateHooksResult,
+                        getSchduleWithEventsResult
+                    },
+                }
+            }
+        } catch (e: any) {
+            return {
+                data: {
+                    recentEvent: null,
+                    recentSchedule: null,
+                },
+                debug: {
+                    [thisProjectResProp()]: {
+                        getRecentEventResult,
+                        calculateEventStatusResult,
+                        getEventStateHooksResult,
+                        getSchduleWithEventsResult
+                    }
+                },
+                error: e.message
+            };
         }
-    }
+    } 
 }

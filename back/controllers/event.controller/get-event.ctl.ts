@@ -36,12 +36,12 @@ export const getEventCtl = async (userHandler: string) => {
             ),
             JSON_ARRAY()
         ) as state_hooks
-    FROM events e
-    LEFT JOIN eventToUser etu 
-        ON e.id = etu.event_id AND etu.user_handler = ?
-    LEFT JOIN eventState es ON e.id = es.eventId
-    WHERE e.created_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 1 DAY)
-    ORDER BY e.created_at DESC`,
+        FROM events e
+        LEFT JOIN eventToUser etu 
+            ON e.id = etu.event_id AND etu.user_handler = ?
+        LEFT JOIN eventState es ON e.id = es.eventId
+        WHERE e.created_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 1 DAY)
+        ORDER BY e.created_at DESC`,
             [userHandler]
         );
 
