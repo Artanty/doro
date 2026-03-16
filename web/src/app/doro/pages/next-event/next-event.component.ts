@@ -2,9 +2,11 @@ import { ChangeDetectorRef, Component, EventEmitter, Injector, Input, OnInit, Ou
 import { ActivatedRoute } from '@angular/router';
 import { EventProps, EventState, EventStateResItem, EventStateResItemStateless, EventViewState } from '../../services/event.types';
 import { EventStates, EventTypePrefix } from '../../constants';
-import { BehaviorSubject, catchError, map, Observable, startWith, takeUntil, tap, throwError } from 'rxjs';
+import { BehaviorSubject, catchError, map, Observable, startWith, switchMap, takeUntil, tap, throwError } from 'rxjs';
 import { countPrc } from '../../helpers/count-percent.util';
 import { EventService } from '../../services/event.service';
+import { dd } from '../../helpers/dd';
+import { NextEventService } from '../../services/next-event.service';
 
 @Component({
   selector: 'app-next-event',
@@ -20,28 +22,29 @@ export class NextEventComponent implements OnInit {
 
   eventState$!: Observable<EventViewState<EventStateResItem>>;
   eventProps!: EventProps;
-  
+  eventId!: number 
   constructor(
     // private route: ActivatedRoute
     private cdr: ChangeDetectorRef,
     private eventService: EventService,
     private injector: Injector,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private _nextEventService: NextEventService
   ) {}
-
+  /**
+   * получаем ид
+   * идем в сервис, чтоб понять, что показывать.
+   * */
   ngOnInit(): void {
     let initalState: EventViewState<EventStateResItemStateless> | EventViewState<EventState> = {
       viewState: 'LOADING_VIEW_STATE',
       eventState: -1 // pending
     }
-    const eventProps = this.route.snapshot.data['event']; // todo rewrite to load method & add refresh
-    // dd('eventProps')
-    // dd(eventProps)
-    if (eventProps) {
-      this.eventProps = eventProps;
-    }
-    if (!this.eventProps?.id) {
-      initalState = this._buildErrorState(new Error('no event id, mb forgot resolver'));
+    
+    dd('transitionEventId')
+    dd(this.eventId)
+    if (this.eventId) {
+      this._nextEventService.getNextActionSuggessions(this.eventId);
     }
     this.eventState$ = 
       this.eventService.listenEventState(EventTypePrefix.TRANSITION, this.eventProps?.id)
@@ -88,4 +91,11 @@ export class NextEventComponent implements OnInit {
     return errorState;
   }
   
+  public finishEvent() {
+    const id = this.eventId;
+    this.eventService.finishEvent(id).subscribe(res => {
+      dd('FINISHED')
+    })
+  }
+
 }

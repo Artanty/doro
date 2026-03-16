@@ -5,7 +5,7 @@ import { BusEvent, EVENT_BUS_LISTENER, HOST_NAME } from "typlib";
 import { animate, style, transition, trigger } from "@angular/animations";
 import { Router } from "@angular/router";
 import { EventService } from "./services/event.service";
-import { filterTransitionEvents } from "./helpers/filterTransitionEvents";
+import { filterActiveTransitionEvents, filterTransitionEvents } from "./helpers/filterTransitionEvents";
 import { dd } from "./helpers/dd";
 import { NextEventService } from "./services/next-event.service";
 
@@ -56,7 +56,7 @@ export class DoroComponent implements OnInit {
     }
 
     this._eventService.listenEvents().pipe(
-      map(res => res.filter(filterTransitionEvents)),
+      map(res => res.filter(filterActiveTransitionEvents)),
       filter(res => res && res.length > 0)
     ).subscribe(res => {
       this._nextEventService.onTransitionFound(res)

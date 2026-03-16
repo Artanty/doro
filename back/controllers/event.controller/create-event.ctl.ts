@@ -17,7 +17,8 @@ export const createEventCtl = async (
 	userHandler: string,
 	base_access: number,
 	state: number,
-	hooks: CreateEventStateHookParams[]
+	hooks: CreateEventStateHookParams[],
+	created_from: string
 ) => {
 	const pool = createPool();
 	const connection = await pool.getConnection();
@@ -28,8 +29,8 @@ export const createEventCtl = async (
 		upsertEventStateResult;
 	try {
 		await connection.beginTransaction();
-
-		createEventResult = await createEventDb(connection, name, length, type, userHandler, base_access);
+		
+		createEventResult = await createEventDb(connection, name, length, type, userHandler, base_access, created_from);
 		if (createEventResult.error) {
 			throw new Error(createEventResult.error);
 		}

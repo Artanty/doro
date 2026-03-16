@@ -48,6 +48,7 @@ CREATE TABLE events (
     created_by VARCHAR(255) NOT NULL COMMENT 'user_handler',
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL,
+    created_from VARCHAR(255) NOT NULL,
     FOREIGN KEY (type) REFERENCES eventTypes(id) ON DELETE RESTRICT,
     FOREIGN KEY (schedule_id) REFERENCES schedules(id) ON DELETE SET NULL,
     

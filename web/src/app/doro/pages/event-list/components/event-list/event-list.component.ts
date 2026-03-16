@@ -27,9 +27,13 @@ export class EventListComponent implements OnInit {
   //   // this.itemActionAway.emit({ user, selectedAction: selectedAction.id })
   // }
   scheduleMenuItems$: Observable<Schedule[]>;
-
+  /**
+   * грузим всё что есть за сутки,
+   * если встречается транзишн-ивент - роутимся на его страницу.
+   * 
+   * */
   ngOnInit() {
-    this.eventService.loadRecentEventOrSchedule().subscribe();
+    this.eventService.loadEvents().subscribe();
   }
 
   constructor(

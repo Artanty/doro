@@ -6,7 +6,7 @@ import { thisProjectResProp } from '../../utils/getResProp';
 
 dotenv.config();
 
-export const getEventCtl = async (userHandler: string) => {
+export const getEventCtl = async (userHandler: string, filters: any) => {
     const pool = createPool();
     const connection = await pool.getConnection();
     try {

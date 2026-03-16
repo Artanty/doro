@@ -27,7 +27,7 @@ import { TimerComponent } from './pages/timer/components/timer/timer.component';
 import { AccessLevelService } from './services/access-level.service';
 import { CompareConfigHashAction } from './services/compare-config-hash.action';
 import { EventTypeService } from './services/event-type.service';
-import { EventMapperService } from './services/event.mapper';
+
 import { ScheduleService } from './services/schedule.service';
 import { SetConfigHashAction } from './services/set-config-hash.action';
 import { NextEventService } from './services/next-event.service';
@@ -111,7 +111,7 @@ export const CHILD_ROUTES = [
     AccessLevelService,
     EventTypeService,
     ScheduleService,
-    EventMapperService,
+    
 
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -155,9 +155,7 @@ export class DoroModule implements DoBootstrap {
       filter(Boolean),
       switchMap(() => {
         dd('configHash not equal. refresh...')
-        return this.eventService.loadRecentEventOrSchedule();
-
-        return of(8)
+        return this.eventService.loadEvents();
       })
     )
       .subscribe();

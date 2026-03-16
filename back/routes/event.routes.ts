@@ -6,10 +6,10 @@ const router = express.Router();
 
 router.post('/create', async (req, res) => {
   try {
-    const { name, length, type, base_access, state, hooks } = req.body;
+    const { name, length, type, base_access, state, hooks, created_from } = req.body;
     const user = getUserFromRequest(req);
     const result = await EventController.createEvent(
-      name, length, type, user, base_access, state, hooks
+      name, length, type, user, base_access, state, hooks, created_from
     );
     res.status(201).json(result);
   } catch (error: unknown) {
@@ -19,8 +19,9 @@ router.post('/create', async (req, res) => {
 
 router.post('/get', async (req, res) => {
   try {
+    const { filters } = req.body;
     const user = getUserFromRequest(req);
-    const result = await EventController.getEvents(user);
+    const result = await EventController.getEvents(user, filters);
     res.json(result);
   } catch (error) {
     handleError(res as unknown as Response, error) 

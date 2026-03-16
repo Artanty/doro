@@ -3,6 +3,7 @@ import { Injectable } from "@angular/core";
 import { BehaviorSubject, catchError, finalize, map, Observable, of, shareReplay, tap } from "rxjs";
 import { dd } from "../helpers/dd";
 import { EventService } from "./event.service";
+import { EventProps } from "./event.types";
 
 
 export interface Schedule {
@@ -74,5 +75,16 @@ export class ScheduleService {
 				}),
 				map(() => true),
 			)
+	}
+
+	public getNextEventsOfSchedule(scheduleId: number, event: EventProps): EventProps[] {
+		return this._getEventsBySchedule(scheduleId).sort((a, b) => {
+			return Number(a.schedule_position) - Number(b.schedule_position)
+		}).filter(el => Number(el.schedule_position) > Number(event.schedule_position))
+	}
+
+	private _getEventsBySchedule(scheduleId: number): EventProps[] {
+		return this._eventService.events$.getValue()
+			.filter(event => event.schedule_id === scheduleId)
 	}
 }

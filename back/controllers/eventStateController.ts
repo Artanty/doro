@@ -40,6 +40,7 @@ export class EventStateController {
         let getAccessibleEventResult,
             upsertStateResult,
             addEventStateHistoryResult,
+            tikEntriesPayload,
             tikResponse;
         try {
             await connection.beginTransaction();
@@ -70,33 +71,12 @@ export class EventStateController {
             const updatedEventsWithStatus: EventStateResItem[] = await buildTikEvents(connection, toMinProps(eventProps));
             await connection.commit();
 
-            const tikAction = 'update';
-            const updatedEventStatusWithTikAction = OuterSyncService.addOuterActionInEvents(updatedEventsWithStatus, tikAction);
-            const tikUpdateEntryPayload = {
-                poolId: 'current_user_id',
-                data: updatedEventStatusWithTikAction,
-                projectId: 'doro@web',
-            }
-            tikResponse = await axios.post(`${process.env['TIK_BACK_URL']}/updateEventsState`,
-                // {
-                //     poolId: 'current_user_id',
-                //     data: updatedEventStatusWithTikAction,
-                //     projectId: 'doro@web',
-
-                //     // requesterProject,
-                //     // requesterApiKey: apiKeyHeader,
-                //     // requesterUrl
-                // }
-                tikUpdateEntryPayload
-                // ,
-                //  {
-                //   headers: {
-                //     'X-Project-Id': process.env.PROJECT_ID,
-                //     'X-Project-Domain-Name': `${req.protocol}://${req.get('host')}`,
-                //     'X-Api-Key': process.env.BASE_KEY
-                //   }
-                // }
-            );
+            ConfigManager.setConfigHash();
+            const hashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert');
+            const eventsPayload = OuterSyncService.addOuterActionInEvents(updatedEventsWithStatus, 'update');
+            tikEntriesPayload = [...hashPayload, ...eventsPayload]
+            await OuterSyncService.updateOuterEntries(tikEntriesPayload);
+            
             return {
                 data: {
                     success: true,
@@ -115,7 +95,7 @@ export class EventStateController {
                         addEventStateHistoryResult,
                     },
                     [tikResProp()]: {
-                        request: tikUpdateEntryPayload,
+                        request: tikEntriesPayload,
                         response: parseServerResponse(tikResponse),
                     }
                 }

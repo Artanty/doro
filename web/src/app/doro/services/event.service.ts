@@ -1,13 +1,12 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable, Inject } from "@angular/core";
-import { BehaviorSubject, Observable, delay, tap, map, catchError, of, throwError, distinctUntilChanged, filter } from "rxjs";
+import { BehaviorSubject, Observable, delay, tap, map, catchError, of, throwError, distinctUntilChanged, filter, switchMap } from "rxjs";
 import { EVENT_BUS_LISTENER, BusEvent } from "typlib";
 import { dd } from "../helpers/dd";
 import { filterStreamDataEntries } from "../helpers/filterStreamDataEntries";
 import { AppStateService } from "./app-state.service";
-import { EventMapperService } from "./event.mapper";
-import { GetRecentRes } from "./event.dto";
 import { EventProps, GetUserEventsRes, EventStateReq, EventState, EventStateRes, SetPlayEventStateReq, EventStateResItem } from "./event.types";
+import { GetRecentRes } from "./event.types.api";
 
 @Injectable(
   // {
@@ -25,17 +24,39 @@ export class EventService {
     @Inject(EVENT_BUS_LISTENER)
     private readonly eventBusListener$: Observable<BusEvent>,
     private _appStateService: AppStateService,
-    private _eventMapperService: EventMapperService
+
   ) {
     this.eventBusListener$.subscribe(res => {
       // dd(res)
     });
-    
+  }
+
+  loadEvents(): Observable<boolean> {
+    const filters = {
+
+    }
+    return this.http.post<GetUserEventsRes>(`${this.doroBaseUrl}/event/get`, filters)
+      .pipe(
+        tap((res: GetUserEventsRes) => {
+          const data: EventProps[] = res.data;
+          if (!data) throw new Error('wrong response format');
+
+          this.events$.next(data)
+        }),
+        catchError((err: any) => {
+          dd(err)
+          return of(false);
+        }),
+        map(() => true),
+      )
   }
 
   public createEvent(payload: any) {
     const apiUrl = `${process.env['DORO_BACK_URL']}/event/create`;
-    return this.http.post(apiUrl, payload).pipe(delay(1000))
+    return this.http.post(apiUrl, payload).pipe(
+      switchMap(() => {
+        return this.loadEvents(); //self only. others via hash
+      })) 
   }
 
   public addToSchedule(eventId: number, scheduleId: number): Observable<unknown> {
@@ -62,9 +83,7 @@ export class EventService {
     return this.events$.asObservable();
   }
 
-  getUserEventsApi(): Observable<GetUserEventsRes> {
-    return this.http.post<GetUserEventsRes>(`${this.doroBaseUrl}/event/get`, null);
-  }
+
 
   setEventStateApi(data: EventStateReq): Observable<EventState> {
     return this.http.post<EventStateRes>(`${this.doroBaseUrl}/event-state/set-event-state`, data)
@@ -95,61 +114,34 @@ export class EventService {
       )
   }
 
-  deleteEventApi(data: { id: number }): Observable<boolean> {
-    return this.http.post<any>(`${this.doroBaseUrl}/event/delete`, data)
-      .pipe(
-        map(res => {
-          if (res.data.success) {
-            return true;
-          } else {  
-            throw new Error('deleteEventApi wrong response')
-          }
-        })
-      );
-  }
 
-  loadEvents(): Observable<boolean> {
-    return this.getUserEventsApi()
-      .pipe(
-        tap((res: GetUserEventsRes) => {
-          const data: EventProps[] = res.data;
-          if (!data) throw new Error('wrong response format');
+  
 
-          this.events$.next(data)
-        }),
-        catchError((err: any) => {
-          dd(err)
-          return of(false);
-        }),
-        map(() => true),
-      )
-  }
-
-  public loadRecentEventOrSchedule() {
-    return this.http.post<GetRecentRes>(`${this.doroBaseUrl}/event-state/get-recent-event-or-schedule`, null)
-      .pipe(
-        tap((res: GetRecentRes) => {
-          dd(res)
-          let events: EventProps[] = [];
-          const { recentEvent, recentSchedule } = res.data;
-          if (recentEvent) {
-            events = [this._eventMapperService.eventDtoToModel(recentEvent)];
-          }
-          if (recentSchedule) {
-            if (recentSchedule.events) {
-              events = recentSchedule.events.map(el => this._eventMapperService.eventDtoToModel(el));  
-            }
-          }
-          dd(events)
-          this.events$.next(events);
-        }),
-        catchError((err: any) => {
-          dd(err)
-          return of(false);
-        }),
-        map(() => true),
-      )
-  }
+  // public loadRecentEventOrSchedule() {
+  //   return this.http.post<GetRecentRes>(`${this.doroBaseUrl}/event-state/get-recent-event-or-schedule`, null)
+  //     .pipe(
+  //       tap((res: GetRecentRes) => {
+  //         dd(res)
+  //         let events: EventProps[] = [];
+  //         const { recentEvent, recentSchedule } = res.data;
+  //         if (recentEvent) {
+  //           events = [this._eventMapperService.eventDtoToModel(recentEvent)];
+  //         }
+  //         if (recentSchedule) {
+  //           if (recentSchedule.events) {
+  //             events = recentSchedule.events.map(el => this._eventMapperService.eventDtoToModel(el));  
+  //           }
+  //         }
+  //         dd(events)
+  //         this.events$.next(events);
+  //       }),
+  //       catchError((err: any) => {
+  //         dd(err)
+  //         return of(false);
+  //       }),
+  //       map(() => true),
+  //     )
+  // }
   // staticEventsState$
   public getRecentEventOrSchedule() {
     return this.http.post<any>(`${this.doroBaseUrl}/event-state/get-recent-event-or-schedule`, null)
@@ -195,7 +187,8 @@ export class EventService {
   }
 
   public deleteEvent(id: number) {
-    this.deleteEventApi({ id: id }).pipe(
+    const payload = { id: id };
+    this.http.post<any>(`${this.doroBaseUrl}/event/delete`, payload).pipe(
       tap(() => {
         const currentEvents = this.events$.getValue();
         const updatedEvents = currentEvents.filter(e => e.id !== id);
@@ -209,8 +202,6 @@ export class EventService {
   }
 
   public pauseEvent(eventId: number) {
-    const poolId = `doro@web_events_${eventId}`
-    const connId = 'doro'
     return this.setEventStateApi({
       "eventId": eventId, 
       "state": 2
@@ -239,4 +230,16 @@ export class EventService {
       { id: 4, name: 'Владелец' },
     ]
   }
+
+  public finishEvent(eventId: number) {
+    return this.setEventStateApi({
+      "eventId": eventId, 
+      "state": 3
+    }).pipe(
+      switchMap(() => {
+        return this.loadEvents(); //self only. others via hash
+      })
+    )   
+  }
+
 }

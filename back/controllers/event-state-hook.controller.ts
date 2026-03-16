@@ -72,10 +72,18 @@ export class EventStateHookController {
 				switch (actionType) {
 					case 'script':
 						if (hook.action_config?.scriptId === 'nextEvent') {
+							const config = {
+								...hook.action_config,
+								// next_event_type: 3,
+								// next_event_length: 86400,
+							}
+							const created_from = `h_${hook.id}`;
+
 							hookResult = await this.createTransitionEvent(
 								connection, 
 								hook.event_id,
-								hook.action_config
+								created_from,
+								config,
 							);
 						}
 						break;
@@ -126,6 +134,7 @@ export class EventStateHookController {
 	static async createTransitionEvent(
 		connection: any, 
 		eventId: number,
+		created_from: string,
 		config?: any
 	): Promise<CreateTransitionEvent> {
 		
@@ -159,7 +168,8 @@ export class EventStateHookController {
 				transitionEventLength, 
 				transitionEventType, 
 				sourceEvent.created_by, 
-				sourceEvent.base_access_id
+				sourceEvent.base_access_id,
+				sourceEvent.id
 			);
 			
 			if (createEventResult.error) {

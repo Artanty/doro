@@ -39,7 +39,10 @@ export interface EventProps {
 	base_access_id: number;
 	// access_level: "owner" | "editor" | "viewer"; //remove on backend
 	has_access: number; // 0 or 1 (boolean)
-	state_hooks: EventStateHook[]
+	state_hooks: EventStateHook[],
+	created_from: string,
+
+	current_state: number
 }
 
 export interface EventWithState { // todo rename
