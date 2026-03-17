@@ -31,6 +31,7 @@ import { EventTypeService } from './services/event-type.service';
 import { ScheduleService } from './services/schedule.service';
 import { SetConfigHashAction } from './services/set-config-hash.action';
 import { NextEventService } from './services/next-event.service';
+import { ApiServce } from './services/api.service';
 
 export const CHILD_ROUTES = [
   {
@@ -111,7 +112,7 @@ export const CHILD_ROUTES = [
     AccessLevelService,
     EventTypeService,
     ScheduleService,
-    
+    ApiServce
 
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],

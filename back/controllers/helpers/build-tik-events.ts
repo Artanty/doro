@@ -6,7 +6,7 @@ import { calculateEventStatus } from "./calculate-event-status.ts";
 
 export const buildTikEvents = async (connection, events: MinimalEventProps | MinimalEventProps[]): Promise<EventStateResItem[]> => {
     events = ensureArray(events);
-    dd(events)
+    
     const eventsWithStatus = await Promise.all(
         events.map(async (eventProps: MinimalEventProps) => {
             const { result: eventStatus } = await calculateEventStatus(connection, eventProps);

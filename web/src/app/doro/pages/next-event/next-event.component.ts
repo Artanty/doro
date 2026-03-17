@@ -1,5 +1,7 @@
 import { ChangeDetectorRef, Component, EventEmitter, Injector, Input, OnInit, Output } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { Location } from '@angular/common';
+
+import { ActivatedRoute, Router } from '@angular/router';
 import { EventProps, EventState, EventStateResItem, EventStateResItemStateless, EventViewState } from '../../services/event.types';
 import { EventStates, EventTypePrefix } from '../../constants';
 import { BehaviorSubject, catchError, map, Observable, startWith, switchMap, takeUntil, tap, throwError } from 'rxjs';
@@ -25,7 +27,8 @@ export class NextEventComponent implements OnInit {
   eventProps!: EventProps;
   eventId!: number 
   constructor(
-    // private route: ActivatedRoute
+    // private router: Router,
+    private location: Location,
     private cdr: ChangeDetectorRef,
     private eventService: EventService,
     private injector: Injector,
@@ -59,7 +62,7 @@ export class NextEventComponent implements OnInit {
         this.endedEvent = suggessions.endedEvent;
       }
       dd(suggessions)
-      this.cdr.detectChanges()
+      this.cdr.detectChanges();
     }
     this.eventState$ = 
       this.eventService.listenEventState(EventTypePrefix.TRANSITION, this.eventProps?.id)
@@ -107,10 +110,14 @@ export class NextEventComponent implements OnInit {
   }
   
   public finishEvent() {
-    const id = this.eventId;
-    this.eventService.finishEvent(id).subscribe(res => {
-      dd('FINISHED')
-    })
+    if (this.nextEvent.id) {
+      const idToFinish = this.eventId;
+      this._nextEventService.finishTransitionAndStartNextEvent(idToFinish, this.nextEvent.id).subscribe(res => {
+        dd('FINISHED')
+        this.location.back()
+      })
+    }
+    
   }
 
 }

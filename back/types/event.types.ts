@@ -14,6 +14,7 @@ export interface EventPropsDbItem {
 }
 
 export const toMinProps = (dbItem: EventPropsDbItem): MinimalEventProps => {
+	// debugger;
 	return {
 		"id": dbItem.id,
 		"length": dbItem.length,

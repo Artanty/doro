@@ -15,7 +15,7 @@ export const calculateEventStatus = async (
     const eventId = event.id;
     const eventLengthSeconds = event.length;
     let currentStateResult: DbActionResult<GetEventStateResult>;
-        
+    // debugger;
     currentStateResult = await getEventState(connection, event);
 
     if (!currentStateResult.success) {

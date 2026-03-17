@@ -12,6 +12,20 @@ import { getEventStateHooksByState } from "../db-actions/get-event-state-hooks";
 import { EventStateHookController } from "./event-state-hook.controller";
 import { buildOuterEntityId, EntryType } from "../utils/buildOuterEntityId";
 
+export interface TikResStat {
+	added: string[],
+	addedCount: number,
+	deleted: string[],
+	deletedCount: number,
+	updated: string[],
+	updatedCount: number,
+}
+
+export interface TikRes {
+	desc: string,
+	stat: TikResStat,
+	success: boolean
+}
 
 export interface OuterEntry {
 	id: string,
@@ -83,7 +97,7 @@ export class OuterSyncService {
 		}));
 	}
 
-	public static async updateOuterConfigHash(): Promise<any> {
+	public static async updateOuterConfigHash(): Promise<TikRes> {
 		dd('updateOuterConfigHash started: ' + ConfigManager.configHash)
         
 		const payload = this.buildUpdateOuterHashPayload('upsert');
@@ -125,9 +139,6 @@ export class OuterSyncService {
 
 	// todo: add api key.
 	public static async updateOuterEntries(payload: OuterEntry[]): Promise<any> {
-		dd('uupdateOuterEntries started: ')
-		dd(payload)
-       
 		let tikResponse;
 		try {
 			// todo rename 'updateEventsState' -> updateEntries
@@ -148,8 +159,6 @@ export class OuterSyncService {
 			console.error('process.env[TIK_BACK_URL]/updateEventsState error:', error.message);
 			throw new Error(error);
 		}
-		dd('updateOuterEntries result:')
-		dd(parseServerResponse(tikResponse))
 		
 		return parseServerResponse(tikResponse);
 	}

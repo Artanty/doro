@@ -1,11 +1,13 @@
 import { Injectable } from "@angular/core";
-import { EventProps } from "./event.types";
+import { EventProps, EventStateReq } from "./event.types";
 import { Router } from "@angular/router";
 import { dd } from "../helpers/dd";
 import { EventService } from "./event.service";
 import { EventProgress } from "../constants";
 import { ScheduleService } from "./schedule.service";
 import { AppStateService } from "./app-state.service";
+import { ApiServce } from "./api.service";
+import { Observable } from "rxjs";
 
 export interface EventStateHook {
 	"id": number
@@ -25,6 +27,7 @@ export class NextEventService {
 		private _eventService: EventService,
 		private _scheduleService: ScheduleService,
 		private _state: AppStateService,
+		private _api: ApiServce
 	) {}
 	/**
 	 * появился ивент перехода - роутим на компонент.
@@ -128,5 +131,21 @@ export class NextEventService {
 		const allEvents = this._state.events.getValue();
 		const foundParentEvent = allEvents.find(event => event.id === eventId);
 		return foundParentEvent;
+	}
+
+	public finishTransitionAndStartNextEvent(idToFinish: number, idToPlay: number): Observable<any> {
+		const payload: EventStateReq = {
+			eventStates: [
+				{
+					"eventId": idToFinish, 
+					"state": 3
+				},
+				{
+					"eventId": idToPlay, 
+					"state": 1
+				}
+			]
+		};
+		return this._api.setEventStateApi(payload);
 	}
 }

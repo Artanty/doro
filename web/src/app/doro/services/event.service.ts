@@ -182,10 +182,15 @@ export class EventService {
   }
 
   public pauseEvent(eventId: number) {
-    return this.setEventStateApi({
-      "eventId": eventId, 
-      "state": 2
-    })
+    const payload: EventStateReq = {
+      eventStates: [
+        {
+          "eventId": eventId, 
+          "state": 2
+        }
+      ]
+    }
+    return this.setEventStateApi(payload)
       .subscribe()
   }
   
@@ -212,10 +217,15 @@ export class EventService {
   }
 
   public finishEvent(eventId: number) {
-    return this.setEventStateApi({
-      "eventId": eventId, 
-      "state": 3
-    }).pipe(
+    const payload: EventStateReq = {
+      eventStates: [
+        {
+          "eventId": eventId, 
+          "state": 3
+        }
+      ]
+    }
+    return this.setEventStateApi(payload).pipe(
       switchMap(() => {
         return this.loadEvents(); //self only. others via hash
       })

@@ -5,14 +5,17 @@ import { getUserFromRequest } from '../utils/getUserFromRequest';
 
 import { dd } from '../utils/dd';
 import { EventStateController } from '../controllers/eventStateController';
+import { UpsertEventStateItem } from '../db-actions/upsert-event-state';
 const router = express.Router();
 
 router.post('/set-event-state', async (req, res) => {
   try {
-    const { eventId, state } = req.body;
+    const eventStates: UpsertEventStateItem[] = req.body.eventStates;
     const user = getUserFromRequest(req);
     const result = await EventStateController.createOrUpdateEventState(
-      user, eventId, state
+      user, 
+      eventStates,
+      // eventId, state
     );
     res.status(201).json(result);
   } catch (error: unknown) {

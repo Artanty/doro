@@ -73,9 +73,13 @@ export interface EventStateRes {
 	"eventState": EventState
 }
 
+export interface EventStateReqItem { 
+	eventId: any, state: any 
+}
 export interface EventStateReq {
-	"eventId": number, 
-	"state": number
+	// "eventId": number, 
+	// "state": number
+	eventStates: EventStateReqItem[]
 }
 
 

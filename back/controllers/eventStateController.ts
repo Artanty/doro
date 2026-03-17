@@ -7,10 +7,10 @@ import { parseServerResponse } from '../utils/parseServerResponse';
 import { buildOuterEntityId } from '../utils/buildOuterEntityId';
 import { thisProjectResProp, tikResProp } from '../utils/getResProp';
 import { ConfigManager } from './config-manager';
-import { OuterSyncService } from './outer-sync.service';
-import { upsertEventState } from '../db-actions/upsert-event-state';
-import { addEventStateHistory } from '../db-actions/add-event-state-history';
-import { ACCESS_CASE, getAccessibleEvent } from '../db-actions/get-accessible-event';
+import { OuterSyncService, TikRes } from './outer-sync.service';
+import { bulkUpsertEventState, upsertEventState, UpsertEventStateItem } from '../db-actions/upsert-event-state';
+import { addEventStateHistory, bulkAddEventStateHistory } from '../db-actions/add-event-state-history';
+import { ACCESS_CASE, getAccessibleEvent, getAccessibleEvents } from '../db-actions/get-accessible-event';
 import { createEvent, DbActionResult } from '../db-actions/create-event';
 import { upsertEventAccess } from '../db-actions/upsert-event-access';
 import { getRecentEvent } from '../db-actions/get-recent-event';
@@ -23,6 +23,7 @@ import { getEventStateHooks } from '../db-actions/get-event-state-hooks';
 import { createEventStateHooks } from '../db-actions/create-event-state-hooks';
 import { buildTikEvents } from './helpers/build-tik-events';
 import { calculateEventStatus } from './helpers/calculate-event-status.ts';
+import { formatBulkErrors } from '../utils/format-bulk-errors.utl';
 
 dotenv.config();
 
@@ -32,61 +33,52 @@ export class EventStateController {
      */
     static async createOrUpdateEventState(
         userHandler: any, 
-        eventId: any, 
-        state: any,
+        eventStates: UpsertEventStateItem[],
+        // eventId: any, 
+        // state: any,
     ): Promise<any> {
+        // debugger;
         const pool = createPool();
         const connection = await pool.getConnection();
         let getAccessibleEventResult,
             upsertStateResult,
             addEventStateHistoryResult,
             tikEntriesPayload,
-            tikResponse;
+            tikResponse!: TikRes;
         try {
             await connection.beginTransaction();
 
-            getAccessibleEventResult = await getAccessibleEvent(connection, eventId, userHandler, ACCESS_CASE.UPDATE);
+            const idsToCheck = eventStates.map(e => e.eventId)
+            getAccessibleEventResult = await getAccessibleEvents(connection, idsToCheck, userHandler, ACCESS_CASE.UPDATE);
             if (!getAccessibleEventResult.success) {
-                throw new Error(getAccessibleEventResult.error!);
+                throw new Error(formatBulkErrors(getAccessibleEventResult));
             }
 
-            upsertStateResult = await upsertEventState(connection, eventId, state) // todo add false return if no updated
+            upsertStateResult = await bulkUpsertEventState(connection, eventStates) // todo add false return if no updated
             
-            if (!upsertStateResult.isStateUpdated) {
-                await connection.commit();
-                return {
-                    eventId,
-                    state,
-                    userHandler,
-                    created: false,
-                    updated: false,
-                    stateChanged: false
-                };
+            if (!upsertStateResult.success) {
+                throw new Error('state is not updated');
             }
-           
-            addEventStateHistoryResult = await addEventStateHistory(connection, eventId, state)
-
-            const eventProps: EventPropsDbItem = getAccessibleEventResult.result[0];
-           
-            const updatedEventsWithStatus: EventStateResItem[] = await buildTikEvents(connection, toMinProps(eventProps));
+            
+            addEventStateHistoryResult = await bulkAddEventStateHistory(connection, eventStates)
+            // debugger;
+            const eventsArr = Array.from(getAccessibleEventResult.results.values());
+            const minProps = eventsArr.map(e => toMinProps(e as EventPropsDbItem));
+            // const eventProps: EventPropsDbItem = getAccessibleEventResult.results.get(eventId);
+            
+            // const minProps = toMinProps(eventProps);
+            const updatedEventsWithStatus: EventStateResItem[] = await buildTikEvents(connection, minProps);
             await connection.commit();
 
             ConfigManager.setConfigHash();
             const hashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert');
             const eventsPayload = OuterSyncService.addOuterActionInEvents(updatedEventsWithStatus, 'update');
             tikEntriesPayload = [...hashPayload, ...eventsPayload]
-            await OuterSyncService.updateOuterEntries(tikEntriesPayload);
+            tikResponse = await OuterSyncService.updateOuterEntries(tikEntriesPayload);
             
             return {
                 data: {
                     success: true,
-                    
-                    updatedEvents: [{
-                        id: eventProps.id,
-                        name: eventProps.name,
-                        length: eventProps.length,
-                        access_level: (eventProps as any)?.access_level ?? 'wrong prop name'
-                    }],
                 },
                 debug: {
                     [thisProjectResProp()]: {
@@ -96,14 +88,31 @@ export class EventStateController {
                     },
                     [tikResProp()]: {
                         request: tikEntriesPayload,
-                        response: parseServerResponse(tikResponse),
+                        response: tikResponse,
                     }
                 }
             };
 
-        } catch (error) {
+        } catch (error: any) {
             await connection.rollback();
-            throw error;
+            return {
+                data: {
+                    success: false,
+                    updatedEvents: [],
+                },
+                debug: {
+                    [thisProjectResProp()]: {
+                        getAccessibleEventResult,
+                        upsertStateResult,
+                        addEventStateHistoryResult,
+                    },
+                    [tikResProp()]: {
+                        request: tikEntriesPayload,
+                        response: tikResponse,
+                    }
+                },
+                error: error.message
+            };
         } finally {
             connection.release();
         }
@@ -191,7 +200,7 @@ export class EventStateController {
                 throw new Error(getAccessibleEventResult.error!);
             }
 
-            const eventProps: EventPropsDbItem = getAccessibleEventResult.result[0];
+            const eventProps: EventPropsDbItem = getAccessibleEventResult.result;
             calculateEventStatusResult = await calculateEventStatus(connection, toMinProps(eventProps));
             if (!calculateEventStatusResult.success) {
                 throw new Error(calculateEventStatusResult.error!);
