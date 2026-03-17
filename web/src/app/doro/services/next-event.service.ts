@@ -3,7 +3,7 @@ import { EventProps, EventStateReq } from "./event.types";
 import { Router } from "@angular/router";
 import { dd } from "../helpers/dd";
 import { EventService } from "./event.service";
-import { EventProgress } from "../constants";
+import { EventProgress, eventTypes } from "../constants";
 import { ScheduleService } from "./schedule.service";
 import { AppStateService } from "./app-state.service";
 import { ApiServce } from "./api.service";
@@ -29,10 +29,7 @@ export class NextEventService {
 		private _state: AppStateService,
 		private _api: ApiServce
 	) {}
-	/**
-	 * появился ивент перехода - роутим на компонент.
-	 * зачем айди? - прокинуть в компонент, чтобы он искал родителя
-	 * */
+
 	public onTransitionFound(res: EventProps[]) {
 		const transitionEvent = res[0];
 		this._router.navigateByUrl(`doro/next-event/${transitionEvent.id}`);
@@ -51,10 +48,6 @@ export class NextEventService {
 			.find(hook => hook.id === Number(hookId));
 	}
 
-	// public getHookLifecycleTrigger (transitionEventId: number, hookId: number) {
-	// 	this.findParentEvent()
-	// }
-
 	public getCreatedFromEntity(transitionEvent: EventProps): EventStateHook | EventProps {
 		let result: any
 		const createdFromId = transitionEvent.created_from; // e_324 or h_123
@@ -68,7 +61,6 @@ export class NextEventService {
 				result = this.getEvent(entityId);
 				break;
 			default:
-				// console.warn(`Unknown entity type: ${entityType}`);
 				throw new Error(`Unknown entity type: ${entityType}`)
 		}
 		return result;
@@ -115,11 +107,22 @@ export class NextEventService {
 		if (!scheduleId) throw new Error('event without schedule - not implemented');
 		const nextEventsBySchedule = this._scheduleService.getNextEventsOfSchedule(scheduleId, creatorEvent);
 
-		// dd('nextEventsBySchedule');
-		// dd(nextEventsBySchedule)
+		const nextTypeByEventType = creatorEvent.type === eventTypes.REST
+			? eventTypes.WORK
+			: eventTypes.REST;
+
+
+		const nextTypeByEventSchedule = this.getNextScheduleInfo(creatorEvent);
+		
+		const nextByEventType = {
+			...nextTypeByEventSchedule,
+			type: nextTypeByEventType
+		}
+
 		return {
 			endedEvent: creatorEvent,
-			nextEventsBySchedule
+			nextEventsBySchedule,
+			nextByEventType
 		}
 	}
 
@@ -148,4 +151,24 @@ export class NextEventService {
 		};
 		return this._api.setEventStateApi(payload);
 	}
+
+	private getNextScheduleInfo(event: EventProps): NextScheduleInfo {
+		let schedule_id = null;
+		let schedule_position = null;
+
+		if (!!event.schedule_id) {
+			schedule_id = event.schedule_id;
+			schedule_position = this._scheduleService.getNextPositionInSchedule(event.schedule_id);
+		}
+
+		return {
+			schedule_id,
+			schedule_position
+		};
+	}
+}
+
+export interface NextScheduleInfo {
+	schedule_id: number | null,
+	schedule_position: number | null		
 }
