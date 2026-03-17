@@ -111,7 +111,6 @@ export class NextEventService {
 			? eventTypes.WORK
 			: eventTypes.REST;
 
-
 		const nextTypeByEventSchedule = this.getNextScheduleInfo(creatorEvent);
 		
 		const nextByEventType = {

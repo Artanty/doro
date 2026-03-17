@@ -40,17 +40,17 @@ CREATE TABLE eventStatesDictionary (
 CREATE TABLE events (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL,
-    length INT NOT NULL COMMENT 'Duration in seconds,
+    length INT NOT NULL COMMENT 'Duration in seconds',
     type INT NOT NULL,
     base_access_id INT NOT NULL,
-    schedule_id INT NULL,
-    schedule_position FLOAT NULL,
+    schedule_id INT NOT NULL,  -- Changed from NULL to NOT NULL
+    schedule_position FLOAT NOT NULL,  -- Changed from NULL to NOT NULL
     created_by VARCHAR(255) NOT NULL COMMENT 'user_handler',
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL,
     created_from VARCHAR(255) NOT NULL,
     FOREIGN KEY (type) REFERENCES eventTypes(id) ON DELETE RESTRICT,
-    FOREIGN KEY (schedule_id) REFERENCES schedules(id) ON DELETE SET NULL,
+    FOREIGN KEY (schedule_id) REFERENCES schedules(id) ON DELETE CASCADE,
     
     INDEX idx_schedule_order (schedule_id, schedule_position),
     INDEX idx_created_by (created_by)

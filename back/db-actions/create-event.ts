@@ -14,8 +14,11 @@ export const createEvent = async (
 	length: number,
 	type: number,
 	userHandler: string,
+	schedule_id: number,
+	schedule_position: number,
 	base_access: number = 0,
 	created_from: string = '',
+
 ): Promise<DbActionResult> => {
 
 	const res = {
@@ -26,8 +29,8 @@ export const createEvent = async (
 	
 	try {
 		const [eventResult] = await connection.execute(
-			'INSERT INTO events (name, length, type, created_at, created_by, base_access_id, created_from) VALUES (?, ?, ?, ?, ?, ?, ?)',
-			[name, length, type, getUTCDatetime(), userHandler, base_access, created_from]
+			'INSERT INTO events (name, length, type, created_at, created_by, base_access_id, created_from, schedule_id, schedule_position) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+			[name, length, type, getUTCDatetime(), userHandler, base_access, created_from, schedule_id, schedule_position]
 		);
                 
 		res.success = true;

@@ -7,8 +7,8 @@ export interface EventPropsDbItem {
 	"type": number
 	"created_at": string
 	"updated_at": string | null,
-	"schedule_id": number | null,
-	"schedule_position": number | null,
+	"schedule_id": number,
+	"schedule_position": number,
 	"created_by": string, //todo remve
 	"base_access_id": number //todo remve
 }

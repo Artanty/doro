@@ -6,6 +6,8 @@ import { getUserFromRequest } from '../utils/getUserFromRequest';
 import { dd } from '../utils/dd';
 import { EventStateController } from '../controllers/eventStateController';
 import { UpsertEventStateItem } from '../db-actions/upsert-event-state';
+
+import { EventStateController2 } from '../controllers/event-state.controller';
 const router = express.Router();
 
 router.post('/set-event-state', async (req, res) => {
@@ -38,6 +40,15 @@ router.post('/get-recent-event-or-schedule', async (req, res) => {
   try {
     const user = getUserFromRequest(req);
     const result = await EventStateController.getRecentEventOrSchedule(user);
+    res.json(result);
+  } catch (error) {
+    handleError(res as unknown as Response, error) 
+  }
+});
+
+router.post('/delete-finished-transitions', async (req, res) => {
+  try {
+    const result = await EventStateController2.deleteFinishedEvents(3, 3);
     res.json(result);
   } catch (error) {
     handleError(res as unknown as Response, error) 

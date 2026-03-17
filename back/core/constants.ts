@@ -23,4 +23,4 @@ export const basicEventTypePrefix = 'e';
 
 export const EVENT_TIK_ACTION_PROP = 'tikAction';
 
-
+export const BASE_SCHEDULE_ID = 1;

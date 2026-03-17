@@ -8,7 +8,9 @@ import { upsertEventAccess } from '../../db-actions/upsert-event-access';
 import { upsertEventState } from '../../db-actions/upsert-event-state';
 import { ConfigManager } from '../config-manager';
 import { OuterSyncService } from '../outer-sync.service';
-import { createEvent as createEventDb } from '../../db-actions/create-event';
+import { createEvent as createEventDb, DbActionResult } from '../../db-actions/create-event';
+import { BASE_SCHEDULE_ID } from '../../core/constants';
+import { GetLastPositionResult, getLastSchedulePosition } from '../../db-actions/get-last-schedule-position';
 
 export const createEventCtl = async (
 	name: string, 
@@ -18,7 +20,9 @@ export const createEventCtl = async (
 	base_access: number,
 	state: number,
 	hooks: CreateEventStateHookParams[],
-	created_from: string
+	created_from: string,
+	scheduleId?: number, 
+	schedulePosition?: number
 ) => {
 	const pool = createPool();
 	const connection = await pool.getConnection();
@@ -29,8 +33,14 @@ export const createEventCtl = async (
 		upsertEventStateResult;
 	try {
 		await connection.beginTransaction();
+
+		const { schedule_id, schedule_position } = await buildScheduleInfo(connection, scheduleId, schedulePosition);
 		
-		createEventResult = await createEventDb(connection, name, length, type, userHandler, base_access, created_from);
+		createEventResult = await createEventDb(
+			connection, name, length, type, userHandler,
+			schedule_id, schedule_position,
+			base_access, created_from
+		);
 		if (createEventResult.error) {
 			throw new Error(createEventResult.error);
 		}
@@ -77,5 +87,24 @@ export const createEventCtl = async (
 		throw error;
 	} finally {
 		connection.release();
+	}
+}
+
+export interface ScheduleInfo {
+	schedule_id: number, 
+	schedule_position: number
+}
+export const buildScheduleInfo = async (connection, schedule_id?: number, schedule_position?: number): Promise<ScheduleInfo> => {
+
+	if (!schedule_id) {
+		schedule_id = BASE_SCHEDULE_ID;
+	}
+	const lastPositionResult: DbActionResult<GetLastPositionResult> = await getLastSchedulePosition(connection, schedule_id);
+	
+	if (!lastPositionResult.success) throw new Error('buildScheduleInfo error');
+
+	return {
+		schedule_id,
+		schedule_position: lastPositionResult.result!.last_position + 1
 	}
 }

@@ -24,6 +24,7 @@ import { createEventStateHooks } from '../db-actions/create-event-state-hooks';
 import { buildTikEvents } from './helpers/build-tik-events';
 import { calculateEventStatus } from './helpers/calculate-event-status.ts';
 import { formatBulkErrors } from '../utils/format-bulk-errors.utl';
+import { buildScheduleInfo } from './event.controller/create-event.ctl';
 
 dotenv.config();
 
@@ -223,7 +224,16 @@ export class EventStateController {
                 const accessLevel = 'owner';
                 // todo add hooks?
 
-                const createEventResult = await createEvent(connection, name, length, type, userHandler);
+                const { schedule_id, schedule_position } = await buildScheduleInfo(
+                    connection, 
+                    eventProps.schedule_id, 
+                    eventProps.schedule_position
+                );
+
+                const createEventResult = await createEvent(
+                    connection, name, length, type, userHandler,
+                    schedule_id, schedule_position
+                );
                 if (createEventResult.error) {
                     throw new Error(createEventResult.error);
                 }

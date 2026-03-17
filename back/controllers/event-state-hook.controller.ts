@@ -145,7 +145,7 @@ export class EventStateHookController {
 
 		
 		try {
-			// Get source event
+			// Get source event -todo upd to accessible
 			const [events] = await connection.execute(
 				`SELECT * FROM events WHERE id = ?`,
 				[eventId]
@@ -161,13 +161,17 @@ export class EventStateHookController {
 			const transitionEventType = config?.next_event_type || 3;
 			const transitionEventState = eventProgress.PLAYING; // 1 = PLAYING
 			const transitionEventLength = config?.next_event_length || 86400; // 1 day default
-			
+
 			createEventResult = await createEvent(
 				connection, 
 				`On finish: ${sourceEvent.name}`, 
 				transitionEventLength, 
 				transitionEventType, 
 				sourceEvent.created_by, 
+
+				sourceEvent.schedule_id, // schedule_id: 
+				999, //schedule_position
+
 				sourceEvent.base_access_id,
 				created_from
 			);
