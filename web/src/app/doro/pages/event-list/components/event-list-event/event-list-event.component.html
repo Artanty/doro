@@ -49,7 +49,7 @@
 
       <ng-template #name let-data>
         <div class="name" (click)="goToEventTimer()">
-          [{{ eventProps.schedule_id }}] {{ eventProps.id }} | {{ eventProps.name }}
+          [{{ eventProps.schedule_id }}: {{ eventProps.schedule_position }}] {{ eventProps.id }} | {{ eventProps.name }}
           <ng-container [ngTemplateOutlet]="deleteButton"></ng-container>
         </div>
       </ng-template>

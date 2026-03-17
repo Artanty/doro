@@ -169,7 +169,7 @@ export class EventStateHookController {
 				transitionEventType, 
 				sourceEvent.created_by, 
 				sourceEvent.base_access_id,
-				sourceEvent.id
+				created_from
 			);
 			
 			if (createEventResult.error) {

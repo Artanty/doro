@@ -9,23 +9,17 @@ import { EventProps, GetUserEventsRes, EventStateReq, EventState, EventStateRes,
 import { GetRecentRes } from "./event.types.api";
 import { ScheduleService } from "./schedule.service";
 
-@Injectable(
-  // {
-  //   providedIn: 'root'
-  // }
-)
+@Injectable()
 export class EventService {
   private doroBaseUrl = `${process.env['DORO_BACK_URL']}`;
   private tikBaseUrl = `${process.env['TIK_BACK_URL']}`;
-
-  public events$ = new BehaviorSubject<EventProps[]>([]);
 
   constructor(
     private http: HttpClient,
     @Inject(EVENT_BUS_LISTENER)
     private readonly eventBusListener$: Observable<BusEvent>,
-    private _appStateService: AppStateService,
-    // private _scheduleService: ScheduleService
+    private _state: AppStateService,
+    private _scheduleService: ScheduleService
   ) {}
 
   loadEvents(daysInterval: number = 1): Observable<boolean> {
@@ -38,7 +32,7 @@ export class EventService {
           const data: EventProps[] = res.data;
           if (!data) throw new Error('wrong response format');
           dd(data)
-          this.events$.next(data)
+          this._state.events.next(data)
         }),
         catchError((err: any) => {
           dd(err)
@@ -60,21 +54,16 @@ export class EventService {
     const payload = {
       id: eventId,
       schedule_id: scheduleId,
-      // schedule_position: this._scheduleService.getNextPositionInSchedule(scheduleId)
+      schedule_position: this._scheduleService.getNextPositionInSchedule(scheduleId)
     }
     dd(payload)
-    return of([])
-    // return this.updateEventApi(payload).pipe(
-    //   tap(() => {
-    //     this._appStateService.configHash.next(999);
-    //   }))
+    // return of([])
+    return this.updateEventApi(payload).pipe(
+      tap(() => {
+        this._state.configHash.next(999);
+      }))
       
   }
-  public listenEvents() {
-    return this.events$.asObservable();
-  }
-
-
 
   setEventStateApi(data: EventStateReq): Observable<EventState> {
     return this.http.post<EventStateRes>(`${this.doroBaseUrl}/event-state/set-event-state`, data)
@@ -141,7 +130,7 @@ export class EventService {
           const data: EventProps[] = res.data;
           if (!data) throw new Error('wrong response format');
 
-          this.events$.next(data)
+          this._state.events.next(data)
         }),
         catchError((err: any) => {
           dd(err)
@@ -169,9 +158,9 @@ export class EventService {
       console.log(res)
       if (res.isDuplicate) {
         if (Array.isArray(res.addedEvents) && res.addedEvents.length) {
-          const eventsToUpdate = this.events$.getValue();
+          const eventsToUpdate = this._state.events.getValue();
           eventsToUpdate.push(...res.addedEvents)
-          this.events$.next(eventsToUpdate);
+          this._state.events.next(eventsToUpdate);
         }
       }
     })   
@@ -181,9 +170,9 @@ export class EventService {
     const payload = { id: id };
     this.http.post<any>(`${this.doroBaseUrl}/event/delete`, payload).pipe(
       tap(() => {
-        const currentEvents = this.events$.getValue();
+        const currentEvents = this._state.events.getValue();
         const updatedEvents = currentEvents.filter(e => e.id !== id);
-        this.events$.next(updatedEvents);
+        this._state.events.next(updatedEvents);
       }),
       catchError(error => {
         console.error('Failed to delete event:', error);

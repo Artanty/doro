@@ -8,6 +8,7 @@ import { EventService } from "./services/event.service";
 import { filterActiveTransitionEvents, filterTransitionEvents } from "./helpers/filterTransitionEvents";
 import { dd } from "./helpers/dd";
 import { NextEventService } from "./services/next-event.service";
+import { AppStateService } from "./services/app-state.service";
 
 @Component({
   selector: 'app-doro',   
@@ -41,7 +42,9 @@ export class DoroComponent implements OnInit {
     private router: Router,
     private readonly _eventService: EventService,
     private readonly _nextEventService: NextEventService,
+    private _state: AppStateService,
     @Optional() @Inject(HOST_NAME) private hostName?: string,
+
   ) {}
 
   ngOnInit(): void {
@@ -55,7 +58,7 @@ export class DoroComponent implements OnInit {
       // this.router.navigateByUrl('/doro/event-create')
     }
 
-    this._eventService.listenEvents().pipe(
+    this._state.events.listen().pipe(
       map(res => res.filter(filterActiveTransitionEvents)),
       filter(res => res && res.length > 0)
     ).subscribe(res => {

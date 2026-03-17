@@ -5,6 +5,7 @@ import { dd } from "../helpers/dd";
 import { EventService } from "./event.service";
 import { EventProgress } from "../constants";
 import { ScheduleService } from "./schedule.service";
+import { AppStateService } from "./app-state.service";
 
 export interface EventStateHook {
 	"id": number
@@ -22,7 +23,8 @@ export class NextEventService {
 	constructor(
 		private _router: Router,
 		private _eventService: EventService,
-		private _scheduleService: ScheduleService
+		private _scheduleService: ScheduleService,
+		private _state: AppStateService,
 	) {}
 	/**
 	 * появился ивент перехода - роутим на компонент.
@@ -34,7 +36,7 @@ export class NextEventService {
 	}
 
 	public getEventByHook(hookId: number): EventProps | undefined {
-		const allEvents = this._eventService.events$.getValue();
+		const allEvents = this._state.events.getValue();
 		const foundParentEvent = allEvents.find(event => 
 			event.state_hooks?.some(hook => hook.id === Number(hookId))
 		);
@@ -93,7 +95,7 @@ export class NextEventService {
 		if (!transitionEvent) {
 			throw new Error('no transition event found with id: ' + transitionEventId);
 		}
-
+		// dd(transitionEvent)
 		const createdFromId = transitionEvent.created_from; // e_324 or h_123
 		const entityType = createdFromId.split('_')[0];
 		const entityId = Number(createdFromId.split('_')[1]);
@@ -110,8 +112,12 @@ export class NextEventService {
 		if (!scheduleId) throw new Error('event without schedule - not implemented');
 		const nextEventsBySchedule = this._scheduleService.getNextEventsOfSchedule(scheduleId, creatorEvent);
 
-		dd('nextEventsBySchedule');
-		dd(nextEventsBySchedule)
+		// dd('nextEventsBySchedule');
+		// dd(nextEventsBySchedule)
+		return {
+			endedEvent: creatorEvent,
+			nextEventsBySchedule
+		}
 	}
 
 	public getNextEventBySchedule() {
@@ -119,7 +125,7 @@ export class NextEventService {
 	}
 
 	public getEvent(eventId: number): EventProps | undefined {
-		const allEvents = this._eventService.events$.getValue();
+		const allEvents = this._state.events.getValue();
 		const foundParentEvent = allEvents.find(event => event.id === eventId);
 		return foundParentEvent;
 	}

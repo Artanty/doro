@@ -15,8 +15,9 @@ import { NextEventService } from '../../services/next-event.service';
   standalone: false,
 })
 export class NextEventComponent implements OnInit {
-  @Input() public endedEvent: any = null
-  @Input() public nextEvent: any = null
+  public endedEvent!: EventProps
+  public nextEvent!: EventProps
+ 
   @Output() public playNextAway = new EventEmitter<void>()
   @Output() public playFirstAway = new EventEmitter<void>()
 
@@ -36,15 +37,29 @@ export class NextEventComponent implements OnInit {
    * идем в сервис, чтоб понять, что показывать.
    * */
   ngOnInit(): void {
+    
+    this.eventService.loadEvents().subscribe(() => this.init())
+    
+  }
+
+  init() {
     let initalState: EventViewState<EventStateResItemStateless> | EventViewState<EventState> = {
       viewState: 'LOADING_VIEW_STATE',
       eventState: -1 // pending
     }
-    
+    this.eventId = Number(this.route.snapshot.params['transitionEventId'])
     dd('transitionEventId')
     dd(this.eventId)
     if (this.eventId) {
-      this._nextEventService.getNextActionSuggessions(this.eventId);
+      const suggessions = this._nextEventService.getNextActionSuggessions(this.eventId);
+      if (suggessions.nextEventsBySchedule) {
+        this.nextEvent = suggessions.nextEventsBySchedule[0];
+      }
+      if (suggessions.endedEvent) {
+        this.endedEvent = suggessions.endedEvent;
+      }
+      dd(suggessions)
+      this.cdr.detectChanges()
     }
     this.eventState$ = 
       this.eventService.listenEventState(EventTypePrefix.TRANSITION, this.eventProps?.id)

@@ -29,6 +29,10 @@ export class ObservableVariable<T> {
     
     return value as NonNullable<T>;
   }
+
+  getValue(): T {
+    return this.subject.getValue();
+  }
   
   setValue(newValue: T) {
     if (this.validator && !this.validator(newValue)) {
@@ -59,8 +63,8 @@ export class ObservableVariable<T> {
   get $(): BehaviorSubject<T> {
     return this.subject;
   }
-  
-  get listen(): Observable<T> {
+
+  listen(): Observable<T> {
     return this.subject.asObservable();
   }
 

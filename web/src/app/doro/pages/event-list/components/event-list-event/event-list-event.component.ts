@@ -1,8 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Injector, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, Subject, takeUntil, filter, startWith, distinctUntilChanged, map, tap, withLatestFrom, catchError, EMPTY, finalize } from 'rxjs';
-
-
 import { EventStates, EventTypePrefix } from 'src/app/doro/constants';
 import { countPrc } from 'src/app/doro/helpers/count-percent.util';
 import { EventService } from 'src/app/doro/services/event.service';

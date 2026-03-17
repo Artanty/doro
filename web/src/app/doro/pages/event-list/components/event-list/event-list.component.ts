@@ -41,11 +41,11 @@ export class EventListComponent implements OnInit {
     private eventService: EventService,
     private cdr: ChangeDetectorRef,
     private router: Router,
-    private _appStateService: AppStateService,
+    private _state: AppStateService,
     private _scheduleService: ScheduleService
   ) {
     this.events$ = combineLatest([
-      this.eventService.listenEvents(),
+      this._state.events.listen(),
       this.scheduleFilter$ // Your second observable for schedule filtering
     ])
       .pipe(
@@ -61,12 +61,12 @@ export class EventListComponent implements OnInit {
         tap(res => {
           setTimeout(() => {
             this.cdr.detectChanges()
-            dd(this.eventService.events$.getValue())
+            dd(this._state.events.getValue())
           }, 1000); // crutch to update state
         })
       );
 
-    this.currentSchedule$ = this._appStateService.currentSchedule.listen as Observable<Nullable<Schedule>>;
+    this.currentSchedule$ = this._state.currentSchedule.listen() as Observable<Nullable<Schedule>>;
 
     this.scheduleMenuItems$ = combineLatest([
       this._scheduleService.getSchedules(),
@@ -92,7 +92,7 @@ export class EventListComponent implements OnInit {
   }
 
   public goToCreateEvent() {
-    const scheduleId = this._appStateService.currentSchedule.value?.id;
+    const scheduleId = this._state.currentSchedule.getValue()?.id;
     const extras = scheduleId ?
       { queryParams: { scheduleId: scheduleId } } :
       undefined;
@@ -104,7 +104,7 @@ export class EventListComponent implements OnInit {
 
   public loadEvents(daysInterval: number = 1): void {
     this.eventService.loadEvents(daysInterval).pipe(take(1)).subscribe(() => {
-      this._appStateService.currentSchedule.next(null);
+      this._state.currentSchedule.next(null);
     });
   }
 }
