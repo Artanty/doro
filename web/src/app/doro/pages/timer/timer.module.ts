@@ -5,8 +5,9 @@ import { CommonModule } from "@angular/common";
 import { ReactiveFormsModule, FormsModule } from "@angular/forms";
 import { GuiDirective } from "../../components/_remote/web-component-wrapper/gui.directive";
 import { TimerWrapperComponent } from "./components/timer-wrapper/timer-wrapper.component";
-import { TimerComponent } from "./components/timer/timer.component";
+
 import { eventResolver } from "./components/timer-wrapper/event.resolver";
+import { TimerComponent } from "../../components/timer/timer.component";
 
 export const CHILD_ROUTES = [
 	{
@@ -19,7 +20,7 @@ export const CHILD_ROUTES = [
 ]
 @NgModule({
 	declarations: [
-		TimerComponent,
+		
 		TimerWrapperComponent
 	],
 	imports: [
@@ -29,7 +30,8 @@ export const CHILD_ROUTES = [
 		),
 		// ReactiveFormsModule,
 		// FormsModule,
-		GuiDirective
+		GuiDirective,
+		TimerComponent,
 	],
 	exports: [RouterModule],
 	providers: [],

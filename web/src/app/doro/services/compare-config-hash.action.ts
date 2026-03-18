@@ -19,8 +19,6 @@ export class CompareConfigHashAction {
 		if (!newConfigHash) {
 			throw new Error(`wrong tikConfigHashEntry, no cur prop`);
 		}
-		// dd(this._appStateService.configHash.value)
-		// dd(newConfigHash)
 
 		const valuesTuple = [
 			this._appStateService.configHash.value, 
@@ -34,7 +32,7 @@ export class CompareConfigHashAction {
 			result = this._appStateService.configHash.value !== newConfigHash;
 		}
 		this.prevValues = valuesTuple
-		dd('isNeed refresh: ' + result)
+		// dd('isNeed refresh: ' + result)
 		return result;
 	}
 }

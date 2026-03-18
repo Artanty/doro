@@ -56,10 +56,8 @@ export class CreateEventComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    dd(this.scheduleId)
     this._eventTypeService.getEventTypes().subscribe((res: any) => {
       this.eventTypes = res;
-      dd(res)
     })
     this._accessLevelService.getAccessLevels()
       .subscribe(res => {

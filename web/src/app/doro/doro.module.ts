@@ -23,7 +23,7 @@ import { filterStreamDataEntries } from './helpers/filterStreamDataEntries';
 import { mapBusEventToConfigHashTikEntry, ConfigHashTikEntry } from './helpers/getConfigHashFromBusEvent';
 import { eventResolver } from './pages/timer/components/timer-wrapper/event.resolver';
 import { TimerWrapperComponent } from './pages/timer/components/timer-wrapper/timer-wrapper.component';
-import { TimerComponent } from './pages/timer/components/timer/timer.component';
+
 import { AccessLevelService } from './services/access-level.service';
 import { CompareConfigHashAction } from './services/compare-config-hash.action';
 import { EventTypeService } from './services/event-type.service';
@@ -31,7 +31,7 @@ import { EventTypeService } from './services/event-type.service';
 import { ScheduleService } from './services/schedule.service';
 import { SetConfigHashAction } from './services/set-config-hash.action';
 import { NextEventService } from './services/next-event.service';
-import { ApiServce } from './services/api.service';
+import { ApiService } from './services/api.service';
 
 export const CHILD_ROUTES = [
   {
@@ -112,7 +112,7 @@ export const CHILD_ROUTES = [
     AccessLevelService,
     EventTypeService,
     ScheduleService,
-    ApiServce
+    ApiService
 
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],

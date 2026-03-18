@@ -33,8 +33,8 @@ export interface EventProps {
 	created_at: string;
 	updated_at: string | null;
 	created_by: string; // hide on backend
-	schedule_id: number | null;
-	schedule_position: number | null;
+	schedule_id: number;
+	schedule_position: number;
 	// base_access: "public-read"; //remove on backend
 	base_access_id: number;
 	// access_level: "owner" | "editor" | "viewer"; //remove on backend
@@ -77,8 +77,6 @@ export interface EventStateReqItem {
 	eventId: any, state: any 
 }
 export interface EventStateReq {
-	// "eventId": number, 
-	// "state": number
 	eventStates: EventStateReqItem[]
 }
 

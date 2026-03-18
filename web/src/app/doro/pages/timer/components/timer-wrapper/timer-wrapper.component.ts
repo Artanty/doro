@@ -91,8 +91,7 @@ export class TimerWrapperComponent {
           }),
           startWith(initalState),
           tap((res: any) => {
-            // dd('go')
-            // dd(res)
+
             this.cdr.detectChanges()
           }),
           catchError(error => {

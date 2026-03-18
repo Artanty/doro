@@ -2,12 +2,16 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Out
 import { eventTypes } from 'src/app/doro/constants';
 import { countPrc } from 'src/app/doro/helpers/count-percent.util';
 import { dd } from 'src/app/doro/helpers/dd';
-
+import { CommonModule } from "@angular/common";
+import { GuiDirective } from '../_remote/web-component-wrapper/gui.directive';
 
 @Component({
   selector: 'app-timer',
-  standalone: false,
-  // imports: [],
+  standalone: true,
+  imports: [
+    CommonModule,
+    GuiDirective,
+  ],
   templateUrl: './timer.component.html',
   styleUrl: './timer.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -15,7 +19,7 @@ import { dd } from 'src/app/doro/helpers/dd';
 export class TimerComponent implements OnChanges {
   @Input() time: number = 0;
   @Input() length: number = 0;
-  @Input() eventType: number = 0; // work = 2, rest = 3;
+  @Input() eventType: number = 0; // work = 1, rest = 2;
   @Input() scheduleProgress: [number, number] = [2, 4];
   @Output() percentageChange = new EventEmitter<number>();
 

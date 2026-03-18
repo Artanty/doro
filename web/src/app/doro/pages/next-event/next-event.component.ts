@@ -2,13 +2,15 @@ import { ChangeDetectorRef, Component, EventEmitter, Injector, Input, OnInit, Ou
 import { Location } from '@angular/common';
 
 import { ActivatedRoute, Router } from '@angular/router';
-import { EventProps, EventState, EventStateResItem, EventStateResItemStateless, EventViewState } from '../../services/event.types';
-import { EventStates, EventTypePrefix } from '../../constants';
-import { BehaviorSubject, catchError, map, Observable, startWith, switchMap, takeUntil, tap, throwError } from 'rxjs';
+import { EventProps, EventState, EventStateReqItem, EventStateResItem, EventStateResItemStateless, EventViewState } from '../../services/event.types';
+import { EventStates, EventTypePrefix, eventTypes, INITIAL_VIEW_STATE } from '../../constants';
+import { BehaviorSubject, catchError, combineLatest, from, map, Observable, of, startWith, switchMap, take, takeUntil, tap, throwError } from 'rxjs';
 import { countPrc } from '../../helpers/count-percent.util';
 import { EventService } from '../../services/event.service';
 import { dd } from '../../helpers/dd';
 import { NextEventService } from '../../services/next-event.service';
+import { NextSuggestionsRes } from '../../services/next-event/next-event.types';
+import { ViewState, ViewStatus } from '../../types/view-state.type';
 
 @Component({
   selector: 'app-next-event',
@@ -17,107 +19,130 @@ import { NextEventService } from '../../services/next-event.service';
   standalone: false,
 })
 export class NextEventComponent implements OnInit {
+  eventTypes = eventTypes
+  ViewStatus = ViewStatus
   public endedEvent!: EventProps
-  public nextEvent!: EventProps
+  public nextEventBySchedule?: EventProps
+  public nextCalculatedEvent: any
  
   @Output() public playNextAway = new EventEmitter<void>()
   @Output() public playFirstAway = new EventEmitter<void>()
-
-  eventState$!: Observable<EventViewState<EventStateResItem>>;
-  eventProps!: EventProps;
-  eventId!: number 
+  transitionEventId!: number;
+  public view$: Observable<ViewState<NextEventViewData>>
   constructor(
     // private router: Router,
     private location: Location,
     private cdr: ChangeDetectorRef,
-    private eventService: EventService,
+    private _eventService: EventService,
     private injector: Injector,
     private route: ActivatedRoute,
-    private _nextEventService: NextEventService
-  ) {}
+    private _nextEventService: NextEventService,
+  ) {
+    this.transitionEventId = Number(this.route.snapshot.params['transitionEventId'])
+
+    this.view$ = combineLatest([
+      this._eventService.listenEventState(EventTypePrefix.TRANSITION, this.transitionEventId),
+      from(this._nextEventService.getNextActionSuggestions(this.transitionEventId))
+    ])      
+      .pipe(
+        map(([eventStateReqItem, nextSuggestionsRes]) => { // [EventStateReqItem, NextSuggestionsRes]
+          if (nextSuggestionsRes) {
+            return {
+              status: ViewStatus.READY,
+              data: this._buildViewData(nextSuggestionsRes)
+            }
+          } else {
+            return INITIAL_VIEW_STATE;
+          }
+        }),
+        startWith(INITIAL_VIEW_STATE),
+        catchError(error => {
+          return of(this._buildErrorState(error))
+        })
+      )
+  }
   /**
    * получаем ид
    * идем в сервис, чтоб понять, что показывать.
    * */
   ngOnInit(): void {
-    
-    this.eventService.loadEvents().subscribe(() => this.init())
-    
+    this._eventService.loadEvents().pipe(take(1)).subscribe(() => this.init())
   }
 
-  init() {
-    let initalState: EventViewState<EventStateResItemStateless> | EventViewState<EventState> = {
-      viewState: 'LOADING_VIEW_STATE',
-      eventState: -1 // pending
-    }
-    this.eventId = Number(this.route.snapshot.params['transitionEventId'])
-    dd('transitionEventId')
-    dd(this.eventId)
-    if (this.eventId) {
-      const suggessions = this._nextEventService.getNextActionSuggessions(this.eventId);
-      if (suggessions.nextEventsBySchedule) {
-        this.nextEvent = suggessions.nextEventsBySchedule[0];
+  async init() {
+    if (this.transitionEventId) {
+      const suggestions: NextSuggestionsRes = await this._nextEventService.getNextActionSuggestions(this.transitionEventId);
+      
+      if (suggestions.nextEventsBySchedule.length > 0) {
+        this.nextEventBySchedule = suggestions.nextEventsBySchedule[0];
       }
-      if (suggessions.endedEvent) {
-        this.endedEvent = suggessions.endedEvent;
+
+      if (suggestions.nextCalculatedEvent) {
+        this.nextCalculatedEvent = suggestions.nextCalculatedEvent;
       }
-      dd(suggessions)
+
+      if (suggestions.endedEvent) {
+        this.endedEvent = suggestions.endedEvent;
+      }
+      dd(this.transitionEventId)
+      dd(suggestions)
       this.cdr.detectChanges();
     }
-    this.eventState$ = 
-      this.eventService.listenEventState(EventTypePrefix.TRANSITION, this.eventProps?.id)
-        .pipe(
-          // takeUntil(this.destroy$),
-          map((res: EventStateResItem) => {
-            const { stt, len, cur, id } = res;
-            const readyState: EventViewState<EventStateResItemStateless> = {
-              viewState: 'READY_VIEW_STATE',
-              eventState: stt,
-              data: {
-                id,
-                cur,
-                len,
-                prc: countPrc(len!, cur),
-              }              
-            };
-
-            return readyState;
-          }),
-          startWith(initalState),
-          tap((res: any) => {
-            // dd('go')
-            // dd(res)
-            this.cdr.detectChanges()
-          }),
-          catchError(error => {
-            console.error('Failed while listenEventState in list item:', error);
-         
-            return throwError(() => this._buildErrorState(error)) 
-
-            // return EMPTY;
-          })
-        )
+    
+    // .subscribe();
   }
 
-  private _buildErrorState(error: Error): EventViewState<EventState> {
-    const errorState: EventViewState<EventState> = {
-      viewState: 'ERROR_VIEW_STATE',
-      eventState: EventStates.ERROR,
+  public replay() {
+    this._eventService.playEventApi({ eventId: this.endedEvent.id })
+  }
+
+  private _buildErrorState(error: Error): ViewState<NextEventViewData> {
+    dd(error)
+    const errorState: ViewState<NextEventViewData> = {
+      status: ViewStatus.ERROR,
       error: error.message
     };
 
     return errorState;
   }
+   
+  public finishTransitionAndDuplicateEvent() {}
   
-  public finishEvent() {
-    if (this.nextEvent.id) {
-      const idToFinish = this.eventId;
-      this._nextEventService.finishTransitionAndStartNextEvent(idToFinish, this.nextEvent.id).subscribe(res => {
-        dd('FINISHED')
-        this.location.back()
-      })
-    }
-    
+  public finishTransitionAndClose() {
+    this._eventService.finishEvent(this.transitionEventId).subscribe(res => {
+      dd(res);
+      this.location.back()
+    })
   }
 
+  public finishTransitionAndStartNextEvent() {
+    if (this.nextEventBySchedule?.id) {
+      const idToFinish = this.transitionEventId;
+      this._nextEventService.finishTransitionAndStartNextEvent(idToFinish, this.nextEventBySchedule.id)
+        .subscribe(res => {
+          dd(res)
+          this.location.back()
+        })
+    } else {
+
+    }
+  }
+
+  private _buildViewData(nextSuggestionsRes: NextSuggestionsRes): NextEventViewData {
+    const result: NextEventViewData = {
+      type: eventTypes.REST,
+      length: 0,
+    }
+
+    if (nextSuggestionsRes.nextCalculatedEvent) {
+      result.type = nextSuggestionsRes.nextCalculatedEvent.type;
+      result.length = nextSuggestionsRes.nextCalculatedEvent.data!.restDuration
+    }
+    return result;
+  }
+}
+
+export interface NextEventViewData {
+  type: typeof eventTypes[keyof typeof eventTypes],
+  length: number,
 }

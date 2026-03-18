@@ -3,11 +3,13 @@ import { EventProps, EventStateReq } from "./event.types";
 import { Router } from "@angular/router";
 import { dd } from "../helpers/dd";
 import { EventService } from "./event.service";
-import { EventProgress, eventTypes } from "../constants";
+import { BASE_SCHEDULE_ID, EventProgress, eventTypes } from "../constants";
 import { ScheduleService } from "./schedule.service";
 import { AppStateService } from "./app-state.service";
-import { ApiServce } from "./api.service";
-import { Observable } from "rxjs";
+import { ApiService } from "./api.service";
+import { lastValueFrom, Observable } from "rxjs";
+import { SuggestRestReq } from "./api/schedule.types.api";
+import { NextCalculatedEvent, NextSuggestionsRes } from "./next-event/next-event.types";
 
 export interface EventStateHook {
 	"id": number
@@ -27,7 +29,7 @@ export class NextEventService {
 		private _eventService: EventService,
 		private _scheduleService: ScheduleService,
 		private _state: AppStateService,
-		private _api: ApiServce
+		private _api: ApiService
 	) {}
 
 	public onTransitionFound(res: EventProps[]) {
@@ -85,12 +87,12 @@ export class NextEventService {
 	 * задача - сформировать объект со всеми возможными вариантами
 	 * 
 	 * */
-	public getNextActionSuggessions(transitionEventId: number) {
+	public async getNextActionSuggestions(transitionEventId: number): Promise<NextSuggestionsRes> {
 		const transitionEvent = this.getEvent(transitionEventId);
 		if (!transitionEvent) {
 			throw new Error('no transition event found with id: ' + transitionEventId);
 		}
-		// dd(transitionEvent)
+
 		const createdFromId = transitionEvent.created_from; // e_324 or h_123
 		const entityType = createdFromId.split('_')[0];
 		const entityId = Number(createdFromId.split('_')[1]);
@@ -105,28 +107,38 @@ export class NextEventService {
 		if (!creatorEvent) throw new Error('hook without parent - not implemented');
 		const scheduleId = creatorEvent.schedule_id;
 		if (!scheduleId) throw new Error('event without schedule - not implemented');
+
 		const nextEventsBySchedule = this._scheduleService.getNextEventsOfSchedule(scheduleId, creatorEvent);
-
-		const nextTypeByEventType = creatorEvent.type === eventTypes.REST
-			? eventTypes.WORK
-			: eventTypes.REST;
-
-		const nextTypeByEventSchedule = this.getNextScheduleInfo(creatorEvent);
-		
-		const nextByEventType = {
-			...nextTypeByEventSchedule,
-			type: nextTypeByEventType
+		/**
+		 * Если у расписания нет следующего события
+		 * Вычисляем его
+		 * */
+		let nextCalculatedEvent: NextCalculatedEvent = {
+			type: eventTypes.WORK,
+			data: null,
+			schedule_id: BASE_SCHEDULE_ID,
+			schedule_position: 9999
+		};
+		if (nextEventsBySchedule.length < 1) {
+			if (creatorEvent.type === eventTypes.REST) {
+				// SUGGESTING WORK
+				nextCalculatedEvent.type = eventTypes.WORK;
+			} else {
+				// SUGGESTING REST
+				nextCalculatedEvent.type = eventTypes.REST;
+				const payload: SuggestRestReq = { scheduleId: creatorEvent.schedule_id }
+				nextCalculatedEvent.data = await lastValueFrom(this._api.suggestRestApi(payload));
+			}
+			nextCalculatedEvent.schedule_id = creatorEvent.schedule_id;
+			nextCalculatedEvent.schedule_position = this._scheduleService.getNextPositionInSchedule(creatorEvent.schedule_id);
+			
 		}
 
 		return {
 			endedEvent: creatorEvent,
 			nextEventsBySchedule,
-			nextByEventType
+			nextCalculatedEvent
 		}
-	}
-
-	public getNextEventBySchedule() {
-
 	}
 
 	public getEvent(eventId: number): EventProps | undefined {
@@ -150,24 +162,10 @@ export class NextEventService {
 		};
 		return this._api.setEventStateApi(payload);
 	}
-
-	private getNextScheduleInfo(event: EventProps): NextScheduleInfo {
-		let schedule_id = null;
-		let schedule_position = null;
-
-		if (!!event.schedule_id) {
-			schedule_id = event.schedule_id;
-			schedule_position = this._scheduleService.getNextPositionInSchedule(event.schedule_id);
-		}
-
-		return {
-			schedule_id,
-			schedule_position
-		};
-	}
 }
 
 export interface NextScheduleInfo {
 	schedule_id: number | null,
 	schedule_position: number | null		
 }
+

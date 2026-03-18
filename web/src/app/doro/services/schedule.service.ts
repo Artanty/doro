@@ -72,7 +72,7 @@ export class ScheduleService {
 					this._state.events.next(events);
 				}),
 				catchError((err: any) => {
-					dd(err)
+
 					return of(false);
 				}),
 				map(() => true),
@@ -80,7 +80,7 @@ export class ScheduleService {
 	}
 
 	public getNextEventsOfSchedule(scheduleId: number, event: EventProps): EventProps[] {
-		dd('getNextEventsOfSchedule')
+
 		const bySchedule = this._getEventsBySchedule(scheduleId);
 		bySchedule.sort((a, b) => {
 			return Number(b.schedule_position) - Number(a.schedule_position)

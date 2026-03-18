@@ -7,7 +7,6 @@ import { EventService } from 'src/app/doro/services/event.service';
 import { EventProps, EventViewState, EventStateResItem, EventStateResItemStateless, EventState } from 'src/app/doro/services/event.types';
 import { Schedule, ScheduleService } from 'src/app/doro/services/schedule.service';
 
-
 @Component({
   selector: 'app-event-list-event',
   standalone: false,
@@ -50,21 +49,6 @@ export class EventListEventComponent implements OnInit, OnDestroy {
         return res;
       }));
   }
-  
-  // loading view state
-  // play loading
-  // play
-  // pause loading
-  // pause
-  // stop loading
-  // stop
-  // delete loading
-  // delete
-  // completed
-  // completed loading
-  // error
-  // data
-
 
   /**
    * Подписываемся на свойства события из (doro@web),
@@ -111,49 +95,26 @@ export class EventListEventComponent implements OnInit, OnDestroy {
   goToEventTimer() {
     this.router.navigateByUrl(`/doro/timer/${this.eventProps.id}`);
   }
+
   deleteEvent() {
     this.eventService.deleteEvent(this.eventProps.id);
   }
+
   addToSchedule(data: any) {
     const scheduleId = data.id;
     this.eventService.addToSchedule(this.eventProps.id, scheduleId).subscribe()
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    // dd('ngOnChanges triggered in ChildComponent');
-    // if (changes['message']) {
-    // }
-
-    // dd(changes)
-  }
-  
-
   playEvent(isGuiEvent = true): void {
     this.eventService.playEvent(this.eventProps.id, isGuiEvent)
   }
 
-
   pauseEvent() {
     this.eventService.pauseEvent(this.eventProps.id)
-    // .subscribe(res => {
-    //   dd(res)
-    //   // const { state } = res;
-    //   // this.eventState = state
-      
-    //   this.cdr.detectChanges()
-    // })
   }
 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
-  }
-
-  
+  } 
 }
-
-// EventListEventComponent
-// по иниту - делаем запрос на собственный бэк event-state/list-by-user
-// получаем список ивентов
-// рисуем список, каждый элемент - EventListEventComponent
-// внутри каджого решаем, если событие активное - подписываемся.

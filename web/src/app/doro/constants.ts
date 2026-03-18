@@ -1,3 +1,5 @@
+import { ViewStatus } from "./types/view-state.type";
+
 export const devPoolId = 'current_user_id'
 
 export const EventProgress = {
@@ -31,4 +33,10 @@ export const eventTypes = {
 	WORK: 1,
 	REST: 2,
 	TRANSITION: 3,
+}
+
+export const BASE_SCHEDULE_ID = 1;
+
+export const INITIAL_VIEW_STATE = {
+	status: ViewStatus.LOADING,
 }

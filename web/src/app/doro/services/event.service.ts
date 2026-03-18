@@ -8,6 +8,8 @@ import { AppStateService } from "./app-state.service";
 import { EventProps, GetUserEventsRes, EventStateReq, EventState, EventStateRes, SetPlayEventStateReq, EventStateResItem } from "./event.types";
 import { GetRecentRes } from "./event.types.api";
 import { ScheduleService } from "./schedule.service";
+import { ApiService } from "./api.service";
+
 
 @Injectable()
 export class EventService {
@@ -19,7 +21,8 @@ export class EventService {
     @Inject(EVENT_BUS_LISTENER)
     private readonly eventBusListener$: Observable<BusEvent>,
     private _state: AppStateService,
-    private _scheduleService: ScheduleService
+    private _scheduleService: ScheduleService,
+    private _api: ApiService,
   ) {}
 
   loadEvents(daysInterval: number = 1): Observable<boolean> {
@@ -31,11 +34,11 @@ export class EventService {
         tap((res: GetUserEventsRes) => {
           const data: EventProps[] = res.data;
           if (!data) throw new Error('wrong response format');
-          dd(data)
+
           this._state.events.next(data)
         }),
         catchError((err: any) => {
-          dd(err)
+          
           return of(false);
         }),
         map(() => true),
@@ -56,8 +59,7 @@ export class EventService {
       schedule_id: scheduleId,
       schedule_position: this._scheduleService.getNextPositionInSchedule(scheduleId)
     }
-    dd(payload)
-    // return of([])
+
     return this.updateEventApi(payload).pipe(
       tap(() => {
         this._state.configHash.next(999);
@@ -65,18 +67,10 @@ export class EventService {
       
   }
 
-  setEventStateApi(data: EventStateReq): Observable<EventState> {
-    return this.http.post<EventStateRes>(`${this.doroBaseUrl}/event-state/set-event-state`, data)
-      .pipe(
-        map(res => res.eventState)
-      );
-  }
-
   playEventApi(data: SetPlayEventStateReq): Observable<any> {
     return this.http.post<any>(`${this.doroBaseUrl}/event-state/play`, data)
       .pipe(
         map(res => {
-          dd(res)
           if (res.data.success) {
             return res.data;
           } else {
@@ -94,59 +88,13 @@ export class EventService {
       )
   }
 
-
-  
-
-  // public loadRecentEventOrSchedule() {
-  //   return this.http.post<GetRecentRes>(`${this.doroBaseUrl}/event-state/get-recent-event-or-schedule`, null)
-  //     .pipe(
-  //       tap((res: GetRecentRes) => {
-  //         dd(res)
-  //         let events: EventProps[] = [];
-  //         const { recentEvent, recentSchedule } = res.data;
-  //         if (recentEvent) {
-  //           events = [this._eventMapperService.eventDtoToModel(recentEvent)];
-  //         }
-  //         if (recentSchedule) {
-  //           if (recentSchedule.events) {
-  //             events = recentSchedule.events.map(el => this._eventMapperService.eventDtoToModel(el));  
-  //           }
-  //         }
-  //         dd(events)
-  //         this.events$.next(events);
-  //       }),
-  //       catchError((err: any) => {
-  //         dd(err)
-  //         return of(false);
-  //       }),
-  //       map(() => true),
-  //     )
-  // }
-  // staticEventsState$
-  public getRecentEventOrSchedule() {
-    return this.http.post<any>(`${this.doroBaseUrl}/event-state/get-recent-event-or-schedule`, null)
-      .pipe(
-        tap((res: GetUserEventsRes) => {
-          const data: EventProps[] = res.data;
-          if (!data) throw new Error('wrong response format');
-
-          this._state.events.next(data)
-        }),
-        catchError((err: any) => {
-          dd(err)
-          return of(false);
-        }),
-        map(() => true),
-      )
-  }
-
   // flow: doro@web -> doro@back -> tik@back -> tik@web -> doro@web
   //   // сначала сделать запрос на свой бэк. +
   //   // обновить стейт. +
   //   // оповестить всех пользователей, которые имеют доступ к этому событию 
   //   // (создать новый хэш, чтобы при сравнении стало понятно, что нужно подтянуть изменения)
   public playEvent(eventId: number, isGuiEvent: boolean): void {
-    dd('eventService.playEvent');
+
   
     this.playEventApi({ "eventId": eventId }).pipe(
       catchError(error => {
@@ -190,7 +138,7 @@ export class EventService {
         }
       ]
     }
-    return this.setEventStateApi(payload)
+    return this._api.setEventStateApi(payload)
       .subscribe()
   }
   
@@ -216,7 +164,7 @@ export class EventService {
     ]
   }
 
-  public finishEvent(eventId: number) {
+  public finishEvent(eventId: number): Observable<EventState> {
     const payload: EventStateReq = {
       eventStates: [
         {
@@ -225,9 +173,9 @@ export class EventService {
         }
       ]
     }
-    return this.setEventStateApi(payload).pipe(
-      switchMap(() => {
-        return this.loadEvents(); //self only. others via hash
+    return this._api.setEventStateApi(payload).pipe(
+      tap(() => {
+        this._state.configHash.next(999);
       })
     )   
   }

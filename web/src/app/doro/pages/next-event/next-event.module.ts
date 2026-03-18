@@ -5,6 +5,8 @@ import { GuiDirective } from "../../components/_remote/web-component-wrapper/gui
 
 import { FormsModule } from "@angular/forms";
 import { NextEventComponent } from "./next-event.component";
+import { TimerModule } from "../timer/timer.module";
+import { TimerComponent } from "../../components/timer/timer.component";
 
 export const CHILD_ROUTES = [
 	{
@@ -23,7 +25,8 @@ export const CHILD_ROUTES = [
 		),
 		// ReactiveFormsModule,
 		FormsModule,
-		GuiDirective
+		GuiDirective,
+		TimerComponent,
 	],
 	exports: [RouterModule],
 	providers: [],

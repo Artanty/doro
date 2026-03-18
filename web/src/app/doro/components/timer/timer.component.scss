@@ -1,15 +1,20 @@
 .demo-container {
   max-width: 600px;
   margin: 0 auto;
-  padding: 20px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  // padding: 20px;
+
   text-align: center;
+
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  // font-family: 'jetmono', sans-serif;
+  // font-family: 'fira', sans-serif;
+  // font-family: 'Montserrat', sans-serif;
 }
 
 .wrapper {
   position: relative;
   display: inline-block;
-  margin: 20px 0;
+  // margin: 20px 0;
 }
 
 .svg-donut {
@@ -34,6 +39,7 @@
     font-weight: bold;
     color: #dfdfdf;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-top: 4px;
   }
 
   & .scheduleProgress {
@@ -56,6 +62,7 @@
   }
 
   & .eventName {
+    margin-top: 12px;
     text-transform: uppercase;
   }
 }

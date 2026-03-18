@@ -8,7 +8,6 @@ import { EventService } from 'src/app/doro/services/event.service';
 import { EventProps } from 'src/app/doro/services/event.types';
 import { Nullable } from 'src/app/doro/helpers/utility.types';
 import { filterBasicEvents } from 'src/app/doro/helpers/filterBasicEvents';
-import { dd } from 'src/app/doro/helpers/dd';
 
 @Component({
   selector: 'app-event-list',
@@ -61,7 +60,6 @@ export class EventListComponent implements OnInit {
         tap(res => {
           setTimeout(() => {
             this.cdr.detectChanges()
-            dd(this._state.events.getValue())
           }, 1000); // crutch to update state
         })
       );
