@@ -33,10 +33,24 @@ export const eventTypes = {
 	WORK: 1,
 	REST: 2,
 	TRANSITION: 3,
-}
+} as const;
+
+export type TEventType = typeof eventTypes[keyof typeof eventTypes];
 
 export const BASE_SCHEDULE_ID = 1;
 
 export const INITIAL_VIEW_STATE = {
 	status: ViewStatus.LOADING,
 }
+
+export const DEFAULT_EVENT_STATE_HOOKS = [
+	{
+		"trigger_event_state_id": 3,
+		"action_type": "script",
+		"action_config": {
+			"scriptId": "nextEvent"
+		}
+	}
+]
+
+export const DEFAULT_WORK_EVENT_LENGTH = 20 //60 * 25;

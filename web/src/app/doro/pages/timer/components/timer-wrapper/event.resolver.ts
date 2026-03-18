@@ -3,8 +3,7 @@ import { ResolveFn, ActivatedRouteSnapshot, RouterStateSnapshot } from "@angular
 import { switchMap, map } from "rxjs";
 import { AppStateService } from "src/app/doro/services/app-state.service";
 import { EventService } from "src/app/doro/services/event.service";
-import { EventProps } from "src/app/doro/services/event.types";
-
+import { EventProps } from "src/app/doro/services/event/event.types";
 
 export const eventResolver: ResolveFn<EventProps | undefined> = (
   route: ActivatedRouteSnapshot,

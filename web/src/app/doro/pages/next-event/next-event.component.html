@@ -18,7 +18,7 @@
               icon: 'mu mu-replay',
               color: 'rgb(83 105 118 / 52%)'
             }"
-            [outputs]="{click: finishTransitionAndDuplicateEvent.bind(this)}"
+            [outputs]="{click: finishTransitionAndDuplicateEvent.bind(this, view.data!)}"
           >
             Повторить
           </button>
@@ -28,7 +28,7 @@
               icon: 'mu mu-play',
               color: 'rgb(88 83 118 / 52%)'
             }"
-            [outputs]="{click: finishTransitionAndStartNextEvent.bind(this)}"
+            [outputs]="{click: finishTransitionAndStartNextEvent.bind(this, view.data!)}"
           >
             Начать
           </button>
@@ -45,7 +45,7 @@
         </div>
       }
       @case(ViewStatus.ERROR) {
-        <pre>{{view.error}}</pre>
+        <pre style="white-space: normal;">{{view.error}}</pre>
       }
     }
   }

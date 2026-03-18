@@ -3,9 +3,9 @@ import { Injectable } from "@angular/core";
 import { BehaviorSubject, catchError, finalize, map, Observable, of, shareReplay, tap } from "rxjs";
 import { dd } from "../helpers/dd";
 import { EventService } from "./event.service";
-import { EventProps } from "./event.types";
 import { AppStateService } from "./app-state.service";
-
+import { filterBasicEvents } from "../helpers/filterBasicEvents";
+import { EventProps } from "./event/event.types";
 
 export interface Schedule {
 	events: never[];
@@ -93,6 +93,7 @@ export class ScheduleService {
 
 	private _getEventsBySchedule(scheduleId: number): EventProps[] {
 		return this._state.events.getValue()
+			.filter(filterBasicEvents)
 			.filter(event => event.schedule_id === scheduleId)
 	}
 

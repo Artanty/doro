@@ -17,6 +17,7 @@ import { GuiDirective } from '../_remote/web-component-wrapper/gui.directive';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TimerComponent implements OnChanges {
+  Number = Number;
   @Input() time: number = 0;
   @Input() length: number = 0;
   @Input() eventType: number = 0; // work = 1, rest = 2;

@@ -94,6 +94,27 @@
           </div>
         </div>
 
+        <div class="form-group">
+          <label for="type">Расписание:</label>
+          <select 
+            id="schedule_id" 
+            name="schedule_id" 
+            [(ngModel)]="eventData.schedule_id" 
+            required
+            class="form-control"
+            [class.is-invalid]="submitted && !eventData.schedule_id"
+          >
+            <option value="" disabled selected>Выберите расписание</option>
+            <option *ngFor="let item of schedules$ | async" [value]="item.id"
+            >
+              {{ item.name }}
+            </option>
+          </select>
+          <div class="invalid-feedback" *ngIf="submitted && !eventData.schedule_id">
+            Выберите расписание
+          </div>
+        </div>
+
         <!-- Уровень доступа -->
         <div class="form-group">
           <label for="base_access">Уровень доступа:</label>

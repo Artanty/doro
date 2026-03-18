@@ -10,8 +10,8 @@ const EVENT_TYPES = {
 // Default durations in seconds (if no schedule settings)
 const DEFAULT_DURATIONS = {
     WORK: 25 * 60,      // 25 minutes
-    SHORT_REST: 5 * 60,  // 5 minutes
-    LONG_REST: 20 * 60   // 20 minutes
+    SHORT_REST: 10,//5 * 60,  // 5 minutes
+    LONG_REST: 15//20 * 60   // 20 minutes
 };
 
 // Session count for long break

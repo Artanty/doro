@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Optional, Inject, OnInit } from "@angular/core";
-
 import { combineLatestWith, filter, map, Observable, tap } from "rxjs";
 import { BusEvent, EVENT_BUS_LISTENER, HOST_NAME } from "typlib";
 import { animate, style, transition, trigger } from "@angular/animations";
@@ -9,6 +8,11 @@ import { filterActiveTransitionEvents, filterTransitionEvents } from "./helpers/
 import { dd } from "./helpers/dd";
 import { NextEventService } from "./services/next-event.service";
 import { AppStateService } from "./services/app-state.service";
+import { filterActiveBasicEvents } from "./helpers/filterBasicEvents";
+import { filterStreamDataEntries } from "./helpers/filterStreamDataEntries";
+import { findActiveTikBasicEvent, findActiveTikTransitionEvent } from "./helpers/tik-events";
+import { RouterService } from "./services/router.service";
+
 
 @Component({
   selector: 'app-doro',   
@@ -40,6 +44,7 @@ export class DoroComponent implements OnInit {
     // @Inject(EVENT_BUS_PUSHER)
     // private readonly eventBusPusher: (busEvent: BusEvent) => void,
     private router: Router,
+    private _routerService: RouterService,
     private readonly _eventService: EventService,
     private readonly _nextEventService: NextEventService,
     private _state: AppStateService,
@@ -48,25 +53,71 @@ export class DoroComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    if (this.hostName === 'DORO-STANDALONE') {
-      // this.router.navigateByUrl('/doro/timer/209');
-      this.router.navigateByUrl('/doro/create-schedule');
+    // if (this.hostName === 'DORO-STANDALONE') {
+    //   // this.router.navigateByUrl('/doro/timer/209');
+    //   this.router.navigateByUrl('/doro/create-schedule');
       
-    } else {
-      // this.router.navigateByUrl('/doro/schedule-create');
-      this.router.navigateByUrl('/doro/event-list')
-      // this.router.navigateByUrl('/doro/event-create')
-    }
+    // } else {
+    //   // this.router.navigateByUrl('/doro/schedule-create');
+    //   this.router.navigateByUrl('/doro/event-list')
+    //   // this.router.navigateByUrl('/doro/event-create')
+    // }
 
-    this._state.events.listen().pipe(
-      map(res => res.filter(filterActiveTransitionEvents)),
-      filter(res => res && res.length > 0)
-    ).subscribe(res => {
-      this._nextEventService.onTransitionFound(res)
-    })
+    // this._state.events.listen().pipe(
+    //   map(res => res.filter(filterActiveTransitionEvents)),
+    //   filter(res => res && res.length > 0)
+    // ).subscribe(res => {
+    //   this._nextEventService.onTransitionFound(res)
+    // })
+
+    // this._state.events.listen().pipe(
+    //   filter(res => res && res.length > 0)
+    // ).subscribe(res => {
+    //   const activeTransitionEvents = res.filter(filterActiveTransitionEvents);
+    //   const activeBasicEvents = res.filter(filterActiveBasicEvents);
+    //   dd('activeTransitionEvents')
+    //   dd(activeTransitionEvents)
+    //   dd('activeBasicEvents')
+    //   dd(activeBasicEvents)
+    //   if (activeTransitionEvents.length > 0) {
+    //     dd('branch 1')
+    //     this._nextEventService.onTransitionFound(res)  
+    //   } else if (activeBasicEvents.length > 0) {
+    //     dd('branch 2')
+    //     // this.router.navigateByUrl(`/doro/timer/${activeBasicEvents[0].id}`);
+    //   }
+    // })
+    this.listenEvents();
   }
 
-  // private listenTransitionEvent() {
-  //   this._eventService.listenEventState(EventTypePrefix.TRANSITION)
-  // }
+  /**
+   * listen to runnng transition events
+   * */
+  listenEvents() {
+    this.eventBusListener$.pipe(
+      filter(filterStreamDataEntries),
+    ).subscribe(res => {
+      // dd(res)
+      const foundActiveTransition = findActiveTikTransitionEvent(res.payload);
+      if (foundActiveTransition) {
+        // dd(foundActiveTransition)
+        const transitionId = fromTikId(foundActiveTransition.id);
+        // dd(transitionId)
+        this._nextEventService.onTransitionFound(transitionId);
+      }
+      const foundActiveBasicEvent = findActiveTikBasicEvent(res.payload);
+      if (foundActiveBasicEvent) {
+        dd('foundActiveBasicEvent')
+        dd(foundActiveBasicEvent)
+        const basicEventId = fromTikId(foundActiveBasicEvent.id);
+        dd(basicEventId);
+        this._routerService.go(`/doro/timer/${basicEventId}`);
+      }
+    })
+  }
 }
+
+export const fromTikId = (tikId: string): number => {
+  return Number(tikId.split('_')[1]);
+}
+

@@ -6,10 +6,13 @@ const router = express.Router();
 
 router.post('/create', async (req, res) => {
   try {
-    const { name, length, type, base_access, state, hooks, created_from } = req.body;
+    const { name, length, type, base_access, state, hooks, created_from,
+      schedule_id, schedule_position
+    } = req.body;
     const user = getUserFromRequest(req);
     const result = await EventController.createEvent(
-      name, length, type, user, base_access, state, hooks, created_from
+      name, length, type, user, base_access, state, hooks, created_from,
+      schedule_id, schedule_position
     );
     res.status(201).json(result);
   } catch (error: unknown) {

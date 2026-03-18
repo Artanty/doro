@@ -1,6 +1,6 @@
 import { BusEvent } from "typlib"
-import { EventProps } from "../services/event.types";
 import { EventStates, eventTypes } from "../constants";
+import { EventProps } from "../services/event/event.types";
 
 export const filterTransitionEvents = (eventProps: EventProps) => {
 	return eventProps.type === eventTypes.TRANSITION

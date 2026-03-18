@@ -1,4 +1,5 @@
-import { Schedule } from "../services/event.types"
+import { Schedule } from "../services/event/event.types"
+
 type EventStatus = any
 type EventPropsDbItem = any
 

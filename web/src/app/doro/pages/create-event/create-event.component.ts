@@ -5,6 +5,10 @@ import { dd } from "../../helpers/dd";
 import { AccessLevel, AccessLevelService } from "../../services/access-level.service";
 import { EventTypeService } from "../../services/event-type.service";
 import { EventService } from "../../services/event.service";
+import { DEFAULT_EVENT_STATE_HOOKS, EventProgressType } from "../../constants";
+import { Schedule, ScheduleService } from "../../services/schedule.service";
+import { Observable } from "rxjs";
+import { CreateEventReq } from "../../services/api/event.types.api";
 
 @Component({
   selector: 'app-create-event',
@@ -23,6 +27,7 @@ export class CreateEventComponent implements OnInit {
     type: 1, // work
     base_access: 1, // Значение по умолчанию
     state: 0,
+    schedule_id: 1,
   };
 
   // Список типов событий
@@ -45,6 +50,7 @@ export class CreateEventComponent implements OnInit {
   successMessage = '';
   createdEventId = '';
   createdEventName = '';
+  public schedules$: Observable<Schedule[]>
 
   constructor(
     private http: HttpClient,
@@ -52,8 +58,11 @@ export class CreateEventComponent implements OnInit {
     private router: Router,
     private _eventService: EventService,
     private _accessLevelService: AccessLevelService,
-    private _eventTypeService: EventTypeService
-  ) {}
+    private _eventTypeService: EventTypeService,
+    private _scheduleService: ScheduleService
+  ) {
+    this.schedules$ = this._scheduleService.getSchedules()
+  }
 
   ngOnInit(): void {
     this._eventTypeService.getEventTypes().subscribe((res: any) => {
@@ -88,22 +97,14 @@ export class CreateEventComponent implements OnInit {
     this.isLoading = true;
 
     // Подготовка данных для отправки
-    const payload = {
+    const payload: CreateEventReq = {
       name: this.eventData.name,
       length: Number(this.eventData.length),
       type: Number(this.eventData.type),
-      // Если private - придумать
       base_access: this.eventData.base_access,
-      state: this.eventData.state,
-      "hooks": [
-        {
-          "trigger_event_state_id": 3,
-          "action_type": "script",
-          "action_config": {
-            "scriptId": "nextEvent"
-          }
-        }
-      ]
+      state: this.eventData.state as EventProgressType,
+      hooks: DEFAULT_EVENT_STATE_HOOKS,
+      schedule_id: this.eventData.schedule_id,
     };
 
     this._eventService.createEvent(payload).pipe().subscribe({
@@ -140,6 +141,7 @@ export class CreateEventComponent implements OnInit {
       type: 2,
       base_access: 1,
       state: 0,
+      schedule_id: 1,
     };
     this.submitted = false;
     this.errorMessage = '';

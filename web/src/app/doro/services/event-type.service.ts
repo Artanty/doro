@@ -17,10 +17,7 @@ export class EventTypeService {
 
 	constructor(
 		private http: HttpClient,
-    
-	) {
-    
-	}
+	) {}
 
 	getEventTypes(): Observable<EventType[]> {
 		return this.http

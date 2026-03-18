@@ -5,11 +5,10 @@ import { EVENT_BUS_LISTENER, BusEvent } from "typlib";
 import { dd } from "../helpers/dd";
 import { filterStreamDataEntries } from "../helpers/filterStreamDataEntries";
 import { AppStateService } from "./app-state.service";
-import { EventProps, GetUserEventsRes, EventStateReq, EventState, EventStateRes, SetPlayEventStateReq, EventStateResItem } from "./event.types";
-import { GetRecentRes } from "./event.types.api";
 import { ScheduleService } from "./schedule.service";
 import { ApiService } from "./api.service";
-
+import { CreateEventReq } from "./api/event.types.api";
+import { GetUserEventsRes, EventProps, EventStateReq, EventStateResItem, EventState } from "./event/event.types";
 
 @Injectable()
 export class EventService {
@@ -45,12 +44,11 @@ export class EventService {
       )
   }
 
-  public createEvent(payload: any) {
-    const apiUrl = `${process.env['DORO_BACK_URL']}/event/create`;
-    return this.http.post(apiUrl, payload).pipe(
-      switchMap(() => {
-        return this.loadEvents(); //self only. others via hash
-      })) 
+  public createEvent(payload: CreateEventReq) {
+    return this._api.createEventApi(payload).pipe(
+      tap(() => {
+        this._state.configHash.next(999);
+      }))
   }
 
   public addToSchedule(eventId: number, scheduleId: number): Observable<unknown> {
@@ -67,18 +65,7 @@ export class EventService {
       
   }
 
-  playEventApi(data: SetPlayEventStateReq): Observable<any> {
-    return this.http.post<any>(`${this.doroBaseUrl}/event-state/play`, data)
-      .pipe(
-        map(res => {
-          if (res.data.success) {
-            return res.data;
-          } else {
-            throw new Error('playEventApi wrong response')
-          }
-        })
-      );
-  }
+
 
   updateEventApi(data: any): Observable<unknown> {
     return this.http
@@ -94,14 +81,11 @@ export class EventService {
   //   // оповестить всех пользователей, которые имеют доступ к этому событию 
   //   // (создать новый хэш, чтобы при сравнении стало понятно, что нужно подтянуть изменения)
   public playEvent(eventId: number, isGuiEvent: boolean): void {
-
-  
-    this.playEventApi({ "eventId": eventId }).pipe(
+    this._api.playEventApi({ "eventId": eventId }).pipe(
       catchError(error => {
         console.error('Failed to play event:', error);
         return throwError(() => new Error(`Failed to play event ${eventId}: ${error.message}`));
       })
-      // @ts-ignore
     ).subscribe((res: any) => {
       console.log(res)
       if (res.isDuplicate) {

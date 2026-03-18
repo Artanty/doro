@@ -1,17 +1,16 @@
-<h1>timer wrapper</h1>
 <div class="topRow">
   <button gui type="button"
-          [inputs]="{
-            label: 'К списку',
-            routerLink: 'doro/event-list'
-          }"
-        ></button>
-        <button gui type="button"
-          [inputs]="{
-            label: 'Новое',
-            routerLink: 'doro/create-event'
-          }"
-        ></button>
+    [inputs]="{
+      label: 'К списку',
+      routerLink: 'doro/event-list'
+    }"
+  ></button>
+  <button gui type="button"
+    [inputs]="{
+      label: 'Новое',
+      routerLink: 'doro/create-event'
+    }"
+  ></button>
 </div>
 
 @if (eventState$ | async; as eventState) {
@@ -38,6 +37,7 @@
        <app-timer 
        		[length]="eventState?.data?.len ?? 0"
           [time]="eventState?.data?.cur ?? 0"
+          [eventType]="eventProps.type"
        >
          
        </app-timer>

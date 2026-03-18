@@ -1,15 +1,17 @@
 import { Injectable } from "@angular/core";
-import { EventProps, EventStateReq } from "./event.types";
 import { Router } from "@angular/router";
 import { dd } from "../helpers/dd";
 import { EventService } from "./event.service";
-import { BASE_SCHEDULE_ID, EventProgress, eventTypes } from "../constants";
+import { BASE_SCHEDULE_ID, DEFAULT_WORK_EVENT_LENGTH, EventProgress, eventTypes } from "../constants";
 import { ScheduleService } from "./schedule.service";
 import { AppStateService } from "./app-state.service";
 import { ApiService } from "./api.service";
-import { lastValueFrom, Observable } from "rxjs";
-import { SuggestRestReq } from "./api/schedule.types.api";
+import { concatMap, filter, first, lastValueFrom, map, Observable, skip, take, tap } from "rxjs";
+import { SuggestRestReq, SuggestRestRes } from "./api/schedule.types.api";
 import { NextCalculatedEvent, NextSuggestionsRes } from "./next-event/next-event.types";
+import { EventProps, EventStateReq } from "./event/event.types";
+import { CreateEventReq } from "./api/event.types.api";
+import { RouterService } from "./router.service";
 
 export interface EventStateHook {
 	"id": number
@@ -29,12 +31,17 @@ export class NextEventService {
 		private _eventService: EventService,
 		private _scheduleService: ScheduleService,
 		private _state: AppStateService,
-		private _api: ApiService
+		private _api: ApiService,
+		private _routerService: RouterService,
 	) {}
 
-	public onTransitionFound(res: EventProps[]) {
+	public onTransitionFound2(res: EventProps[]) {
 		const transitionEvent = res[0];
 		this._router.navigateByUrl(`doro/next-event/${transitionEvent.id}`);
+	}
+
+	public onTransitionFound(transitionId: number) {
+		this._routerService.go(`doro/next-event/${transitionId}`);
 	}
 
 	public getEventByHook(hookId: number): EventProps | undefined {
@@ -68,27 +75,8 @@ export class NextEventService {
 		return result;
 	}
 
-
-
-	/**
-	 * todo
-	 * Сделать апи типа getRecentEventOrSchedule()
-	 * проверить сначала наличие schedule
-	 * потом аналогично getRecentEventOrSchedule()
-	 * подумать, мб не нужен запрос ведь все данные актуальны (согласно хэшу)
-	 * */
-
-
-
-	// const foundParentEvent = nextEventService.findParentEvent(+transitionEventId);
-
-
-	/**
-	 * задача - сформировать объект со всеми возможными вариантами
-	 * 
-	 * */
 	public async getNextActionSuggestions(transitionEventId: number): Promise<NextSuggestionsRes> {
-		const transitionEvent = this.getEvent(transitionEventId);
+		const transitionEvent = await lastValueFrom(this.listenEvent(transitionEventId));
 		if (!transitionEvent) {
 			throw new Error('no transition event found with id: ' + transitionEventId);
 		}
@@ -115,23 +103,27 @@ export class NextEventService {
 		 * */
 		let nextCalculatedEvent: NextCalculatedEvent = {
 			type: eventTypes.WORK,
-			data: null,
+			length: 0,
 			schedule_id: BASE_SCHEDULE_ID,
-			schedule_position: 9999
+			schedule_position: 9999,
+			debug: null,
 		};
 		if (nextEventsBySchedule.length < 1) {
 			if (creatorEvent.type === eventTypes.REST) {
 				// SUGGESTING WORK
 				nextCalculatedEvent.type = eventTypes.WORK;
+				// todo ask if schedule has settings. otherwise default
+				nextCalculatedEvent.length = DEFAULT_WORK_EVENT_LENGTH;
 			} else {
 				// SUGGESTING REST
 				nextCalculatedEvent.type = eventTypes.REST;
 				const payload: SuggestRestReq = { scheduleId: creatorEvent.schedule_id }
-				nextCalculatedEvent.data = await lastValueFrom(this._api.suggestRestApi(payload));
+				const suggestRestApiRes = await lastValueFrom(this._api.suggestRestApi(payload));
+				nextCalculatedEvent.length = suggestRestApiRes.restDuration;
+				nextCalculatedEvent.debug = { suggestRestApiRes };
 			}
 			nextCalculatedEvent.schedule_id = creatorEvent.schedule_id;
 			nextCalculatedEvent.schedule_position = this._scheduleService.getNextPositionInSchedule(creatorEvent.schedule_id);
-			
 		}
 
 		return {
@@ -145,6 +137,16 @@ export class NextEventService {
 		const allEvents = this._state.events.getValue();
 		const foundParentEvent = allEvents.find(event => event.id === eventId);
 		return foundParentEvent;
+	}
+
+	// for race fix
+	public listenEvent(eventId: number): Observable<EventProps | undefined> {
+    
+		return this._state.events.listenReq.pipe(
+			filter(events => events.length > 0 && events.some(event => event.id === eventId)),
+			map(events => events.find(event => event.id === eventId)),
+			first() // Takes first emission that passes filter and completes
+		);
 	}
 
 	public finishTransitionAndStartNextEvent(idToFinish: number, idToPlay: number): Observable<any> {
@@ -161,6 +163,44 @@ export class NextEventService {
 			]
 		};
 		return this._api.setEventStateApi(payload);
+	}
+
+	public finishTransitionAndCreateNextEvent(idToFinish: number, eventToCreate: CreateEventReq): Observable<any> {
+		const payload: EventStateReq = {
+			eventStates: [
+				{
+					"eventId": idToFinish, 
+					"state": 3
+				},
+			]
+		};
+		return this._api.setEventStateApi(payload).pipe(
+			concatMap(() => {
+				return this._api.createEventApi(eventToCreate);
+			}),
+			tap(() => {
+				this._state.configHash.next(999);
+			})
+		);
+	}
+
+	public finishTransitionAndPlayDuplicatedEvent(idToFinish: number, idToDuplicate: number): Observable<any> {
+		const payload: EventStateReq = {
+			eventStates: [
+				{
+					"eventId": idToFinish, 
+					"state": 3
+				},
+			]
+		};
+		return this._api.setEventStateApi(payload).pipe(
+			concatMap(() => {
+				return this._api.playEventApi({ eventId: idToDuplicate });
+			}),
+			tap(() => {
+				this._state.configHash.next(999);
+			})
+		);
 	}
 }
 

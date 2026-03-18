@@ -4,8 +4,8 @@ import { EventStates, EventTypePrefix } from 'src/app/doro/constants';
 import { dd } from 'src/app/doro/helpers/dd';
 import { ActivatedRoute } from '@angular/router';
 import { EventService } from 'src/app/doro/services/event.service';
-import { EventProps, EventViewState, EventStateResItem, EventStateResItemStateless, EventState } from 'src/app/doro/services/event.types';
 import { countPrc } from 'src/app/doro/helpers/count-percent.util';
+import { EventProps, EventState, EventStateResItem, EventStateResItemStateless, EventViewState } from 'src/app/doro/services/event/event.types';
 
 @Component({
   selector: 'app-timer-wrapper',

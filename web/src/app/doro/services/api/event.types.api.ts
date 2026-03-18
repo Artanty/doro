@@ -1,4 +1,6 @@
-import { EventStateHook } from "./event.types";
+import { EventProgressType } from "../../constants";
+import { EventStateHook } from "../next-event.service";
+
 
 export interface EventPropsDTO {
 	id: number;
@@ -34,4 +36,28 @@ export interface GetRecentRes {
 		recentEvent?: EventPropsDTO,
 		recentSchedule?: ScheduleDTO,
 	}
+}
+
+export interface CreateEventReqHook {
+	"trigger_event_state_id": number,
+	"action_type": string
+	"action_config": {
+		"scriptId": string
+	}
+}
+
+export interface CreateEventReq {
+	name: string
+	length: number
+	type: number
+	base_access: number
+	state: EventProgressType,
+	"hooks": CreateEventReqHook[],
+	schedule_id?: number,
+	schedule_position?: number,
+};
+
+
+export interface SetPlayEventStateReq {
+	"eventId": number
 }

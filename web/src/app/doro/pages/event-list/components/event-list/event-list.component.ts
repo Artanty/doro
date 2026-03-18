@@ -5,9 +5,9 @@ import { Observable, tap, combineLatest, map, take, filter, Subject, BehaviorSub
 import { AppStateService } from 'src/app/doro/services/app-state.service';
 import { Schedule, ScheduleService } from 'src/app/doro/services/schedule.service';
 import { EventService } from 'src/app/doro/services/event.service';
-import { EventProps } from 'src/app/doro/services/event.types';
 import { Nullable } from 'src/app/doro/helpers/utility.types';
 import { filterBasicEvents } from 'src/app/doro/helpers/filterBasicEvents';
+import { EventProps } from 'src/app/doro/services/event/event.types';
 
 @Component({
   selector: 'app-event-list',

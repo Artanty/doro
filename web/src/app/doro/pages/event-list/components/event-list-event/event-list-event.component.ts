@@ -4,7 +4,7 @@ import { Observable, Subject, takeUntil, filter, startWith, distinctUntilChanged
 import { EventStates, EventTypePrefix } from 'src/app/doro/constants';
 import { countPrc } from 'src/app/doro/helpers/count-percent.util';
 import { EventService } from 'src/app/doro/services/event.service';
-import { EventProps, EventViewState, EventStateResItem, EventStateResItemStateless, EventState } from 'src/app/doro/services/event.types';
+import { EventProps, EventViewState, EventStateResItem, EventStateResItemStateless, EventState } from 'src/app/doro/services/event/event.types';
 import { Schedule, ScheduleService } from 'src/app/doro/services/schedule.service';
 
 @Component({

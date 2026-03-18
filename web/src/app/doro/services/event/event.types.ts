@@ -1,4 +1,5 @@
-import { EventProgressType, EventStatesType } from "../constants";
+import { EventProgressType, EventStatesType } from "../../constants"
+
 
 export interface EventStateResItem { // todo: rename to entry
 	id: string,
@@ -81,9 +82,7 @@ export interface EventStateReq {
 }
 
 
-export interface SetPlayEventStateReq {
-	"eventId": number
-}
+
 
 export interface EventData {
 	data: any

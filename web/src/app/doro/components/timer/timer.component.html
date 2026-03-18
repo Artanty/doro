@@ -31,7 +31,7 @@
       <!-- Percentage Display -->
       <!-- <div class="percentage">{{ percentage }}%</div> -->
       <div class="eventIcon">
-        @if(eventType === eventTypes.WORK) {
+        @if(Number(eventType) === Number(eventTypes.WORK)) {
           <i title="work" class="mu mu-show"></i>
         } @else {
           <i title="rest" class="mu mu-audio"></i>
