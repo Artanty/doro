@@ -33,6 +33,8 @@ import { SetConfigHashAction } from './services/set-config-hash.action';
 import { NextEventService } from './services/next-event.service';
 import { ApiService } from './services/api.service';
 import { RouterService } from './services/router.service';
+import { StorageService } from './services/storage.service';
+import { SettingsService } from './services/settings.service';
 
 export const CHILD_ROUTES = [
   {
@@ -68,6 +70,11 @@ export const CHILD_ROUTES = [
         path: 'next-event', 
         loadChildren: () => import('./pages/next-event/next-event.module')
           .then(m => m.NextEventModule)
+      },
+      {
+        path: 'settings', 
+        loadChildren: () => import('./pages/settings/settings.module')
+          .then(m => m.SettingsModule)
       },
     ]
   },
@@ -114,7 +121,9 @@ export const CHILD_ROUTES = [
     EventTypeService,
     ScheduleService,
     ApiService,
-    RouterService
+    RouterService,
+    StorageService,
+    SettingsService
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })

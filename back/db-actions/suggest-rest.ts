@@ -1,21 +1,13 @@
+import { DEFAULT_DURATIONS, SESSIONS_BEFORE_LONG_BREAK } from "../core/constants";
 import { dd } from "../utils/dd";
 import { DbActionResult } from "./create-event";
+
 
 // Event type constants
 const EVENT_TYPES = {
     WORK: 1,
     REST: 2
 };
-
-// Default durations in seconds (if no schedule settings)
-const DEFAULT_DURATIONS = {
-    WORK: 25 * 60,      // 25 minutes
-    SHORT_REST: 10,//5 * 60,  // 5 minutes
-    LONG_REST: 15//20 * 60   // 20 minutes
-};
-
-// Session count for long break
-const SESSIONS_BEFORE_LONG_BREAK = 4;
 
 interface RestSuggestion {
     shouldTakeLongBreak: boolean;

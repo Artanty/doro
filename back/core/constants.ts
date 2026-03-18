@@ -24,3 +24,13 @@ export const basicEventTypePrefix = 'e';
 export const EVENT_TIK_ACTION_PROP = 'tikAction';
 
 export const BASE_SCHEDULE_ID = 1;
+
+// Default durations in seconds (if no schedule settings)
+export const DEFAULT_DURATIONS = {
+  WORK: 25 * 60,      // 25 minutes
+  SHORT_REST: 10,//5 * 60,  // 5 minutes
+  LONG_REST: 15//20 * 60   // 20 minutes
+};
+
+// Session count for long break
+export const SESSIONS_BEFORE_LONG_BREAK = 4;

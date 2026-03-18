@@ -12,6 +12,7 @@ import { filterActiveBasicEvents } from "./helpers/filterBasicEvents";
 import { filterStreamDataEntries } from "./helpers/filterStreamDataEntries";
 import { findActiveTikBasicEvent, findActiveTikTransitionEvent } from "./helpers/tik-events";
 import { RouterService } from "./services/router.service";
+import { SettingsService } from "./services/settings.service";
 
 
 @Component({
@@ -48,6 +49,7 @@ export class DoroComponent implements OnInit {
     private readonly _eventService: EventService,
     private readonly _nextEventService: NextEventService,
     private _state: AppStateService,
+    private _settings: SettingsService,
     @Optional() @Inject(HOST_NAME) private hostName?: string,
 
   ) {}
@@ -62,31 +64,6 @@ export class DoroComponent implements OnInit {
     //   this.router.navigateByUrl('/doro/event-list')
     //   // this.router.navigateByUrl('/doro/event-create')
     // }
-
-    // this._state.events.listen().pipe(
-    //   map(res => res.filter(filterActiveTransitionEvents)),
-    //   filter(res => res && res.length > 0)
-    // ).subscribe(res => {
-    //   this._nextEventService.onTransitionFound(res)
-    // })
-
-    // this._state.events.listen().pipe(
-    //   filter(res => res && res.length > 0)
-    // ).subscribe(res => {
-    //   const activeTransitionEvents = res.filter(filterActiveTransitionEvents);
-    //   const activeBasicEvents = res.filter(filterActiveBasicEvents);
-    //   dd('activeTransitionEvents')
-    //   dd(activeTransitionEvents)
-    //   dd('activeBasicEvents')
-    //   dd(activeBasicEvents)
-    //   if (activeTransitionEvents.length > 0) {
-    //     dd('branch 1')
-    //     this._nextEventService.onTransitionFound(res)  
-    //   } else if (activeBasicEvents.length > 0) {
-    //     dd('branch 2')
-    //     // this.router.navigateByUrl(`/doro/timer/${activeBasicEvents[0].id}`);
-    //   }
-    // })
     this.listenEvents();
   }
 
@@ -97,21 +74,19 @@ export class DoroComponent implements OnInit {
     this.eventBusListener$.pipe(
       filter(filterStreamDataEntries),
     ).subscribe(res => {
-      // dd(res)
-      const foundActiveTransition = findActiveTikTransitionEvent(res.payload);
-      if (foundActiveTransition) {
-        // dd(foundActiveTransition)
-        const transitionId = fromTikId(foundActiveTransition.id);
-        // dd(transitionId)
-        this._nextEventService.onTransitionFound(transitionId);
-      }
-      const foundActiveBasicEvent = findActiveTikBasicEvent(res.payload);
-      if (foundActiveBasicEvent) {
-        dd('foundActiveBasicEvent')
-        dd(foundActiveBasicEvent)
-        const basicEventId = fromTikId(foundActiveBasicEvent.id);
-        dd(basicEventId);
-        this._routerService.go(`/doro/timer/${basicEventId}`);
+      if (this._settings.isSheevaMode() === false) {
+        dd(111)
+        const foundActiveTransition = findActiveTikTransitionEvent(res.payload);
+        const foundActiveBasicEvent = findActiveTikBasicEvent(res.payload);
+
+        if (foundActiveTransition) {
+          const transitionId = fromTikId(foundActiveTransition.id);
+          this._nextEventService.onTransitionFound(transitionId);
+        } 
+        else if (foundActiveBasicEvent) {
+          const basicEventId = fromTikId(foundActiveBasicEvent.id);
+          this._routerService.go(`/doro/timer/${basicEventId}`);
+        }
       }
     })
   }

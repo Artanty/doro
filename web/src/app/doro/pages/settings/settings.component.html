@@ -1,0 +1,8 @@
+<input gui type="radio"
+  [inputs]="{
+    label: 'Режим',
+    options: ['Single', 'Sheeva'],
+    value: settings.appMode
+  }"
+  [outputs]="{valueChange: onAppModeChange.bind(this)}"
+>

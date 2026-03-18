@@ -36,10 +36,10 @@ export class NextEventComponent implements OnInit {
     private _eventService: EventService,
     private injector: Injector,
     private route: ActivatedRoute,
+    private router: Router,
     private _nextEventService: NextEventService,
   ) {
     this.transitionEventId = Number(this.route.snapshot.params['transitionEventId'])
-    dd('now')
     this.view$ = combineLatest([
       this._eventService.listenEventState(EventTypePrefix.TRANSITION, this.transitionEventId),
       from(this._nextEventService.getNextActionSuggestions(this.transitionEventId))
@@ -52,10 +52,6 @@ export class NextEventComponent implements OnInit {
           return JSON.stringify(prevSuggestions) === JSON.stringify(currSuggestions);
         }),
         map(([eventStateReqItem, nextSuggestionsRes]) => { // [EventStateReqItem, NextSuggestionsRes]
-          dd('eventStateReqItem')
-          dd(eventStateReqItem)
-          dd('nextSuggestionsRes')
-          dd(nextSuggestionsRes)
           if (nextSuggestionsRes) {
             return {
               status: ViewStatus.READY,
@@ -70,16 +66,11 @@ export class NextEventComponent implements OnInit {
         catchError(error => {
           return of(this._buildErrorState(error))
         }),
-        tap(res => dd(res)),
       )
   }
   
   ngOnInit(): void {
     // this._eventService.loadEvents().pipe(take(1)).subscribe(() => this.init())
-  }
-
-  public replay() {
-    // this._eventService.playEventApi({ eventId: this.endedEvent.id })
   }
 
   private _buildErrorState(error: Error): ViewState<NextEventViewData> {
@@ -102,8 +93,7 @@ export class NextEventComponent implements OnInit {
   
   public finishTransitionAndClose() {
     this._eventService.finishEvent(this.transitionEventId).subscribe(res => {
-      dd(res);
-      this.location.back()
+      this.router.navigateByUrl('/doro/event-list')
     })
   }
 
