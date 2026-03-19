@@ -43,7 +43,7 @@ export const getEventStateHooks = async (
 		if (!params.eventId) {
 			throw new Error('eventId is required');
 		}
-		
+		// debugger;
 		// Build query with optional filters
 		let query = `
 			SELECT 

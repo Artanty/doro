@@ -56,14 +56,14 @@ export const createEventCtl = async (
 		 * Нужно чтобы doro@web подтянул новое cобытие.
 		 * Для этого обновляем хэш, который doro@web впоследствии получит от tik@web
 		 * */
-		ConfigManager.setConfigHash(); 
+		ConfigManager.setConfigHash();
 		/**
 		 * Стейт события нужно передать в tik@, чтобы отобразился прогресс.
 		 * Передаем обе сущности в одном запросе.
 		 * v2: проверять, нужно ли сейчас отправлять это событие или оно не актуальное.
 		 * */
 		const hashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert');
-		const eventsPayload = OuterSyncService.buildNewOuterEventPayload(eventId, length, state);
+		const eventsPayload = OuterSyncService.buildNewOuterEventPayload(eventId, length, state, 'event');
 		await OuterSyncService.updateOuterEntries([...hashPayload, ...eventsPayload]);
 
 		await connection.commit();

@@ -26,7 +26,7 @@ export const createEvent = async (
 		result: null,
 		error: null
 	}
-	debugger;
+	
 	try {
 		const [eventResult] = await connection.execute(
 			'INSERT INTO events (name, length, type, created_at, created_by, base_access_id, created_from, schedule_id, schedule_position) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',

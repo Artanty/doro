@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Injector, Input, SimpleChanges } from '@angular/core';
-import { Subject, Observable, takeUntil, map, startWith, tap, catchError, EMPTY, finalize, throwError } from 'rxjs';
+import { Subject, Observable, takeUntil, map, startWith, tap, catchError, EMPTY, finalize, throwError, switchMap, combineLatest } from 'rxjs';
 import { EventStates, EventTypePrefix } from 'src/app/doro/constants';
 import { dd } from 'src/app/doro/helpers/dd';
 import { ActivatedRoute } from '@angular/router';
 import { EventService } from 'src/app/doro/services/event.service';
 import { countPrc } from 'src/app/doro/helpers/count-percent.util';
 import { EventProps, EventState, EventStateResItem, EventStateResItemStateless, EventViewState } from 'src/app/doro/services/event/event.types';
+import { AppStateService } from 'src/app/doro/services/app-state.service';
 
 @Component({
   selector: 'app-timer-wrapper',
@@ -40,71 +41,84 @@ export class TimerWrapperComponent {
     private cdr: ChangeDetectorRef,
     private eventService: EventService,
     private injector: Injector,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private _store: AppStateService
   ) {
     // const service = this.injector.get(IconFallbackService);
     // console.log(service)
   }
-
-  // todo make pipe
+  
   getPrc(eventState: any): number {
     const result = (eventState?.data?.cur && eventState?.data?.len)
       ? ((eventState?.data?.cur / eventState?.data?.len) * 100)
       : 0;
     return Math.round(result)
   }
-  // countPrc
+  
   ngOnInit() {
+    this.eventState$ = this.route.params.pipe(
+      takeUntil(this.destroy$),
+      switchMap(params => {
+        const eventId = Number(params['id']);
+        dd('Event ID from route:', eventId);
+        return combineLatest([
+          this._listenEventState(eventId),
+          this._listenEventProps(eventId),
+        ])
+          .pipe(
+            map(([state]) => state),
+          );
+      })
+    )
+  }
+
+  private _listenEventState(eventId: number): Observable<EventViewState<EventStateResItemStateless>> {
     let initalState: EventViewState<EventStateResItemStateless> | EventViewState<EventState> = {
       viewState: 'LOADING_VIEW_STATE',
       eventState: -1 // pending
     }
+    return this.eventService.listenEventState(EventTypePrefix.BASIC, eventId)
+      .pipe(
+        takeUntil(this.destroy$),
+        map((res: EventStateResItem) => {
+          const { stt, len, cur, id } = res;
+          const readyState: EventViewState<EventStateResItemStateless> = {
+            viewState: 'READY_VIEW_STATE',
+            eventState: stt,
+            data: {
+              id,
+              cur,
+              len,
+              prc: countPrc(len!, cur),
+            }              
+          };
 
-    const eventProps = this.route.snapshot.data['event']; // todo rewrite to load method & add refresh
-    // dd('eventProps')
-    // dd(eventProps)
-    if (eventProps) {
-      this.eventProps = eventProps;
-    }
-
-    if (!this.eventProps?.id) {
-      initalState = this._buildErrorState(new Error('no event id, mb forgot resolver'));
-    }
-    this.eventState$ = 
-      this.eventService.listenEventState(EventTypePrefix.BASIC, this.eventProps?.id)
-        .pipe(
-          takeUntil(this.destroy$),
-          map((res: EventStateResItem) => {
-            const { stt, len, cur, id } = res;
-            const readyState: EventViewState<EventStateResItemStateless> = {
-              viewState: 'READY_VIEW_STATE',
-              eventState: stt,
-              data: {
-                id,
-                cur,
-                len,
-                prc: countPrc(len!, cur),
-              }              
-            };
-
-            return readyState;
-          }),
-          startWith(initalState),
-          tap((res: any) => {
-
-            this.cdr.detectChanges()
-          }),
-          catchError(error => {
-            console.error('Failed while listenEventState in list item:', error);
+          return readyState;
+        }),
+        startWith(initalState),
+        tap((res: any) => {
+          this.cdr.detectChanges()
+        }),
+        catchError(error => {
+          console.error('Failed while listenEventState in list item:', error);
          
-            return throwError(() => this._buildErrorState(error)) 
+          return throwError(() => this._buildErrorState(error)) 
 
-            // return EMPTY;
-          })
-        )
-    // .subscribe(res => {
-    //   this.eventState = res
-    // })
+          // return EMPTY;
+        })
+      )
+  }
+  private _listenEventProps(eventId: number): Observable<EventProps> {
+    return this.eventService.waitForEventProps(eventId).pipe(
+      tap(eventProps => {
+        this.eventProps = eventProps;
+        dd('Event props loaded:', eventProps);
+      }),
+      catchError(error => {
+        dd(`Failed to load event props: ${error}`);
+        return EMPTY;
+      })
+    );
   }
   
   ngOnDestroy() {

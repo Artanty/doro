@@ -11,9 +11,9 @@ export const CHILD_ROUTES = [
 	{
 		path: ':id', 
 		component: TimerWrapperComponent,
-		resolve: {
-			event: eventResolver
-		}
+		// resolve: {
+		// 	event: eventResolver
+		// }
 	}
 ]
 @NgModule({

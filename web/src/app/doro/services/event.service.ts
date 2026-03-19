@@ -1,6 +1,6 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable, Inject } from "@angular/core";
-import { BehaviorSubject, Observable, delay, tap, map, catchError, of, throwError, distinctUntilChanged, filter, switchMap } from "rxjs";
+import { BehaviorSubject, Observable, delay, tap, map, catchError, of, throwError, distinctUntilChanged, filter, switchMap, first, timeout } from "rxjs";
 import { EVENT_BUS_LISTENER, BusEvent } from "typlib";
 import { dd } from "../helpers/dd";
 import { filterStreamDataEntries } from "../helpers/filterStreamDataEntries";
@@ -65,8 +65,6 @@ export class EventService {
       
   }
 
-
-
   updateEventApi(data: any): Observable<unknown> {
     return this.http
       .post<any>(`${this.doroBaseUrl}/event/update`, data)
@@ -75,11 +73,6 @@ export class EventService {
       )
   }
 
-  // flow: doro@web -> doro@back -> tik@back -> tik@web -> doro@web
-  //   // сначала сделать запрос на свой бэк. +
-  //   // обновить стейт. +
-  //   // оповестить всех пользователей, которые имеют доступ к этому событию 
-  //   // (создать новый хэш, чтобы при сравнении стало понятно, что нужно подтянуть изменения)
   public playEvent(eventId: number, isGuiEvent: boolean): void {
     this._api.playEventApi({ "eventId": eventId }).pipe(
       catchError(error => {
@@ -87,14 +80,7 @@ export class EventService {
         return throwError(() => new Error(`Failed to play event ${eventId}: ${error.message}`));
       })
     ).subscribe((res: any) => {
-      console.log(res)
-      if (res.isDuplicate) {
-        if (Array.isArray(res.addedEvents) && res.addedEvents.length) {
-          const eventsToUpdate = this._state.events.getValue();
-          eventsToUpdate.push(...res.addedEvents)
-          this._state.events.next(eventsToUpdate);
-        }
-      }
+      this._state.configHash.next(999);
     })   
   }
 
@@ -162,6 +148,30 @@ export class EventService {
         this._state.configHash.next(999);
       })
     )   
+  }
+
+  public waitForEventProps(eventId: number): Observable<EventProps> {
+    console.log(`Waiting for event ${eventId} to appear...`);
+    
+    return this._state.events.listen().pipe(
+      filter(events => {
+        const exists = events.some(e => e.id === eventId);
+        if (exists) console.log(`Event ${eventId} found!`);
+        return exists;
+      }),
+      map(events => {
+        // Find and return the actual event object
+        const foundEvent = events.find(e => e.id === eventId);
+        console.log('Returning event object:', foundEvent);
+        return foundEvent!; // Non-null assertion since we filtered
+      }),
+      first(), // Complete after first emission
+      timeout(10000),
+      catchError(err => {
+        console.error(`Event ${eventId} never appeared`);
+        return throwError(() => err);
+      })
+    );
   }
 
 }

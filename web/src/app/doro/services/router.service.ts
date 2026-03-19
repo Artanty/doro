@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+import { Injectable, NgZone } from "@angular/core";
 import { Router } from "@angular/router";
 import { AppStateService } from "./app-state.service";
 import { dd } from "../helpers/dd";
@@ -7,16 +7,23 @@ import { dd } from "../helpers/dd";
 export class RouterService {
 	constructor(
 		private router: Router,
-		private _state: AppStateService
+		private _state: AppStateService,
+		private ngZone: NgZone
 	) {}
 
 	go(route: string) {
-		const canGo = this._validate(route);
+		const canGo = this.ngZone.runOutsideAngular(() => {
+			return this._validate(route);
+		});
 		if (canGo) {
 			this._state.lastAutoRedirect.next(route);
-			this.router.navigateByUrl(route);
+			this.ngZone.run(() => {
+				this.router.navigateByUrl(route).then(() => {
+					console.log('Navigation complete');
+				});
+			});
 		} else {
-			dd('ROUTE GOING DISALLOWED: ' + route)
+			// dd('ROUTE GOING DISALLOWED: ' + route)
 		}
 	}
 

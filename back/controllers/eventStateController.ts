@@ -187,12 +187,13 @@ export class EventStateController {
         const connection = await pool.getConnection();
         let getAccessibleEventResult,
             calculateEventStatusResult,
-            createdEventId,
-            upsertStateResult,
+            upsertEventStateResult,
             addHistoryResult,
+            createdEventId,
             getEventStateHooksResult,
             createEventStateHookResult,
-            upsertEventAccessResult;
+            upsertEventAccessResult,
+            tikResponse;
         try {
             await connection.beginTransaction();
 
@@ -213,92 +214,61 @@ export class EventStateController {
             if (eventStatus.status === eventProgress.STOPPED || eventStatus.status === eventProgress.PAUSED) {
                 dd('CHANGING STATE (PLAYING) OF EXISTING EVENT')
                 
-                upsertStateResult = await upsertEventState(connection, eventId, state)
+                upsertEventStateResult = await upsertEventState(connection, eventId, state)
                 addHistoryResult = await addEventStateHistory(connection, eventId, state)
+                ConfigManager.setConfigHash();
+                const hashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert');
+                const eventsPayload = OuterSyncService.buildNewOuterEventPayload(eventId, eventProps.length, state, 'event');
+                tikResponse = await OuterSyncService.updateOuterEntries([...hashPayload, ...eventsPayload]);
+                await connection.commit();
 
             } else if (eventStatus.status === eventProgress.COMPLETED) {
                 dd('DUPLICATING EVENT')
                 const name = eventProps.name;
                 const length = eventProps.length;
                 const type = Number(eventProps.type);
-                const accessLevel = 'owner';
-                // todo add hooks?
+                const accessLevel = 3;
 
                 const { schedule_id, schedule_position } = await buildScheduleInfo(
                     connection, 
                     eventProps.schedule_id, 
                     eventProps.schedule_position
                 );
+                const base_access = eventProps.base_access_id
+                const created_from = `e_${eventId}`;
 
                 const createEventResult = await createEvent(
                     connection, name, length, type, userHandler,
-                    schedule_id, schedule_position
+                    schedule_id, schedule_position,
+                    base_access, created_from
                 );
                 if (createEventResult.error) {
                     throw new Error(createEventResult.error);
                 }
                 createdEventId = createEventResult.result;
-                getEventStateHooksResult = await getEventStateHooks(connection, eventId);
-                createEventStateHookResult = await createEventStateHooks(connection, eventId, getEventStateHooksResult.hooks);
+
+                getEventStateHooksResult = await getEventStateHooks(connection, { eventId });
+
+                createEventStateHookResult = await createEventStateHooks(connection, createdEventId, getEventStateHooksResult.hooks);
+
                 upsertEventAccessResult = await upsertEventAccess(connection, createdEventId, userHandler, accessLevel)
-                upsertStateResult = await upsertEventState(connection, createdEventId, state)
-                addHistoryResult = await addEventStateHistory(connection, createdEventId, state)
-                //no need history on create
+                // debugger;
+                upsertEventStateResult = await upsertEventState(connection, createdEventId, state)
+                //
+                ConfigManager.setConfigHash();
+                const hashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert');
+                const eventsPayload = OuterSyncService.buildNewOuterEventPayload(createdEventId, length, state);
+                tikResponse = await OuterSyncService.updateOuterEntries([...hashPayload, ...eventsPayload]);
+                await connection.commit();
             } else {
                 throw new Error('wrong state of event')
             }
-            
-            // eventProgress.COMPLETED - add event copy
-            const eventPropsForCalc = { 
-                id: eventStatus.status === eventProgress.COMPLETED ? createdEventId : eventId, 
-                length: eventProps.length,
-                event_type: eventProps.type,
-            }
-            // dd(eventPropsForCalc)
-            // dd(eventProgress.COMPLETED)
-            // dd(eventProgress.COMPLETED ? createdEventId : eventId)
-            // dd(createdEventId)
-            // dd(eventId)
-            // build event for tik
-            const updatedEventsStatus: EventStateResItem[] = await buildTikEvents(connection, eventPropsForCalc);
-            await connection.commit();
-            // dd(updatedEventsStatus)
-            const tikAction = eventProgress.COMPLETED ? 'add' : 'update';
-            const updatedEventStatusWithTikAction = OuterSyncService.addOuterActionInEvents(updatedEventsStatus, tikAction);
-            // dd(updatedEventStatusWithTikAction)
-            // request to tik@back
-            let tikResponse;
-            tikResponse = await axios.post(`${process.env['TIK_BACK_URL']}/updateEventsState`,
-                {
-                    poolId: 'current_user_id',
-                    data: updatedEventStatusWithTikAction,
-                    projectId: 'doro@web',
 
-                    // requesterProject,
-                    // requesterApiKey: apiKeyHeader,
-                    // requesterUrl
-                }
-                // ,
-                //  {
-                //   headers: {
-                //     'X-Project-Id': process.env.PROJECT_ID,
-                //     'X-Project-Domain-Name': `${req.protocol}://${req.get('host')}`,
-                //     'X-Api-Key': process.env.BASE_KEY
-                //   }
-                // }
-            );
-            
             return {
                 data: {
                     success: true,
                     isDuplicate: eventStatus.status === eventProgress.COMPLETED,
                     actualEventId: eventProgress.COMPLETED ? createdEventId : eventId, //eventS!
-                    addedEvents: [{
-                        id: createdEventId,
-                        name: eventProps.name,
-                        length: eventProps.length,
-                        access_level: "owner",
-                    }],
                 },
                 debug: {
                     [thisProjectResProp()]: {
@@ -306,17 +276,14 @@ export class EventStateController {
                         calculateEventStatusResult,
                         isDuplicate: eventStatus.status === eventProgress.COMPLETED,
                         actualEventId: eventProgress.COMPLETED ? createdEventId : eventId, //eventS!
-                        addedEvents: [{
-                            id: createdEventId,
-                            name: eventProps.name,
-                            length: eventProps.length,
-                            access_level: "owner",
-                        }],
-                        upsertStateResult,
+                       
+                        upsertEventStateResult,
                         addHistoryResult,
                         upsertEventAccessResult,
+                        getEventStateHooksResult,
+                        createEventStateHookResult,
                     },
-                    [tikResProp()]: parseServerResponse(tikResponse)
+                    [tikResProp()]: tikResponse
                 }
             };
         } catch (error: any) { 

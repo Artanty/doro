@@ -195,7 +195,9 @@ export class NextEventService {
 		};
 		return this._api.setEventStateApi(payload).pipe(
 			concatMap(() => {
-				return this._api.playEventApi({ eventId: idToDuplicate });
+				return this._api.playEventApi({ eventId: idToDuplicate }).pipe(tap(() => {
+					this._state.configHash.next(999);
+				}));
 			}),
 			tap(() => {
 				this._state.configHash.next(999);

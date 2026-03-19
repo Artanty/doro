@@ -75,7 +75,6 @@ export class DoroComponent implements OnInit {
       filter(filterStreamDataEntries),
     ).subscribe(res => {
       if (this._settings.isSheevaMode() === false) {
-        dd(111)
         const foundActiveTransition = findActiveTikTransitionEvent(res.payload);
         const foundActiveBasicEvent = findActiveTikBasicEvent(res.payload);
 

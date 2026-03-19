@@ -71,13 +71,13 @@ export class OuterSyncService {
 
 		return this.addOuterActionInEvents<OuterHash>(this.buildOuterHash(), action);
 	}
-
+	// todo add prop tikAction, default = upsert
 	public static buildNewOuterEventPayload(
 		id: string | number, 
 		length: number, 
 		state: number, 
 		entryType: EntryType = 'event'
-	) {
+	): EntryWithTikAction<EventStateResItem>[] {
 		// todo: мб убрать add и оставить только upsert?
 		// разница только в дебаг-отчете, который и без этого корректно сложится
 		return this.addOuterActionInEvents(this.buildNewOuterEvent(id, length, state, entryType), 'add');
