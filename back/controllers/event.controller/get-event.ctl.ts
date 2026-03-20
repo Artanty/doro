@@ -18,7 +18,7 @@ export const getEventCtl = async (userHandler: string, filters: any) => {
             `SELECT 
         e.*, 
         etu.access_level, 
-        es.event_state_id as current_state,
+        e.event_state_id as current_state,
         CASE 
             WHEN e.base_access_id IN (1, 2, 3) THEN TRUE
             ELSE FALSE
@@ -43,7 +43,6 @@ export const getEventCtl = async (userHandler: string, filters: any) => {
         FROM events e
         LEFT JOIN eventToUser etu 
             ON e.id = etu.event_id AND etu.user_handler = ?
-        LEFT JOIN eventState es ON e.id = es.eventId
         WHERE e.created_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? DAY)
         ORDER BY e.created_at DESC
         LIMIT ?`,

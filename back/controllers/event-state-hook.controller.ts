@@ -173,7 +173,8 @@ export class EventStateHookController {
 				999, //schedule_position
 
 				sourceEvent.base_access_id,
-				created_from
+				created_from,
+				transitionEventState
 			);
 			
 			if (createEventResult.error) {
@@ -191,11 +192,11 @@ export class EventStateHookController {
 			);
 			
 			// Set initial state
-			upsertEventStateResult = await upsertEventState(
-				connection, 
-				transitionEventId, 
-				transitionEventState
-			);
+			// upsertEventStateResult = await upsertEventState(
+			// 	connection, 
+			// 	transitionEventId, 
+			// 	transitionEventState
+			// );
 			
 			const eventsPayload: any[] = OuterSyncService.buildNewOuterEventPayload(
 				transitionEventId, 

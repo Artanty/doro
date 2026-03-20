@@ -18,9 +18,8 @@ export const deleteFinishedEvents = async (
 	try {
 		const [result] = await connection.execute(
 			`DELETE e FROM events e
-             INNER JOIN eventState es ON e.id = es.eventId
              WHERE e.type = ? 
-             AND es.event_state_id = ?`,
+             AND e.event_state_id = ?`,
 			[eventType, eventStateId]
 		);
                 

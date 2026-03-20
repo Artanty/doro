@@ -2,7 +2,6 @@ import { getSchedules } from "../db-actions/get-schedules";
 import { thisProjectResProp } from "../utils/getResProp";
 import createPool from '../core/db_connection';
 import { createSchedule } from "../db-actions/create-schedule";
-import { getScheduleWithEvents } from "../db-actions/get-schedules-with-events";
 
 export default class ScheduleController {
 
@@ -50,33 +49,6 @@ export default class ScheduleController {
                 debug: {
                     [thisProjectResProp()]: {
                         createSchduleResult
-                    }
-                }
-            };
-
-        } catch (err) {
-            return { status: 'err' }
-        }
-    }
-
-    public static async getScheduleWithEvents(
-        userHandler: string,
-        scheduleId: number,
-    ): Promise<any> {
-        try {
-
-            const pool = createPool();
-            const connection = await pool.getConnection();
-
-            let getSchduleWithEventsResult;
-
-            getSchduleWithEventsResult = await getScheduleWithEvents(connection, userHandler, scheduleId)
-
-            return {
-                data: getSchduleWithEventsResult.result,
-                debug: {
-                    [thisProjectResProp()]: {
-                        getSchduleWithEventsResult
                     }
                 }
             };

@@ -38,9 +38,8 @@ export const suggestRestBreak = async (
                 e.type,
                 e.length,
                 e.schedule_position,
-                es.event_state_id as state
+                e.event_state_id as state
              FROM events e
-             LEFT JOIN eventState es ON e.id = es.eventId
              WHERE e.schedule_id = ?
              ORDER BY e.schedule_position DESC
              LIMIT 20`,
@@ -142,9 +141,8 @@ export const suggestRestBreakWithSettings = async (
                 e.type,
                 e.length,
                 e.schedule_position,
-                es.event_state_id as state
+                e.event_state_id as state
              FROM events e
-             LEFT JOIN eventState es ON e.id = es.eventId
              WHERE e.schedule_id = ?
              ORDER BY e.schedule_position DESC
              LIMIT 20`,

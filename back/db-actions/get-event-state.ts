@@ -22,7 +22,7 @@ export const getEventState = async (
 	try {
 
 		const [queryResult] = await connection.execute(
-			`SELECT * FROM eventState WHERE eventId = ?`,
+			`SELECT * FROM events WHERE id = ?`,
 			[event.id]
 		);
 

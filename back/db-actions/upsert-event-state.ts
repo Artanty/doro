@@ -13,9 +13,13 @@ export interface BulkUpsertEventStateActionRes {
 	error?: string;
 	debug?: any;
 }
+
 export interface UpsertEventStateItem {
-	eventId: any, state: any
+	eventId: any, 
+	state: any
 }
+
+// Updated for merged table (state columns now in events table)
 export const bulkUpsertEventState = async (
 	connection: any, 
 	eventStates: UpsertEventStateItem[]
@@ -32,13 +36,13 @@ export const bulkUpsertEventState = async (
 	}
 
 	try {
-		// Get all current states in one query
+		// Get all current states from events table (not eventState)
 		const eventIds = eventStates.map(es => es.eventId);
 		const placeholders = eventIds.map(() => '?').join(',');
 		
 		const [currentStates] = await connection.execute(
-			`SELECT eventId, event_state_id FROM eventState 
-			 WHERE eventId IN (${placeholders})`,
+			`SELECT id as eventId, event_state_id FROM events 
+			 WHERE id IN (${placeholders})`,
 			eventIds
 		);
 
@@ -69,7 +73,7 @@ export const bulkUpsertEventState = async (
 				// State needs update
 				statesToUpdate.push(es);
 				
-				// Initialize result entry (will be updated after bulk insert)
+				// Initialize result entry (will be updated after bulk update)
 				result.results.set(es.eventId, {
 					isStateUpdated: true,
 					result: null,
@@ -82,31 +86,37 @@ export const bulkUpsertEventState = async (
 			}
 		}
 
-		// Bulk insert/update only the states that changed
+		// Bulk update only the states that changed
 		if (statesToUpdate.length > 0) {
-			// Build bulk insert query
-			const values: any[] = [];
-			const valuePlaceholders = statesToUpdate.map(es => {
-				values.push(es.eventId, es.state, getUTCDatetime(), getUTCDatetime());
-				return '(?, ?, ?, ?)';
-			}).join(',');
-
+			// Build CASE statements for bulk update
+			const updateQueries: string[] = [];
+			const updateValues: any[] = [];
+			
+			for (const es of statesToUpdate) {
+				updateQueries.push(`WHEN ? THEN ?`);
+				updateValues.push(es.eventId, es.state);
+			}
+			
+			const caseStatement = updateQueries.join(' ');
+			const currentTime = getUTCDatetime();
+			
 			const [bulkResult] = await connection.execute(
-				`INSERT INTO eventState (eventId, event_state_id, created_at, updated_at) 
-				 VALUES ${valuePlaceholders}
-				 ON DUPLICATE KEY UPDATE 
-					 event_state_id = VALUES(event_state_id),
-					 updated_at = VALUES(updated_at)`,
-				values
+				`UPDATE events 
+				 SET event_state_id = CASE id ${caseStatement} END,
+					 updated_at = ?
+				 WHERE id IN (${statesToUpdate.map(() => '?').join(',')})`,
+				[...updateValues, currentTime, ...statesToUpdate.map(es => es.eventId)]
 			);
 
 			// Update results with the bulk operation outcome
 			for (const es of statesToUpdate) {
 				const existingResult = result.results.get(es.eventId);
 				if (existingResult) {
-					existingResult.result = bulkResult;
+					existingResult.result = {
+						affectedRows: bulkResult.affectedRows,
+						changedRows: bulkResult.changedRows
+					};
 					
-					// You can add more specific debug info if needed
 					existingResult.debug = {
 						...existingResult.debug,
 						bulkOperationAffectedRows: bulkResult.affectedRows,

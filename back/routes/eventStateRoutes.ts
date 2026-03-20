@@ -36,16 +36,6 @@ router.post('/play', async (req, res) => {
   }
 });
 
-router.post('/get-recent-event-or-schedule', async (req, res) => {
-  try {
-    const user = getUserFromRequest(req);
-    const result = await EventStateController.getRecentEventOrSchedule(user);
-    res.json(result);
-  } catch (error) {
-    handleError(res as unknown as Response, error) 
-  }
-});
-
 router.post('/delete-finished-transitions', async (req, res) => {
   try {
     const { eventType, eventStateId } = req.body;

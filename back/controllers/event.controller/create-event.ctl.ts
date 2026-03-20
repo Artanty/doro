@@ -22,8 +22,9 @@ export const createEventCtl = async (
 	hooks: CreateEventStateHookParams[],
 	created_from: string,
 	scheduleId?: number, 
-	schedulePosition?: number
+	schedulePosition?: number,
 ) => {
+	const event_state_id = state;
 	const pool = createPool();
 	const connection = await pool.getConnection();
 
@@ -39,7 +40,7 @@ export const createEventCtl = async (
 		createEventResult = await createEventDb(
 			connection, name, length, type, userHandler,
 			schedule_id, schedule_position,
-			base_access, created_from
+			base_access, created_from, event_state_id
 		);
 		if (createEventResult.error) {
 			throw new Error(createEventResult.error);
@@ -50,7 +51,7 @@ export const createEventCtl = async (
 
 		upsertEventAccessResult = await upsertEventAccess(connection, eventId, userHandler, 3);
 
-		upsertEventStateResult = await upsertEventState(connection, eventId, state) // todo add false return if no updated
+		// upsertEventStateResult = await upsertEventState(connection, eventId, state) // todo add false return if no updated
 			
 		/**
 		 * Нужно чтобы doro@web подтянул новое cобытие.
@@ -77,7 +78,6 @@ export const createEventCtl = async (
 					createEventStateHookResult,
 					upsertEventAccessResult,
 					upsertEventStateResult,
-						
 				},
 			}
 		};

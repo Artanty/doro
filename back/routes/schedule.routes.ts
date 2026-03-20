@@ -17,19 +17,6 @@ router.post('/list', async (req, res) => {
   }
 });
 
-router.post('/get-by-id-with-events', async (req, res) => {
-  try {
-    dd(req.body)
-    const { scheduleId } = req.body;
-    dd(scheduleId)
-    const user = getUserFromRequest(req);
-    const result = await ScheduleController.getScheduleWithEvents(user, scheduleId);
-    res.json(result);
-  } catch (error) {
-    handleError(res as unknown as Response, error) 
-  }
-});
-
 router.post('/create', async (req, res) => {
   try {
     const name = req.body.name;
