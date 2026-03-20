@@ -86,7 +86,7 @@ export class NextEventService {
 		const entityId = Number(createdFromId.split('_')[1]);
 		if (entityType !== 'h') throw new Error(`Unknown entity type: ${entityType}`);
 		const hook = this.getHookById(entityId);
-
+		
 		const isOnCompleteEvent = hook.trigger_event_state_id === EventProgress.COMPLETED;
 		const isSuggestNext = hook.action_config?.scriptId === 'nextEvent';
 		if (!isOnCompleteEvent || !isSuggestNext) throw new Error('unknown hook config');

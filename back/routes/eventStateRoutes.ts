@@ -48,7 +48,8 @@ router.post('/get-recent-event-or-schedule', async (req, res) => {
 
 router.post('/delete-finished-transitions', async (req, res) => {
   try {
-    const result = await EventStateController2.deleteFinishedEvents(3, 3);
+    const { eventType, eventStateId } = req.body;
+    const result = await EventStateController2.deleteFinishedEvents(eventType, eventStateId);
     res.json(result);
   } catch (error) {
     handleError(res as unknown as Response, error) 

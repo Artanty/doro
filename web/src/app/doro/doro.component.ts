@@ -79,10 +79,14 @@ export class DoroComponent implements OnInit {
         const foundActiveBasicEvent = findActiveTikBasicEvent(res.payload);
 
         if (foundActiveTransition) {
+          dd('foundActiveTransition')
+          dd(foundActiveTransition)
           const transitionId = fromTikId(foundActiveTransition.id);
           this._nextEventService.onTransitionFound(transitionId);
         } 
         else if (foundActiveBasicEvent) {
+          dd('foundActiveBasicEvent')
+          dd(foundActiveBasicEvent)
           const basicEventId = fromTikId(foundActiveBasicEvent.id);
           this._routerService.go(`/doro/timer/${basicEventId}`);
         }
