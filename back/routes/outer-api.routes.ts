@@ -21,7 +21,8 @@ router.post('/get-event-state', [validateUserAccessToken], async (req, res) => {
 
 router.post('/set-event-state', async (req, res) => {
   try {
-    const { eventId, state } = req.body;
+    const { eventId: stringEventId, state } = req.body;
+    const eventId = Number(stringEventId);
     const data = await OuterSyncService.updateEventStateByOuterApp(eventId, state);
     res.json(data);
   } catch (error) {

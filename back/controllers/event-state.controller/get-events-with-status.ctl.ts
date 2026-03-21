@@ -7,10 +7,8 @@ import { buildTikEvents } from "../helpers/build-tik-events";
 import { OuterSyncService } from "../outer-sync.service";
 
 export const getEventsWithStatusCtl = async (userHandler: any) => {
-    dd('getEventsWithStatus')
     const pool = createPool();
     const connection = await pool.getConnection();
-    debugger;
     try {
         const [events] = await connection.execute(
             `SELECT 
@@ -41,7 +39,6 @@ export const getEventsWithStatusCtl = async (userHandler: any) => {
 
         const productEntriesForTik: any[] = [...eventsWithTikAction, configHashEntry];
 
-        console.log(productEntriesForTik)
         // return productEntriesForTik;
         return { 
             data: productEntriesForTik,

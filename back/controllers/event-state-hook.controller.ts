@@ -2,6 +2,7 @@ import { eventProgress } from "../core/constants";
 import { createEvent } from "../db-actions/create-event";
 import { upsertEventAccess } from "../db-actions/upsert-event-access";
 import { upsertEventState } from "../db-actions/upsert-event-state";
+import { dd } from "../utils/dd";
 import { thisProjectResProp } from "../utils/getResProp";
 import { ConfigManager } from "./config-manager";
 import { OuterEntry, OuterSyncService } from "./outer-sync.service";
@@ -130,6 +131,7 @@ export class EventStateHookController {
 
 	/**
 	 * Create a transition event (triggered by 'nextEvent' script)
+	 * Output is ready for @tik
 	 */
 	static async createTransitionEvent(
 		connection: any, 

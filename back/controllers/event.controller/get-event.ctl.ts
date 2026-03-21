@@ -197,7 +197,7 @@ export const calculateBulkEventProgress = async (
             
             // Determine final status
             let finalStatus: number;
-            debugger;
+            
             if (isEnded) {
                 finalStatus = eventProgress.COMPLETED;
                 eventDebug.reason = 'Event duration completed';

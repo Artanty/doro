@@ -85,6 +85,8 @@ export const playOrDuplicateEventCtl = async (userHandler: any, eventId: any) =>
             }
             createdEventId = createEventResult.result;
 
+            addHistoryResult = await addEventStateHistory(connection, createdEventId, state)
+
             getEventStateHooksResult = await getEventStateHooks(connection, { eventId });
 
             createEventStateHookResult = await createEventStateHooks(connection, createdEventId, getEventStateHooksResult.hooks);

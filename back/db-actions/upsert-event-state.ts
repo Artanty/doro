@@ -24,7 +24,7 @@ export const bulkUpsertEventState = async (
 	connection: any, 
 	eventStates: UpsertEventStateItem[]
 ): Promise<BulkUpsertEventStateActionRes> => {
-
+	
 	const result = {
 		results: new Map<string, UpsertEventStateActionRes>(),
 		success: true,
@@ -34,7 +34,6 @@ export const bulkUpsertEventState = async (
 	if (!eventStates || eventStates.length === 0) {
 		return result;
 	}
-
 	try {
 		// Get all current states and schedule_ids from events table
 		const eventIds = eventStates.map(es => es.eventId);
@@ -56,7 +55,7 @@ export const bulkUpsertEventState = async (
 
 		// Check for missing events
 		for (const es of eventStates) {
-			if (!currentStateMap.has(es.eventId)) {
+			if (!currentStateMap.has(es.eventId)) {				
 				result.results.set(es.eventId, {
 					success: false,
 					result: null,
@@ -273,7 +272,7 @@ export const bulkUpsertEventState = async (
 export const upsertEventState = async (
 	connection: any, 
 	eventId: any, 
-	state: any, 
+	state: any,
 ): Promise<UpsertEventStateActionRes> => {
 	
 	const bulkResult = await bulkUpsertEventState(connection, [{ eventId, state }]);

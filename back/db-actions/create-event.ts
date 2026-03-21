@@ -177,6 +177,7 @@ export const createEvent = async (
 	userHandler: string,
 	schedule_id: number,
 	schedule_position: number,
+	
 	base_access: number = 0,
 	created_from: string = '',
 	event_state_id: number = 0

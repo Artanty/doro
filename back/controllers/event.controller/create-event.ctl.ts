@@ -61,7 +61,6 @@ export const createEventCtl = async (
 		/**
 		 * Стейт события нужно передать в tik@, чтобы отобразился прогресс.
 		 * Передаем обе сущности в одном запросе.
-		 * v2: проверять, нужно ли сейчас отправлять это событие или оно не актуальное.
 		 * */
 		const hashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert');
 		const eventsPayload = OuterSyncService.buildNewOuterEventPayload(eventId, length, state, 'event');
