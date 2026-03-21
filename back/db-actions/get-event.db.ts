@@ -78,7 +78,5 @@ export const getEventDb = async (
             result: null,
             error: error.message
         };
-    } finally {
-        connection.release();
     }
 }

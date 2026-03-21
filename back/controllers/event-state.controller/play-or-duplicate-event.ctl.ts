@@ -49,7 +49,6 @@ export const playOrDuplicateEventCtl = async (userHandler: any, eventId: any) =>
         dd(eventStatus);
         if (eventStatus.status === eventProgress.STOPPED || eventStatus.status === eventProgress.PAUSED) {
             dd('CHANGING STATE (PLAYING) OF EXISTING EVENT')
-                
             upsertEventStateResult = await upsertEventState(connection, eventId, state);
             if (!upsertEventStateResult.success) {
                 throw new Error(upsertEventStateResult.error!)
@@ -57,7 +56,7 @@ export const playOrDuplicateEventCtl = async (userHandler: any, eventId: any) =>
             addHistoryResult = await addEventStateHistory(connection, eventId, state)
             ConfigManager.setConfigHash();
             const hashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert');
-            const eventsPayload = OuterSyncService.buildNewOuterEventPayload(eventId, eventProps.length, state, 'event');
+            const eventsPayload = OuterSyncService.buildNewOuterEventPayload(eventId, eventProps.length, state, 'event', eventStatus.currentSeconds);
             tikResponse = await OuterSyncService.updateOuterEntries([...hashPayload, ...eventsPayload]);
             await connection.commit();
 
@@ -94,7 +93,7 @@ export const playOrDuplicateEventCtl = async (userHandler: any, eventId: any) =>
            
             ConfigManager.setConfigHash();
             const hashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert');
-            const eventsPayload = OuterSyncService.buildNewOuterEventPayload(createdEventId, length, state);
+            const eventsPayload = OuterSyncService.buildNewOuterEventPayload(createdEventId, length, state, 'event', 0);
             tikResponse = await OuterSyncService.updateOuterEntries([...hashPayload, ...eventsPayload]);
             await connection.commit();
         } else {

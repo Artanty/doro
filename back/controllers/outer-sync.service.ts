@@ -54,13 +54,13 @@ export class OuterSyncService {
 	/**
 	 * Предполагается, что new event не требует запроса в БД для вычисления своего состояния.
 	 * */
-	public static buildNewOuterEvent(
-		id: string | number, length: number, state: number,
+	public static buildOuterEvent(
+		id: string | number, length: number, state: number, currentSeconds: number,
 		entryType: EntryType
 	): EventStateResItem {
 		return {
 			id: buildOuterEntityId(entryType, id),
-			cur: 0, // v2 событие может быть создано с плейхэдом не в нулевой точке.
+			cur: currentSeconds,
 			len: length,
 			stt: state
 		}	
@@ -76,11 +76,10 @@ export class OuterSyncService {
 		id: string | number, 
 		length: number, 
 		state: number, 
-		entryType: EntryType = 'event'
+		entryType: EntryType = 'event',
+		currentSeconds: number = 0,
 	): EntryWithTikAction<EventStateResItem>[] {
-		// todo: мб убрать add и оставить только upsert?
-		// разница только в дебаг-отчете, который и без этого корректно сложится
-		return this.addOuterActionInEvents(this.buildNewOuterEvent(id, length, state, entryType), 'add');
+		return this.addOuterActionInEvents(this.buildOuterEvent(id, length, state, currentSeconds, entryType), 'upsert');
 	}
 
 	static addOuterActionInEvents<T extends Record<string, any>>(
