@@ -34,3 +34,29 @@ export interface ActionResult<T> {
     error?: null | string;
     debug?: any
 }
+
+export interface EventStateRecord {
+    event_state_id: number;
+    created_at: string;
+    event_id?: number; // Optional, for tracking multiple events
+}
+
+export interface EventProgressResult {
+    status: number;
+    currentSeconds: number;
+    debug?: any;
+}
+
+export interface EventProgressResponse {
+    success: boolean;
+    result: EventProgressResult;
+    error?: string;
+    debug?: any;
+}
+
+export interface BulkEventProgressResponse {
+    success: boolean;
+    results: Map<number, EventProgressResult>; // eventId -> result
+    errors: Map<number, string>; // eventId -> error
+    debug?: any;
+}

@@ -1,20 +1,8 @@
 import createPool from '../core/db_connection';
-import axios from 'axios';
 import dotenv from 'dotenv';
-import { dd } from '../utils/dd';
-import { ensureArray } from '../utils/ensureArray';
-import { EventStateController } from './eventStateController';
-import { buildOuterEntityId } from '../utils/buildOuterEntityId';
-import { parseServerResponse } from '../utils/parseServerResponse';
-import { thisProjectResProp, tikResProp } from '../utils/getResProp';
-import { getUTCDatetime } from '../utils/get-utc-datetime';
-import { upsertEventState } from '../db-actions/upsert-event-state';
-import { ConfigManager } from './config-manager';
-import { OuterSyncService } from './outer-sync.service';
-import { ACCESS_CASE, getAccessibleEvent } from '../db-actions/get-accessible-event';
-import { createEvent } from '../db-actions/create-event';
-import { upsertEventAccess } from '../db-actions/upsert-event-access';
 import { getAccessLevels } from '../db-actions/get-access-levels';
+import { dd } from '../utils/dd';
+import { thisProjectResProp } from '../utils/getResProp';
 
 
 dotenv.config();

@@ -1,10 +1,10 @@
 import express from 'express'
-import { EventStateController } from '../controllers/eventStateController';
 import { OuterSyncService } from '../controllers/outer-sync.service';
 import { validateUserAccessToken } from '../middlewares/validateUserAccessToken';
 import { dd } from '../utils/dd';
 import { getUserFromRequest } from '../utils/getUserFromRequest';
 import { handleError } from '../utils/handleError';
+import { EventStateController } from '../controllers/event-state.controller';
 
 const router = express.Router();
 
