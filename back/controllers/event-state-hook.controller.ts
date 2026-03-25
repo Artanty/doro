@@ -1,4 +1,5 @@
 import { eventProgress } from "../core/constants";
+import { addEventStateHistory } from "../db-actions/add-event-state-history";
 import { createEvent } from "../db-actions/create-event";
 import { upsertEventAccess } from "../db-actions/upsert-event-access";
 import { upsertEventState } from "../db-actions/upsert-event-state";
@@ -143,7 +144,8 @@ export class EventStateHookController {
 		let createEventResult,
 			upsertEventAccessResult,
 			upsertEventStateResult,
-			createEventStateHookResult
+			createEventStateHookResult,
+			addHistoryResult
 
 		
 		try {
@@ -193,12 +195,7 @@ export class EventStateHookController {
 				3
 			);
 			
-			// Set initial state
-			// upsertEventStateResult = await upsertEventState(
-			// 	connection, 
-			// 	transitionEventId, 
-			// 	transitionEventState
-			// );
+			addHistoryResult = await addEventStateHistory(connection, eventId, transitionEventState)
 			
 			const eventsPayload: any[] = OuterSyncService.buildNewOuterEventPayload(
 				transitionEventId, 
@@ -215,6 +212,7 @@ export class EventStateHookController {
 						createEventResult,
 						upsertEventAccessResult,
 						upsertEventStateResult,
+						addHistoryResult,
 						createEventStateHookResult
 					}
 				}
@@ -229,6 +227,7 @@ export class EventStateHookController {
 						createEventResult,
 						upsertEventAccessResult,
 						upsertEventStateResult,
+						addHistoryResult,
 						createEventStateHookResult
 					}
 				},

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Injector, Input, SimpleChanges } from '@angular/core';
-import { Subject, Observable, takeUntil, map, startWith, tap, catchError, EMPTY, finalize, throwError, switchMap, combineLatest } from 'rxjs';
+import { Subject, Observable, takeUntil, map, startWith, tap, catchError, EMPTY, finalize, throwError, switchMap, combineLatest, distinctUntilChanged, take } from 'rxjs';
 import { EventStates, EventTypePrefix } from 'src/app/doro/constants';
 import { dd } from 'src/app/doro/helpers/dd';
 import { ActivatedRoute } from '@angular/router';
@@ -58,6 +58,7 @@ export class TimerWrapperComponent {
   ngOnInit() {
     this.eventState$ = this.route.params.pipe(
       takeUntil(this.destroy$),
+      take(1),
       switchMap(params => {
         const eventId = Number(params['id']);
         dd('Event ID from route:', eventId);
@@ -66,7 +67,12 @@ export class TimerWrapperComponent {
           this._listenEventProps(eventId),
         ])
           .pipe(
+            takeUntil(this.destroy$),
             map(([state]) => state),
+            distinctUntilChanged((prev, curr) => {
+              return JSON.stringify(prev) === JSON.stringify(curr);
+            }),
+            tap(res => dd(res))
           );
       })
     )
@@ -110,6 +116,7 @@ export class TimerWrapperComponent {
   }
   private _listenEventProps(eventId: number): Observable<EventProps> {
     return this.eventService.waitForEventProps(eventId).pipe(
+      takeUntil(this.destroy$),
       tap(eventProps => {
         this.eventProps = eventProps;
         dd('Event props loaded:', eventProps);
@@ -122,7 +129,7 @@ export class TimerWrapperComponent {
   }
   
   ngOnDestroy() {
-    dd('list item destroyed')
+    dd('timer wrapper destroyed')
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -153,12 +160,15 @@ export class TimerWrapperComponent {
 
   pauseEvent() {
     this.eventService.pauseEvent(this.eventProps.id)
-    // .subscribe(res => {
-    //   dd(res)
-    //   // const { state } = res;
-    //   // this.eventState = state
-      
-    //   this.cdr.detectChanges()
-    // })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe()
+  }
+
+  endEvent() {
+    this.eventService.finishEventRunHooks(this.eventProps.id)
+      .pipe(
+        takeUntil(this.destroy$),
+      )
+      .subscribe()
   }
 }

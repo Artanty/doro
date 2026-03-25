@@ -11,6 +11,7 @@ import { OuterSyncService } from '../outer-sync.service';
 import { createEvent as createEventDb, DbActionResult } from '../../db-actions/create-event';
 import { BASE_SCHEDULE_ID } from '../../core/constants';
 import { GetLastPositionResult, getLastSchedulePosition } from '../../db-actions/get-last-schedule-position';
+import { addEventStateHistory } from '../../db-actions/add-event-state-history';
 
 export const createEventCtl = async (
 	name: string, 
@@ -31,7 +32,9 @@ export const createEventCtl = async (
 	let createEventResult,
 		createEventStateHookResult,
 		upsertEventAccessResult,
-		upsertEventStateResult;
+		upsertEventStateResult,
+		addHistoryResult
+		;
 	try {
 		await connection.beginTransaction();
 
@@ -50,8 +53,7 @@ export const createEventCtl = async (
 		createEventStateHookResult = await createEventStateHooks(connection, eventId, hooks);
 
 		upsertEventAccessResult = await upsertEventAccess(connection, eventId, userHandler, 3);
-
-		// upsertEventStateResult = await upsertEventState(connection, eventId, state) // todo add false return if no updated
+		addHistoryResult = await addEventStateHistory(connection, eventId, state)
 			
 		/**
 		 * Нужно чтобы doro@web подтянул новое cобытие.
@@ -77,6 +79,7 @@ export const createEventCtl = async (
 					createEventStateHookResult,
 					upsertEventAccessResult,
 					upsertEventStateResult,
+					addHistoryResult
 				},
 			}
 		};

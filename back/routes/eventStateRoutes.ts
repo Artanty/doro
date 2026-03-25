@@ -32,6 +32,28 @@ router.post('/play', async (req, res) => {
   }
 });
 
+router.post('/stop', async (req, res,) => {
+  try {
+    const user = getUserFromRequest(req);
+    const { eventId, state } = req.body;
+    const result = await EventStateController.stopEventRunHooks(user, eventId, state);
+    res.json(result);
+  } catch (error) {
+    handleError(res as unknown as Response, error) 
+  }
+});
+
+router.post('/pause', async (req, res,) => {
+  try {
+    const user = getUserFromRequest(req);
+    const { eventId, state } = req.body;
+    const result = await EventStateController.pauseEvent(user, +eventId, +state);
+    res.json(result);
+  } catch (error) {
+    handleError(res as unknown as Response, error) 
+  }
+});
+
 router.post('/delete-finished-transitions', async (req, res) => {
   try {
     const { eventType, eventStateId } = req.body;

@@ -6,7 +6,7 @@ interface DbActionResult {
 	result: any;
 	error: null | string;
 }
-
+{}
 export const updateEvent = async (
 	connection: any, 
 	eventId: number,
@@ -16,7 +16,8 @@ export const updateEvent = async (
 		type?: number,
 		schedule_id?: number | null,
 		schedule_position?: number | null,
-		base_access_id?: number
+		base_access_id?: number,
+		event_state_id?: number
 	},
 	userHandler: string
 ): Promise<DbActionResult> => {
@@ -61,6 +62,10 @@ export const updateEvent = async (
 		if (updates.base_access_id !== undefined) {
 			updateFields.push('base_access_id = ?');
 			updateValues.push(updates.base_access_id);
+		}
+		if (updates.event_state_id !== undefined) {
+			updateFields.push('event_state_id = ?');
+			updateValues.push(updates.event_state_id);
 		}
 
 		// If not only updated_at is updating

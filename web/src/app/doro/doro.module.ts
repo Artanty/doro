@@ -21,7 +21,6 @@ import { DoroComponent } from './doro.component';
 import { dd } from './helpers/dd';
 import { filterStreamDataEntries } from './helpers/filterStreamDataEntries';
 import { mapBusEventToConfigHashTikEntry, ConfigHashTikEntry } from './helpers/getConfigHashFromBusEvent';
-import { eventResolver } from './pages/timer/components/timer-wrapper/event.resolver';
 import { TimerWrapperComponent } from './pages/timer/components/timer-wrapper/timer-wrapper.component';
 
 import { AccessLevelService } from './services/access-level.service';

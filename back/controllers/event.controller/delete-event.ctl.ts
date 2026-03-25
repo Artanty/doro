@@ -50,7 +50,7 @@ export const deleteEventCtl = async (eventId: number, userHandler: string) => {
 					getAccessibleEventResult,
 					deleteEventResult
 				},
-				[tikResProp()]: parseServerResponse(tikResponse),
+				[tikResProp()]: tikResponse,
 			}
 		}
 	} catch (error) { 

@@ -18,7 +18,7 @@ interface DbActionResult {
 interface BulkDbActionResult {
 	success: boolean;
 	results: Map<string, EventPropsDbItem | null>; // eventId -> event data
-	errors: Map<string, string>; // eventId -> error message
+	errors: any; // eventId -> error message
 	debug?: any
 }
 
@@ -43,11 +43,11 @@ export const getAccessibleEvents = async (
 	if (!eventIds || eventIds.length === 0) {
 		return result;
 	}
-
+	// debugger;
 	try {
 		// Create placeholders for the IN clause
 		const placeholders = eventIds.map(() => '?').join(',');
-		
+		// debugger;
 		// Get all events in one query
 		const [events] = await connection.execute(
 			`SELECT * FROM events WHERE id IN (${placeholders})`,
@@ -131,7 +131,10 @@ export const getAccessibleEvents = async (
 			accessibleViaShared: result.results.size - directlyAccessibleEventIds.length,
 			errors: result.errors.size
 		};
-
+		if (result.errors.size) {
+			result.success = false;
+		}
+		result.errors = result.errors;
 		return result;
 	} catch (error: any) {
 		return {

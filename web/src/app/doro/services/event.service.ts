@@ -100,16 +100,14 @@ export class EventService {
   }
 
   public pauseEvent(eventId: number) {
-    const payload: EventStateReq = {
-      eventStates: [
-        {
-          "eventId": eventId, 
-          "state": 2
-        }
-      ]
+    const payload: any = {
+      "eventId": eventId, 
+      "state": 2
     }
-    return this._api.setEventStateApi(payload)
-      .subscribe()
+    return this.http.post<any>(`${this.doroBaseUrl}/event-state/pause`, payload).pipe(
+      tap(() => {
+        this._state.configHash.next(999);
+      }))
   }
   
   public listenEventState(eventTypePrefix: string, eventId: number): Observable<EventStateResItem> {
@@ -148,6 +146,17 @@ export class EventService {
         this._state.configHash.next(999);
       })
     )   
+  }
+
+  public finishEventRunHooks(eventId: number): Observable<any> {
+    const payload: any = {
+      "eventId": eventId, 
+      "state": 3
+    }
+    return this.http.post<any>(`${this.doroBaseUrl}/event-state/stop`, payload).pipe(
+      tap(() => {
+        this._state.configHash.next(999);
+      }))   
   }
 
   public waitForEventProps(eventId: number): Observable<EventProps> {

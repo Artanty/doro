@@ -15,7 +15,7 @@ export const calculateEventStatus = async (
     const eventId = event.id;
     const eventLengthSeconds = event.length;
     let currentStateResult: DbActionResult<GetEventStateResult>;
-    // debugger;
+    
     currentStateResult = await getEventState(connection, event);
 
     if (!currentStateResult.success) {
@@ -46,16 +46,15 @@ export const calculateEventStatus = async (
             debug
         };
     }
-         
+      
     const historyResult = await getEventStateHistory(connection, eventId);
         
     if (!historyResult.success) {
         throw new Error(historyResult.error ?? 'history undefined error, check wtf')
     }
 
-    const history = historyResult.result!.length 
-        ? historyResult.result!
-        : [currentStateObj];
+    const history = historyResult.result || [];
+  
     // если не STOPPED и не COMPLETED, значит точно было запущено
     let totalActiveSeconds = 0;
     let activeStartTime: Date | null = null;

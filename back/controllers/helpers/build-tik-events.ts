@@ -2,7 +2,7 @@ import { MinimalEventProps, EventStateResItem } from "../../types/event-state.ty
 import { buildOuterEntityId } from "../../utils/buildOuterEntityId";
 import { dd } from "../../utils/dd";
 import { ensureArray } from "../../utils/ensureArray";
-import { calculateEventStatus } from "./calculate-event-status.ts";
+import { calculateEventStatus } from "./calculate-event-status";
 
 export const buildTikEvents = async (connection, events: MinimalEventProps | MinimalEventProps[]): Promise<EventStateResItem[]> => {
     events = ensureArray(events);
@@ -26,6 +26,6 @@ export const buildTikEvents = async (connection, events: MinimalEventProps | Min
             return res;
         })
     );
-    dd(eventsWithStatus)
+    
     return eventsWithStatus;
 }

@@ -43,8 +43,9 @@ CREATE TABLE events (
     length INT NOT NULL COMMENT 'Duration in seconds',
     type INT NOT NULL,
     base_access_id INT NOT NULL,
-    schedule_id INT NOT NULL,  -- Changed from NULL to NOT NULL
-    schedule_position FLOAT NOT NULL,  -- Changed from NULL to NOT NULL
+    schedule_id INT NOT NULL,
+    schedule_position FLOAT NOT NULL,
+    event_state_id INT NOT NULL,
     created_by VARCHAR(255) NOT NULL COMMENT 'user_handler',
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL,

@@ -13,7 +13,7 @@ import { dd } from "../../utils/dd";
 import { thisProjectResProp, tikResProp } from "../../utils/getResProp";
 import { ConfigManager } from "../config-manager";
 import { buildScheduleInfo } from "../event.controller/create-event.ctl";
-import { calculateEventStatus } from "../helpers/calculate-event-status.ts";
+import { calculateEventStatus } from "../helpers/calculate-event-status";
 import { OuterSyncService } from "../outer-sync.service";
 
 export const playOrDuplicateEventCtl = async (userHandler: any, eventId: any) => {
