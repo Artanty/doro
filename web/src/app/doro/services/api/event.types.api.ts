@@ -1,6 +1,5 @@
 import { EventProgressType } from "../../constants";
-import { EventStateHook } from "../next-event.service";
-
+import { EventStateHook } from "../next-event/next-event.types";
 
 export interface EventPropsDTO {
 	id: number;
@@ -29,13 +28,6 @@ export interface ScheduleDTO {
 	created_at: Date | string;
 	updated_at: Date | string;
 	events?: EventPropsDTO[];
-}
-
-export interface GetRecentRes {
-	data: {
-		recentEvent?: EventPropsDTO,
-		recentSchedule?: ScheduleDTO,
-	}
 }
 
 export interface CreateEventReqHook {

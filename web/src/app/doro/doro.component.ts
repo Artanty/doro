@@ -6,13 +6,13 @@ import { Router } from "@angular/router";
 import { EventService } from "./services/event.service";
 import { filterActiveTransitionEvents, filterTransitionEvents } from "./helpers/filterTransitionEvents";
 import { dd } from "./helpers/dd";
-import { NextEventService } from "./services/next-event.service";
 import { AppStateService } from "./services/app-state.service";
 import { filterActiveBasicEvents } from "./helpers/filterBasicEvents";
 import { filterStreamDataEntries } from "./helpers/filterStreamDataEntries";
 import { findActiveTikBasicEvent, findActiveTikTransitionEvent } from "./helpers/tik-events";
 import { RouterService } from "./services/router.service";
 import { SettingsService } from "./services/settings.service";
+import { NextEventService } from "./services/next-event/next-event.service";
 
 
 @Component({
@@ -81,14 +81,10 @@ export class DoroComponent implements OnInit {
         if (foundActiveTransition) {
           dd('foundActiveTransition')
           dd(foundActiveTransition)
-          const transitionId = fromTikId(foundActiveTransition.id);
-          this._nextEventService.onTransitionFound(transitionId);
         } 
         else if (foundActiveBasicEvent) {
           dd('foundActiveBasicEvent')
           dd(foundActiveBasicEvent)
-          const basicEventId = fromTikId(foundActiveBasicEvent.id);
-          this._routerService.go(`/doro/timer/${basicEventId}`);
         }
       }
     })

@@ -1,7 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { HTTP_INTERCEPTORS, HttpClient, HttpClientModule, provideHttpClient, withInterceptors, withInterceptorsFromDi } from '@angular/common/http';
 import {
-  APP_INITIALIZER,
   ApplicationRef,
   CUSTOM_ELEMENTS_SCHEMA,
   DoBootstrap,
@@ -9,9 +7,7 @@ import {
   Injector,
   NgModule,
 } from '@angular/core';
-import { createCustomElement } from '@angular/elements';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-
 import { EventService } from './services/event.service';
 import { RouterModule } from '@angular/router';
 import { BehaviorSubject, Observable, filter, map, switchMap, of } from 'rxjs';
@@ -21,19 +17,16 @@ import { DoroComponent } from './doro.component';
 import { dd } from './helpers/dd';
 import { filterStreamDataEntries } from './helpers/filterStreamDataEntries';
 import { mapBusEventToConfigHashTikEntry, ConfigHashTikEntry } from './helpers/getConfigHashFromBusEvent';
-import { TimerWrapperComponent } from './pages/timer/components/timer-wrapper/timer-wrapper.component';
-
 import { AccessLevelService } from './services/access-level.service';
 import { CompareConfigHashAction } from './services/compare-config-hash.action';
 import { EventTypeService } from './services/event-type.service';
-
 import { ScheduleService } from './services/schedule.service';
 import { SetConfigHashAction } from './services/set-config-hash.action';
-import { NextEventService } from './services/next-event.service';
 import { ApiService } from './services/api.service';
 import { RouterService } from './services/router.service';
 import { StorageService } from './services/storage.service';
 import { SettingsService } from './services/settings.service';
+import { NextEventService } from './services/next-event/next-event.service';
 
 export const CHILD_ROUTES = [
   {
@@ -59,16 +52,6 @@ export const CHILD_ROUTES = [
         path: 'schedule-list', 
         loadChildren: () => import('./pages/schedule-list/schedule-list.module')
           .then(m => m.ScheduleListModule)
-      },
-      {
-        path: 'timer', 
-        loadChildren: () => import('./pages/timer/timer.module')
-          .then(m => m.TimerModule)
-      },
-      {
-        path: 'next-event', 
-        loadChildren: () => import('./pages/next-event/next-event.module')
-          .then(m => m.NextEventModule)
       },
       {
         path: 'settings', 

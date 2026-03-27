@@ -10,8 +10,8 @@ import { CreateEventReq } from "src/app/doro/services/api/event.types.api"
 import { SuggestRestReq } from "src/app/doro/services/api/schedule.types.api"
 import { EventService } from "src/app/doro/services/event.service"
 import { EVENT_PROPS_KEY, EventProps, EventPropsWithState } from "src/app/doro/services/event/event.types"
-import { EventStateHook, NextEventService } from "src/app/doro/services/next-event.service"
-import { NextCalculatedEvent, NextSuggestionsRes } from "src/app/doro/services/next-event/next-event.types"
+import { NextEventService } from "src/app/doro/services/next-event/next-event.service"
+import { EventStateHook, NextCalculatedEvent, NextSuggestionsRes } from "src/app/doro/services/next-event/next-event.types"
 import { ViewStatus, ViewState } from "src/app/doro/types/view-state.type"
 
 @Component({

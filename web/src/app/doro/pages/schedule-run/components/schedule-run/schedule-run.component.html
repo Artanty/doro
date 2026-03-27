@@ -2,7 +2,8 @@
   @if (view$ | async; as view) {
     @switch(view.status) {
       @case(ViewStatus.LOADING) {
-        LOADING...
+        <!-- LOADING... -->
+        <app-loading></app-loading>
       }
       @case(ViewStatus.READY) {
         @if (view.data; as data) {
@@ -27,5 +28,4 @@
     }
   }
 </div>
-<pre>{{ view$ | async | json }}</pre>
 

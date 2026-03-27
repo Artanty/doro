@@ -1,14 +1,13 @@
-import { ChangeDetectorRef, Component, Injector, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { takeUntil, take, switchMap, combineLatest, map, distinctUntilChanged, tap, Subject, Observable, BehaviorSubject } from 'rxjs';
-import { dd } from '../../helpers/dd';
-import { AppStateService } from '../../services/app-state.service';
-import { EventService } from '../../services/event.service';
-import { EventViewState, EventStateResItem, EventProps, EventPropsWithState, EVENT_STATE_KEY, EVENT_PROPS_KEY } from '../../services/event/event.types';
-import { filterBasicEvents } from '../../helpers/filterBasicEvents';
-import { Nullable } from '../../helpers/utility.types';
-import { ViewState, ViewStatus } from '../../types/view-state.type';
-import { EventProgress, EventStates, EventTypePrefix, eventTypes } from '../../constants';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, Injector } from "@angular/core";
+import { ActivatedRoute } from "@angular/router";
+import { Subject, Observable, takeUntil, take, map, combineLatest, switchMap, tap, startWith, of } from "rxjs";
+import { eventTypes, EventProgress, EventTypePrefix, INITIAL_VIEW_STATE } from "src/app/doro/constants";
+import { dd } from "src/app/doro/helpers/dd";
+import { Nullable } from "src/app/doro/helpers/utility.types";
+import { AppStateService } from "src/app/doro/services/app-state.service";
+import { EventService } from "src/app/doro/services/event.service";
+import { EventPropsWithState, EVENT_PROPS_KEY, EVENT_STATE_KEY, EventProps } from "src/app/doro/services/event/event.types";
+import { ViewState, ViewStatus } from "src/app/doro/types/view-state.type";
 
 @Component({
   selector: 'app-schedule-run',
@@ -63,7 +62,6 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
           const sortedEvents = this._sortScheduleEvents(filteredEvents);
           return sortedEvents;
         }),
-      
         switchMap((events: EventProps[]) => {
           const allScheduleEventsUnfiltered = events;
           const eventsToDisplay = events.filter(e => e.event_state_id !== EventProgress.COMPLETED);
@@ -100,7 +98,8 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
           setTimeout(() => {
             this.cdr.detectChanges()
           }, 1000); // crutch to update state
-        })
+        }),
+        startWith(INITIAL_VIEW_STATE),
       );
   }
 
