@@ -1,7 +1,7 @@
 import { TEventType } from "../../constants";
 import { Nullable } from "../../helpers/utility.types";
-import { SuggestRestRes } from "../api/schedule.types.api"
-import { EventProps } from "../event/event.types";
+import { EventProps } from "../basic-event/basic-event.types";
+import { SuggestRestRes } from "../schedule/schedule.api.types";
 
 export interface NextCalculatedEvent {
 	type: TEventType,

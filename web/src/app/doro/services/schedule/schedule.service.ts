@@ -1,29 +1,18 @@
+
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { BehaviorSubject, catchError, finalize, map, Observable, of, shareReplay, tap } from "rxjs";
-import { dd } from "../helpers/dd";
-import { EventService } from "./event.service";
-import { AppStateService } from "./app-state.service";
-import { filterBasicEvents } from "../helpers/filterBasicEvents";
-import { EventProps } from "./event/event.types";
-
-export interface Schedule {
-	events: never[];
-	id: number;
-	name: string;
-	created_by: string;
-	created_at: string;
-	updated_at: string;
-}
+import { Observable, BehaviorSubject, map, shareReplay, finalize, tap, catchError, of } from "rxjs";
+import { filterBasicEvents } from "../../helpers/filterBasicEvents";
+import { EventProps } from "../basic-event/basic-event.types";
+import { AppStateService } from "../core/app-state.service";
+import { Schedule } from "./schedule.types";
 
 @Injectable()
-
 export class ScheduleService {
 	private doroBaseUrl = `${process.env['DORO_BACK_URL']}`;
 	_appStateService: any;
 	events$: any;
 	
-
 	constructor(
 		private http: HttpClient,
 		private _state: AppStateService,
@@ -57,7 +46,6 @@ export class ScheduleService {
     
 		return this.cache$;
 	}
-
 	
 	public getScheduleWithEvents(scheduleId: number): Observable<boolean> {
 		const payload = {

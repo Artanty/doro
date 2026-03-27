@@ -3,8 +3,8 @@ import { Subject, takeUntil } from "rxjs";
 import { EventStates } from "src/app/doro/constants";
 import { countPrc } from "src/app/doro/helpers/count-percent.util";
 import { dd } from "src/app/doro/helpers/dd";
-import { EventService } from "src/app/doro/services/event.service";
-import { EVENT_PROPS_KEY, EVENT_STATE_KEY, EventProps, EventPropsWithState, EventStateResItem } from "src/app/doro/services/event/event.types";
+import { EventService } from "src/app/doro/services/basic-event/basic-event.service";
+import { EVENT_PROPS_KEY, EVENT_STATE_KEY, EventProps, EventPropsWithState, EventStateResItem } from "src/app/doro/services/basic-event/basic-event.types";
 
 @Component({
   selector: 'app-base-event',

@@ -1,6 +1,5 @@
 import { EventProgressType, EventStatesType } from "../../constants"
 
-
 export interface EventStateResItem { // todo: rename to entry
 	id: string,
 	cur: number,

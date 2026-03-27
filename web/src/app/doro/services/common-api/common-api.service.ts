@@ -1,9 +1,10 @@
+import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Observable, map } from "rxjs";
-import { HttpClient } from "@angular/common/http";
-import { SuggestRestReq, SuggestRestRes } from "./api/schedule.types.api";
-import { CreateEventReq, SetPlayEventStateReq } from "./api/event.types.api";
-import { EventStateReq, EventState, EventStateRes } from "./event/event.types";
+import { CreateEventReq, SetPlayEventStateReq } from "../basic-event/basic-event-api.types";
+import { EventStateReq, EventState, EventStateRes } from "../basic-event/basic-event.types";
+import { SuggestRestReq, SuggestRestRes } from "../schedule/schedule.api.types";
+
 
 @Injectable()
 export class ApiService {

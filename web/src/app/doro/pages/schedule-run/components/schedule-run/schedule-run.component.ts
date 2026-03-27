@@ -1,13 +1,13 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, Injector } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
-import { Subject, Observable, takeUntil, take, map, combineLatest, switchMap, tap, startWith, of } from "rxjs";
+import { Subject, Observable, takeUntil, take, map, combineLatest, switchMap, tap, startWith } from "rxjs";
 import { eventTypes, EventProgress, EventTypePrefix, INITIAL_VIEW_STATE } from "src/app/doro/constants";
 import { dd } from "src/app/doro/helpers/dd";
 import { Nullable } from "src/app/doro/helpers/utility.types";
-import { AppStateService } from "src/app/doro/services/app-state.service";
-import { EventService } from "src/app/doro/services/event.service";
-import { EventPropsWithState, EVENT_PROPS_KEY, EVENT_STATE_KEY, EventProps } from "src/app/doro/services/event/event.types";
-import { ViewState, ViewStatus } from "src/app/doro/types/view-state.type";
+import { EventService } from "src/app/doro/services/basic-event/basic-event.service";
+import { EventPropsWithState, EVENT_PROPS_KEY, EVENT_STATE_KEY, EventProps } from "src/app/doro/services/basic-event/basic-event.types";
+import { AppStateService } from "src/app/doro/services/core/app-state.service";
+import { ViewState, ViewStatus } from "src/app/doro/services/core/view-state.type";
 
 @Component({
   selector: 'app-schedule-run',

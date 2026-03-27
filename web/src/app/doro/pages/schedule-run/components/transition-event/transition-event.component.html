@@ -2,7 +2,7 @@
   @if (view$ | async; as view) {
     @switch(view.status) {
       @case(ViewStatus.LOADING) {
-        LOADING...
+        <app-loading></app-loading>
       }
       @case(ViewStatus.READY) {
         <app-timer

@@ -1,7 +1,7 @@
 import { Component, EventEmitter, forwardRef, Input, OnInit, Output } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { dd } from 'src/app/doro/helpers/dd';
-import { StorageService } from '../../services/storage.service';
+import { StorageService } from '../../services/core/storage.service';
 
 export interface Settings {
 	appMode: boolean

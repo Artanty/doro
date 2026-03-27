@@ -1,6 +1,5 @@
 import { APP_INITIALIZER, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-
 import { HTTP_INTERCEPTORS, HttpClientModule, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject } from 'rxjs';
@@ -9,11 +8,8 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { DoroModule } from './doro/doro.module';
 import { MockInterceptor } from './app.mock.interceptor';
-
 import { initializeIconFallback } from './app.icon-fallback.observer';
 import { MockBackService } from './app.mock.back.service';
-
-
 
 // export const authStrategyBusEvent: BusEvent = {
 //   from: 'DORO',

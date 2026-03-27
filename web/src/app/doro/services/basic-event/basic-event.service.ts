@@ -1,14 +1,13 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable, Inject } from "@angular/core";
-import { BehaviorSubject, Observable, delay, tap, map, catchError, of, throwError, distinctUntilChanged, filter, switchMap, first, timeout } from "rxjs";
+import { Observable, tap, catchError, of, map, throwError, filter, first, timeout } from "rxjs";
 import { EVENT_BUS_LISTENER, BusEvent } from "typlib";
-import { dd } from "../helpers/dd";
-import { filterStreamDataEntries } from "../helpers/filterStreamDataEntries";
-import { AppStateService } from "./app-state.service";
-import { ScheduleService } from "./schedule.service";
-import { ApiService } from "./api.service";
-import { CreateEventReq } from "./api/event.types.api";
-import { GetUserEventsRes, EventProps, EventStateReq, EventStateResItem, EventState } from "./event/event.types";
+import { filterStreamDataEntries } from "../../helpers/filterStreamDataEntries";
+import { ApiService } from "../common-api/common-api.service";
+import { AppStateService } from "../core/app-state.service";
+import { ScheduleService } from "../schedule/schedule.service";
+import { CreateEventReq } from "./basic-event-api.types";
+import { GetUserEventsRes, EventProps, EventStateResItem, EventState, EventStateReq } from "./basic-event.types";
 
 @Injectable()
 export class EventService {

@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
-import { obs$ } from "../helpers/observable-variable";
-import { Nullable } from "../helpers/utility.types";
-import { EventProps, Schedule } from "./event/event.types";
+import { obs$ } from "../../helpers/observable-variable";
+import { Nullable } from "../../helpers/utility.types";
+import { EventProps, Schedule } from "../basic-event/basic-event.types";
 
 @Injectable({
   providedIn: 'root'

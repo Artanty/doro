@@ -1,11 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Injector, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
-import { Router } from '@angular/router';
-import { Observable, Subject, takeUntil, filter, startWith, distinctUntilChanged, map, tap, withLatestFrom, catchError, EMPTY, finalize } from 'rxjs';
-import { EventStates, EventTypePrefix } from 'src/app/doro/constants';
-import { countPrc } from 'src/app/doro/helpers/count-percent.util';
-import { EventService } from 'src/app/doro/services/event.service';
-import { EventProps, EventViewState, EventStateResItem, EventStateResItemStateless, EventState } from 'src/app/doro/services/event/event.types';
-import { Schedule, ScheduleService } from 'src/app/doro/services/schedule.service';
+import { Component, ChangeDetectionStrategy, OnInit, OnDestroy, Input, ChangeDetectorRef, Injector } from "@angular/core";
+import { Router } from "@angular/router";
+import { Subject, Observable, map, takeUntil, startWith, tap, catchError, EMPTY } from "rxjs";
+import { EventStates, EventTypePrefix } from "src/app/doro/constants";
+import { countPrc } from "src/app/doro/helpers/count-percent.util";
+import { EventService } from "src/app/doro/services/basic-event/basic-event.service";
+import { EventProps, Schedule, EventViewState, EventStateResItem, EventStateResItemStateless, EventState } from "src/app/doro/services/basic-event/basic-event.types";
+import { ScheduleService } from "src/app/doro/services/schedule/schedule.service";
 
 @Component({
   selector: 'app-event-list-event',

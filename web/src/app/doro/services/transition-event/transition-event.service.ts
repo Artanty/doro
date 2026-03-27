@@ -1,9 +1,9 @@
-import { Injectable } from "@angular/core"
-import { Observable, concatMap, tap } from "rxjs"
-import { ApiService } from "../api.service";
-import { CreateEventReq } from "../api/event.types.api";
-import { AppStateService } from "../app-state.service";
-import { EventStateReq } from "../event/event.types";
+import { Injectable } from "@angular/core";
+import { Observable, concatMap, tap } from "rxjs";
+import { CreateEventReq } from "../basic-event/basic-event-api.types";
+import { EventStateReq } from "../basic-event/basic-event.types";
+import { ApiService } from "../common-api/common-api.service";
+import { AppStateService } from "../core/app-state.service";
 
 
 @Injectable()

@@ -1,19 +1,15 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Optional, Inject, OnInit } from "@angular/core";
-import { combineLatestWith, filter, map, Observable, tap } from "rxjs";
-import { BusEvent, EVENT_BUS_LISTENER, HOST_NAME } from "typlib";
-import { animate, style, transition, trigger } from "@angular/animations";
+import { trigger, transition, style, animate } from "@angular/animations";
+import { Component, ChangeDetectionStrategy, OnInit, Inject, ChangeDetectorRef, Optional } from "@angular/core";
 import { Router } from "@angular/router";
-import { EventService } from "./services/event.service";
-import { filterActiveTransitionEvents, filterTransitionEvents } from "./helpers/filterTransitionEvents";
+import { Observable, filter } from "rxjs";
+import { EVENT_BUS_LISTENER, BusEvent, HOST_NAME } from "typlib";
 import { dd } from "./helpers/dd";
-import { AppStateService } from "./services/app-state.service";
-import { filterActiveBasicEvents } from "./helpers/filterBasicEvents";
 import { filterStreamDataEntries } from "./helpers/filterStreamDataEntries";
-import { findActiveTikBasicEvent, findActiveTikTransitionEvent } from "./helpers/tik-events";
-import { RouterService } from "./services/router.service";
-import { SettingsService } from "./services/settings.service";
-import { NextEventService } from "./services/next-event/next-event.service";
-
+import { findActiveTikTransitionEvent, findActiveTikBasicEvent } from "./helpers/tik-events";
+import { EventService } from "./services/basic-event/basic-event.service";
+import { AppStateService } from "./services/core/app-state.service";
+import { SettingsService } from "./services/settings/settings.service";
+import { NextEventService } from "./services/transition-event/transition-event.service";
 
 @Component({
   selector: 'app-doro',   
@@ -45,7 +41,6 @@ export class DoroComponent implements OnInit {
     // @Inject(EVENT_BUS_PUSHER)
     // private readonly eventBusPusher: (busEvent: BusEvent) => void,
     private router: Router,
-    private _routerService: RouterService,
     private readonly _eventService: EventService,
     private readonly _nextEventService: NextEventService,
     private _state: AppStateService,

@@ -1,10 +1,8 @@
-import { CUSTOM_ELEMENTS_SCHEMA, NgModule, NO_ERRORS_SCHEMA } from "@angular/core";
-
 import { RouterModule } from "@angular/router";
 import { CommonModule } from "@angular/common";
-import { ReactiveFormsModule, FormsModule } from "@angular/forms";
 import { GuiDirective } from "../../components/_remote/web-component-wrapper/gui.directive";
 import { SettingsComponent } from "./settings.component";
+import { NgModule } from "@angular/core";
 
 export const CHILD_ROUTES = [
 	{

@@ -1,13 +1,12 @@
-import { ChangeDetectorRef, Component, OnChanges, OnInit, SimpleChanges } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import { Observable, tap, combineLatest, map, take, filter, Subject, BehaviorSubject } from 'rxjs';
-import { AppStateService } from 'src/app/doro/services/app-state.service';
-import { Schedule, ScheduleService } from 'src/app/doro/services/schedule.service';
-import { EventService } from 'src/app/doro/services/event.service';
-import { Nullable } from 'src/app/doro/helpers/utility.types';
-import { filterBasicEvents } from 'src/app/doro/helpers/filterBasicEvents';
-import { EventProps } from 'src/app/doro/services/event/event.types';
+import { Component, OnInit, ChangeDetectorRef } from "@angular/core";
+import { Router } from "@angular/router";
+import { Observable, BehaviorSubject, combineLatest, map, tap, take } from "rxjs";
+import { filterBasicEvents } from "src/app/doro/helpers/filterBasicEvents";
+import { Nullable } from "src/app/doro/helpers/utility.types";
+import { EventService } from "src/app/doro/services/basic-event/basic-event.service";
+import { EventProps, Schedule } from "src/app/doro/services/basic-event/basic-event.types";
+import { AppStateService } from "src/app/doro/services/core/app-state.service";
+import { ScheduleService } from "src/app/doro/services/schedule/schedule.service";
 
 @Component({
   selector: 'app-event-list',

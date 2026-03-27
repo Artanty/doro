@@ -1,16 +1,8 @@
 import { CommonModule } from '@angular/common';
-import {
-  ApplicationRef,
-  CUSTOM_ELEMENTS_SCHEMA,
-  DoBootstrap,
-  Inject,
-  Injector,
-  NgModule,
-} from '@angular/core';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { EventService } from './services/event.service';
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA, DoBootstrap, Injector, Inject, ApplicationRef } from '@angular/core';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { BehaviorSubject, Observable, filter, map, switchMap, of } from 'rxjs';
+import { BehaviorSubject, Observable, filter, map, switchMap } from 'rxjs';
 import { EVENT_BUS_LISTENER, BusEvent, EVENT_BUS, EVENT_BUS_PUSHER } from 'typlib';
 import { GuiDirective } from './components/_remote/web-component-wrapper/gui.directive';
 import { DoroComponent } from './doro.component';
@@ -18,15 +10,16 @@ import { dd } from './helpers/dd';
 import { filterStreamDataEntries } from './helpers/filterStreamDataEntries';
 import { mapBusEventToConfigHashTikEntry, ConfigHashTikEntry } from './helpers/getConfigHashFromBusEvent';
 import { AccessLevelService } from './services/access-level.service';
-import { CompareConfigHashAction } from './services/compare-config-hash.action';
+import { EventService } from './services/basic-event/basic-event.service';
+import { ApiService } from './services/common-api/common-api.service';
+import { CompareConfigHashAction } from './services/core/compare-config-hash.action';
+import { SetConfigHashAction } from './services/core/set-config-hash.action';
+import { StorageService } from './services/core/storage.service';
 import { EventTypeService } from './services/event-type.service';
-import { ScheduleService } from './services/schedule.service';
-import { SetConfigHashAction } from './services/set-config-hash.action';
-import { ApiService } from './services/api.service';
-import { RouterService } from './services/router.service';
-import { StorageService } from './services/storage.service';
-import { SettingsService } from './services/settings.service';
-import { NextEventService } from './services/next-event/next-event.service';
+import { ScheduleService } from './services/schedule/schedule.service';
+import { SettingsService } from './services/settings/settings.service';
+import { NextEventService } from './services/transition-event/transition-event.service';
+
 
 export const CHILD_ROUTES = [
   {
@@ -108,7 +101,6 @@ export const CHILD_ROUTES = [
     EventTypeService,
     ScheduleService,
     ApiService,
-    RouterService,
     StorageService,
     SettingsService
   ],

@@ -1,14 +1,15 @@
 import { HttpClient } from "@angular/common/http";
 import { Component, OnInit, Input, ChangeDetectorRef } from "@angular/core";
 import { EventType, Router } from "@angular/router";
-import { dd } from "../../helpers/dd";
-import { AccessLevel, AccessLevelService } from "../../services/access-level.service";
-import { EventTypeService } from "../../services/event-type.service";
-import { EventService } from "../../services/event.service";
-import { DEFAULT_EVENT_STATE_HOOKS, EventProgressType } from "../../constants";
-import { Schedule, ScheduleService } from "../../services/schedule.service";
 import { Observable } from "rxjs";
-import { CreateEventReq } from "../../services/api/event.types.api";
+import { EventProgressType, DEFAULT_EVENT_STATE_HOOKS } from "../../constants";
+import { AccessLevel, AccessLevelService } from "../../services/access-level.service";
+import { CreateEventReq } from "../../services/basic-event/basic-event-api.types";
+import { EventService } from "../../services/basic-event/basic-event.service";
+import { Schedule } from "../../services/basic-event/basic-event.types";
+import { EventTypeService } from "../../services/event-type.service";
+import { ScheduleService } from "../../services/schedule/schedule.service";
+
 
 @Component({
   selector: 'app-create-event',

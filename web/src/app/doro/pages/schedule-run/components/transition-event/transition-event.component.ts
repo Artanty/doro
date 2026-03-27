@@ -1,18 +1,16 @@
-import { Component, OnInit, Input, Output, ChangeDetectorRef, Injector } from "@angular/core"
-import { ActivatedRoute, Router } from "@angular/router"
-import * as EventEmitter from "events"
-import { Observable, combineLatest, from, distinctUntilChanged, map, tap, startWith, catchError, of, lastValueFrom } from "rxjs"
-import { eventTypes, EventTypePrefix, INITIAL_VIEW_STATE, EventProgress, DEFAULT_EVENT_STATE_HOOKS, BASE_SCHEDULE_ID, DEFAULT_WORK_EVENT_LENGTH } from "src/app/doro/constants"
+import { Component, OnInit, Input, ChangeDetectorRef } from "@angular/core"
+import { Observable, from, distinctUntilChanged, map, tap, startWith, catchError, of, lastValueFrom } from "rxjs"
+import { eventTypes, INITIAL_VIEW_STATE, EventProgress, BASE_SCHEDULE_ID, DEFAULT_WORK_EVENT_LENGTH, DEFAULT_EVENT_STATE_HOOKS } from "src/app/doro/constants"
 import { dd } from "src/app/doro/helpers/dd"
 import { Nullable } from "src/app/doro/helpers/utility.types"
-import { ApiService } from "src/app/doro/services/api.service"
-import { CreateEventReq } from "src/app/doro/services/api/event.types.api"
-import { SuggestRestReq } from "src/app/doro/services/api/schedule.types.api"
-import { EventService } from "src/app/doro/services/event.service"
-import { EVENT_PROPS_KEY, EventProps, EventPropsWithState } from "src/app/doro/services/event/event.types"
-import { NextEventService } from "src/app/doro/services/next-event/next-event.service"
-import { EventStateHook, NextCalculatedEvent, NextSuggestionsRes } from "src/app/doro/services/next-event/next-event.types"
-import { ViewStatus, ViewState } from "src/app/doro/types/view-state.type"
+import { CreateEventReq } from "src/app/doro/services/basic-event/basic-event-api.types"
+import { EventService } from "src/app/doro/services/basic-event/basic-event.service"
+import { EventProps, EventPropsWithState, EVENT_PROPS_KEY, EventStateHook } from "src/app/doro/services/basic-event/basic-event.types"
+import { ApiService } from "src/app/doro/services/common-api/common-api.service"
+import { ViewStatus, ViewState } from "src/app/doro/services/core/view-state.type"
+import { SuggestRestReq } from "src/app/doro/services/schedule/schedule.api.types"
+import { NextEventService } from "src/app/doro/services/transition-event/transition-event.service"
+import { NextSuggestionsRes, NextCalculatedEvent } from "src/app/doro/services/transition-event/transition-event.types"
 
 @Component({
   selector: 'app-transition-event',
@@ -34,9 +32,6 @@ export class TransitionEventComponent implements OnInit {
   constructor(
     private cdr: ChangeDetectorRef,
     private _eventService: EventService,
-    private injector: Injector,
-    private route: ActivatedRoute,
-    private router: Router,
     private _nextEventService: NextEventService,
     private _api: ApiService,
   ) {}

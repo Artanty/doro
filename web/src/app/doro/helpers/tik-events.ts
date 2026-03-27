@@ -1,5 +1,5 @@
 import { EventStates, EventTypePrefix } from "../constants";
-import { EventStateResItem } from "../services/event/event.types";
+import { EventStateResItem } from "../services/basic-event/basic-event.types";
 
 export const findActiveTikTransitionEvent = (
 	eventsStates: EventStateResItem[]

@@ -1,4 +1,4 @@
-import { ViewStatus } from "./types/view-state.type";
+import { ViewStatus } from "./services/core/view-state.type";
 
 export const devPoolId = 'current_user_id'
 
@@ -53,4 +53,4 @@ export const DEFAULT_EVENT_STATE_HOOKS = [
 	}
 ]
 
-export const DEFAULT_WORK_EVENT_LENGTH = 20 //60 * 25;
+export const DEFAULT_WORK_EVENT_LENGTH = 60 * 25;
