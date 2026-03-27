@@ -1,9 +1,11 @@
-import { BehaviorSubject, lastValueFrom, Observable } from 'rxjs';
-import { distinctUntilChanged, filter, map } from 'rxjs/operators';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { distinctUntilChanged, filter, map, skip } from 'rxjs/operators';
 
 export class ObservableVariable<T> {
   private subject: BehaviorSubject<T>;
   private validator?: (value: T) => boolean;
+  private initialValue: T;
+  private wasSet = false; // Track if value was ever set after creation
   
   constructor(
     initialValue: T, 
@@ -12,6 +14,7 @@ export class ObservableVariable<T> {
       distinct?: boolean;
     }
   ) {
+    this.initialValue = initialValue;
     this.subject = new BehaviorSubject<T>(initialValue);
     this.validator = options?.validator;
   }
@@ -39,9 +42,9 @@ export class ObservableVariable<T> {
       throw new Error(`Invalid value: ${newValue}`);
     }
     this.subject.next(newValue);
+    this.wasSet = true; // Mark that a real value was set
   }
   
-  // Safe set that returns success status
   next(newValue: T): boolean {
     try {
       this.setValue(newValue);
@@ -64,10 +67,42 @@ export class ObservableVariable<T> {
     return this.subject;
   }
 
+  // Regular listen - includes everything (including initial)
   listen(): Observable<T> {
     return this.subject.asObservable();
   }
 
+  // Listen only for real changes (skips initial value, but includes current value if it was set)
+  listenReal(): Observable<T> {
+    if (this.wasSet) {
+      // If value was set before, include current value
+      return this.subject.asObservable();
+    } else {
+      // If never set, skip the initial value
+      return this.subject.asObservable().pipe(skip(1));
+    }
+  }
+
+  // Listen with option to skip initial value
+  // listen(options?: { skipInitial?: boolean }): Observable<T> {
+  //   if (!options?.skipInitial) {
+  //     return this.subject.asObservable();
+  //   }
+    
+  //   // Skip initial only if value was never set
+  //   if (!this.wasSet) {
+  //     return this.subject.asObservable().pipe(skip(1));
+  //   }
+    
+  //   // Value was set before, include current value
+  //   return this.subject.asObservable();
+  // }
+  
+  // Check if a real value was ever set
+  get isSet(): boolean {
+    return this.wasSet;
+  }
+  
   get listenReq(): Observable<NonNullable<T>> {
     return this.subject.asObservable()
       .pipe(filter(res => {
@@ -78,7 +113,7 @@ export class ObservableVariable<T> {
   get distinct$(): Observable<T> {
     return this.subject.pipe(distinctUntilChanged());
   }
-  //todo add filter . make listen(maps[], filters[])
+  
   map<R>(mapper: (value: T) => R): Observable<R> {
     return this.subject.pipe(map(mapper));
   }
@@ -95,9 +130,18 @@ export class ObservableVariable<T> {
     return this.subject.isStopped;
   }
   
-  // Reset to initial value (if needed, you might want to store initial)
   reset(initialValue?: T): void {
-    this.subject.next(initialValue !== undefined ? initialValue : this.value);
+    this.subject.next(initialValue !== undefined ? initialValue : this.initialValue);
+    this.wasSet = false; // Reset the flag when resetting
+  }
+  
+  // Force set without marking as "set" (useful for initial data load)
+  setSilent(newValue: T) {
+    if (this.validator && !this.validator(newValue)) {
+      throw new Error(`Invalid value: ${newValue}`);
+    }
+    this.subject.next(newValue);
+    // Don't set wasSet flag
   }
 }
 

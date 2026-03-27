@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Injector, Input, SimpleChanges } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Injector, Input, OnInit, SimpleChanges } from '@angular/core';
 import { Subject, Observable, takeUntil, map, startWith, tap, catchError, EMPTY, finalize, throwError, switchMap, combineLatest, distinctUntilChanged, take } from 'rxjs';
 import { EventStates, EventTypePrefix } from 'src/app/doro/constants';
 import { dd } from 'src/app/doro/helpers/dd';
@@ -16,7 +16,7 @@ import { AppStateService } from 'src/app/doro/services/app-state.service';
   styleUrl: './timer-wrapper.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TimerWrapperComponent {
+export class TimerWrapperComponent implements OnInit {
   // common
   // @Input() eventProps!: EventProps;
   eventProps!: EventProps;
@@ -48,13 +48,6 @@ export class TimerWrapperComponent {
     // console.log(service)
   }
   
-  getPrc(eventState: any): number {
-    const result = (eventState?.data?.cur && eventState?.data?.len)
-      ? ((eventState?.data?.cur / eventState?.data?.len) * 100)
-      : 0;
-    return Math.round(result)
-  }
-  
   ngOnInit() {
     this.eventState$ = this.route.params.pipe(
       takeUntil(this.destroy$),
@@ -78,6 +71,13 @@ export class TimerWrapperComponent {
     )
   }
 
+    getPrc(eventState: any): number {
+    const result = (eventState?.data?.cur && eventState?.data?.len)
+      ? ((eventState?.data?.cur / eventState?.data?.len) * 100)
+      : 0;
+    return Math.round(result)
+  }
+  
   private _listenEventState(eventId: number): Observable<EventViewState<EventStateResItemStateless>> {
     let initalState: EventViewState<EventStateResItemStateless> | EventViewState<EventState> = {
       viewState: 'LOADING_VIEW_STATE',

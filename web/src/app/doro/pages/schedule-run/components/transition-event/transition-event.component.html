@@ -1,0 +1,53 @@
+<div class="container">
+  @if (view$ | async; as view) {
+    @switch(view.status) {
+      @case(ViewStatus.LOADING) {
+        LOADING...
+      }
+      @case(ViewStatus.READY) {
+        <app-timer
+          [length]="view.data!.length"
+          [time]="0"
+          [eventType]="view.data!.type"
+        ></app-timer>
+
+        <div class="bottomControlsRow">
+          <button gui
+            type="button" 
+            [inputs]="{
+              icon: 'mu mu-replay',
+              color: 'rgb(83 105 118 / 52%)'
+            }"
+            [outputs]="{click: finishTransitionAndDuplicateEvent.bind(this, view.data!)}"
+          >
+            Повторить
+          </button>
+          <button gui
+            type="button" 
+            [inputs]="{
+              icon: 'mu mu-play',
+              color: 'rgb(88 83 118 / 52%)'
+            }"
+            [outputs]="{click: finishTransitionAndStartNextEvent.bind(this, view.data!)}"
+          >
+            Начать
+          </button>
+          <!-- <button gui
+            type="button" 
+            [inputs]="{
+              icon: 'mu mu-i-cross',
+              color: 'rgb(175 84 84 / 52%)'
+            }"
+            [outputs]="{click: finishTransitionAndClose.bind(this)}"
+          >
+            Закрыть
+          </button> -->
+        </div>
+      }
+      @case(ViewStatus.ERROR) {
+        <pre style="white-space: normal;">{{view.error}}</pre>
+      }
+    }
+  }
+  <!-- mu-next - skip -->
+</div>

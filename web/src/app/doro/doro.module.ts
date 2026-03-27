@@ -75,6 +75,11 @@ export const CHILD_ROUTES = [
         loadChildren: () => import('./pages/settings/settings.module')
           .then(m => m.SettingsModule)
       },
+      {
+        path: 'schedule-run', 
+        loadChildren: () => import('./pages/schedule-run/schedule-run.module')
+          .then(m => m.ScheduleRunModule)
+      },
     ]
   },
 ]

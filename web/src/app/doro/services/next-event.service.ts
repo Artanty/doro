@@ -26,6 +26,7 @@ export interface EventStateHook {
 }
 @Injectable()
 export class NextEventService {
+	
 	constructor(
 		private _router: Router,
 		private _eventService: EventService,
@@ -120,7 +121,7 @@ export class NextEventService {
 				const payload: SuggestRestReq = { scheduleId: creatorEvent.schedule_id }
 				const suggestRestApiRes = await lastValueFrom(this._api.suggestRestApi(payload));
 				nextCalculatedEvent.length = suggestRestApiRes.restDuration;
-				nextCalculatedEvent.debug = { suggestRestApiRes };
+				nextCalculatedEvent.debug = { suggestRestApiRes }; 	
 			}
 			nextCalculatedEvent.schedule_id = creatorEvent.schedule_id;
 			nextCalculatedEvent.schedule_position = this._scheduleService.getNextPositionInSchedule(creatorEvent.schedule_id);
@@ -128,7 +129,7 @@ export class NextEventService {
 
 		return {
 			endedEvent: creatorEvent,
-			nextEventsBySchedule,
+			nextEventBySchedule: null, // hard
 			nextCalculatedEvent
 		}
 	}

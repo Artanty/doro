@@ -140,10 +140,16 @@ export class NextEventComponent implements OnInit {
       endedEvent: nextSuggestionsRes.endedEvent
     }
 
-    if (nextSuggestionsRes.nextCalculatedEvent) {
+    if (nextSuggestionsRes.nextEventBySchedule) {
+      result.type = nextSuggestionsRes.nextEventBySchedule.type as any;
+      result.length = nextSuggestionsRes.nextEventBySchedule.length;
+      result.startNewEventType = 'play';
+    } else if (nextSuggestionsRes.nextCalculatedEvent) {
       result.type = nextSuggestionsRes.nextCalculatedEvent.type;
       result.length = nextSuggestionsRes.nextCalculatedEvent.length;
       result.startNewEventType = 'create';
+    } else {
+      throw new Error('wrong state of app')
     }
     return result;
   }

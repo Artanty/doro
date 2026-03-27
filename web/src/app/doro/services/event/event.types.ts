@@ -38,12 +38,22 @@ export interface EventProps {
 	schedule_position: number;
 	// base_access: "public-read"; //remove on backend
 	base_access_id: number;
+	event_state_id: number;
 	// access_level: "owner" | "editor" | "viewer"; //remove on backend
 	has_access: number; // 0 or 1 (boolean)
 	state_hooks: EventStateHook[],
 	created_from: string,
 
 	current_state: number
+}
+export const EVENT_PROPS_KEY = 'doroProps' as const;
+export const EVENT_STATE_KEY = 'tikState' as const;
+
+export interface EventPropsWithState {
+	[EVENT_PROPS_KEY]: EventProps,
+	[EVENT_STATE_KEY]: EventStateResItem,
+	allScheduleEvents: EventProps[],
+	allScheduleEventsUnfiltered: EventProps[],
 }
 
 export interface EventWithState { // todo rename

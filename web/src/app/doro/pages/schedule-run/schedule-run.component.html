@@ -1,0 +1,31 @@
+<div class="container">
+  @if (view$ | async; as view) {
+    @switch(view.status) {
+      @case(ViewStatus.LOADING) {
+        LOADING...
+      }
+      @case(ViewStatus.READY) {
+        @if (view.data; as data) {
+          @if (data[EVENT_PROPS_KEY]; as eventProps) {
+            
+            @if(eventProps.type === eventTypes.TRANSITION) {
+              <app-transition-event
+                [data]="data"
+              ></app-transition-event>
+            }
+            @else {
+              <app-base-event
+                [data]="data"
+              ></app-base-event>
+            }
+          }
+        }
+      }
+      @case(ViewStatus.ERROR) {
+        <pre style="white-space: normal;">{{view.error}}</pre>
+      }
+    }
+  }
+</div>
+<pre>{{ view$ | async | json }}</pre>
+

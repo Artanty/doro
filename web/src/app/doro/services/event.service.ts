@@ -110,6 +110,7 @@ export class EventService {
       }))
   }
   
+  //EventTypePrefix
   public listenEventState(eventTypePrefix: string, eventId: number): Observable<EventStateResItem> {
     const receivedEventId = `${eventTypePrefix}_${eventId}`;
   

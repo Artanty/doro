@@ -33,10 +33,10 @@ export class RouterService {
 		
 		// Check if we're already on this route
 		const isCurrentRoute = this._isSameRoute(currentUrl, route);
-		
+		if (isCurrentRoute) dd('isCurrentRoute');
 		// Check if this is the last auto-redirect route
 		const isLastRedirect = route === lastRoute;
-		
+		if (isLastRedirect) dd('isLastRedirect');
 		// Don't allow if we're already on this route OR if it's the last redirect
 		return !isCurrentRoute && !isLastRedirect;
 	}

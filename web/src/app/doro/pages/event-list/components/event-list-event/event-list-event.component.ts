@@ -92,6 +92,11 @@ export class EventListEventComponent implements OnInit, OnDestroy {
         )
   }
 
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  } 
+
   goToEventTimer() {
     this.router.navigateByUrl(`/doro/timer/${this.eventProps.id}`);
   }
@@ -110,11 +115,8 @@ export class EventListEventComponent implements OnInit, OnDestroy {
   }
 
   pauseEvent() {
-    this.eventService.pauseEvent(this.eventProps.id)
+    this.eventService.pauseEvent(this.eventProps.id).subscribe()
   }
 
-  ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
-  } 
+ 
 }

@@ -45,7 +45,7 @@ export class EventListComponent implements OnInit {
   ) {
     this.events$ = combineLatest([
       this._state.events.listen(),
-      this.scheduleFilter$ // Your second observable for schedule filtering
+      this.scheduleFilter$
     ])
       .pipe(
         map(([events, scheduleFilter]) => {

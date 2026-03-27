@@ -13,6 +13,6 @@ export interface NextCalculatedEvent {
 
 export interface NextSuggestionsRes {
 	endedEvent: EventProps
-	nextEventsBySchedule: EventProps[]
+	nextEventBySchedule: Nullable<EventProps>
 	nextCalculatedEvent: Nullable<NextCalculatedEvent>
 }
