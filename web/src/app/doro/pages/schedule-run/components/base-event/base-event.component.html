@@ -1,66 +1,62 @@
 @if (eventState) {
-  <li>
-    <div>
-      <app-timer 
-     		[length]="eventState?.len ?? 0"
-        [time]="eventState?.cur ?? 0"
-        [eventType]="eventProps.type"
+  {{ 'base-event-id: ' + eventProps.id }}
+  <app-timer 
+ 		[length]="eventState?.len ?? 0"
+    [time]="eventState?.cur ?? 0"
+    [eventType]="eventProps.type"
+  >
+  </app-timer>
+
+  <ng-container [ngTemplateOutlet]="bottomControlsRow"></ng-container>
+
+  <ng-template #bottomControlsRow>
+    <div class="bottomControlsRow">
+      <!-- <button gui
+        type="button" 
+        [inputs]="{
+          icon: 'mu mu-replay',
+          color: 'rgb(83 105 118 / 52%)'
+        }"
+        [outputs]="{click: finishTransitionAndDuplicateEvent.bind(this, view.data!)}"
       >
-      </app-timer>
-
-      <ng-container [ngTemplateOutlet]="bottomControlsRow"></ng-container>
-
-      <ng-template #bottomControlsRow>
-        <div class="bottomControlsRow">
-          <!-- <button gui
-            type="button" 
-            [inputs]="{
-              icon: 'mu mu-replay',
-              color: 'rgb(83 105 118 / 52%)'
-            }"
-            [outputs]="{click: finishTransitionAndDuplicateEvent.bind(this, view.data!)}"
-          >
-            Повторить
-          </button> -->
-          
-          @if (eventState.stt !== EventStates.PLAYING) {
-            <button gui
-              type="button" 
-              [inputs]="{
-                icon: 'mu mu-play',
-                color: 'rgb(88 83 118 / 52%)'
-              }"
-              [outputs]="{click: playEvent.bind(this)}"
-            >
-              Начать
-            </button>
-          } 
-          @else {
-            <button gui
-              type="button" 
-              [inputs]="{
-                icon: 'mu mu-pause',
-                color: 'rgb(88 83 118 / 52%)'
-              }"
-              [outputs]="{click: pauseEvent.bind(this)}"
-            >
-              Пауза
-            </button>
-          }
-          
-          <button gui
-            type="button" 
-            [inputs]="{
-              icon: 'mu mu-next',
-              color: 'rgb(175 84 84 / 52%)'
-            }"
-            [outputs]="{click: endEvent.bind(this)}"
-          >
-            Следующее
-          </button>
-        </div>
-      </ng-template>
+        Повторить
+      </button> -->
+      
+      @if (eventState.stt !== EventStates.PLAYING) {
+        <button gui
+          type="button" 
+          [inputs]="{
+            icon: 'mu mu-play',
+            color: 'rgb(88 83 118 / 52%)'
+          }"
+          [outputs]="{click: playEvent.bind(this)}"
+        >
+          Начать
+        </button>
+      } 
+      @else {
+        <button gui
+          type="button" 
+          [inputs]="{
+            icon: 'mu mu-pause',
+            color: 'rgb(88 83 118 / 52%)'
+          }"
+          [outputs]="{click: pauseEvent.bind(this)}"
+        >
+          Пауза
+        </button>
+      }
+      
+      <button gui
+        type="button" 
+        [inputs]="{
+          icon: 'mu mu-next',
+          color: 'rgb(175 84 84 / 52%)'
+        }"
+        [outputs]="{click: endEvent.bind(this)}"
+      >
+        Следующее
+      </button>
     </div>
-    
-  </li>  
+  </ng-template>
 }

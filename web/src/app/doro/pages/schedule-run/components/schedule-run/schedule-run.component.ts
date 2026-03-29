@@ -1,6 +1,6 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, Injector } from "@angular/core";
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, Injector, DestroyRef } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
-import { Subject, Observable, takeUntil, take, map, combineLatest, switchMap, tap, startWith } from "rxjs";
+import { Subject, Observable, takeUntil, take, map, combineLatest, switchMap, tap, startWith, of } from "rxjs";
 import { eventTypes, EventProgress, EventTypePrefix, INITIAL_VIEW_STATE } from "src/app/doro/constants";
 import { dd } from "src/app/doro/helpers/dd";
 import { Nullable } from "src/app/doro/helpers/utility.types";
@@ -8,6 +8,8 @@ import { EventService } from "src/app/doro/services/basic-event/basic-event.serv
 import { EventPropsWithState, EVENT_PROPS_KEY, EVENT_STATE_KEY, EventProps } from "src/app/doro/services/basic-event/basic-event.types";
 import { AppStateService } from "src/app/doro/services/core/app-state.service";
 import { ViewState, ViewStatus } from "src/app/doro/services/core/view-state.type";
+import { getEmptyEventProps, getEmptyEventState } from "../transition-next/transition-next.helper";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 
 @Component({
   selector: 'app-schedule-run',
@@ -23,27 +25,15 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
   ViewStatus = ViewStatus;
   eventTypes = eventTypes;
   Number = Number;
-
-  public events$?: Observable<EventProps[]>;
-  scheduleFilter$: Observable<Nullable<number>>;
+  scheduleId!: number;
   constructor(
     private cdr: ChangeDetectorRef,
     private _eventService: EventService,
     private injector: Injector,
     private route: ActivatedRoute,
-    private _state: AppStateService
-  ) {
-    this.scheduleFilter$ = this.route.params.pipe(
-      takeUntil(this.destroy$),
-      take(1),
-      map(params => {
-        const scheduleId = Number(params['scheduleId']);
-        dd('scheduleId');
-        dd(scheduleId);
-        return scheduleId;
-      })
-    );
-  }
+    private _state: AppStateService,
+    private destroyRef: DestroyRef
+  ) {}
 
   ngOnInit() {
     this.view$ = combineLatest([
@@ -51,22 +41,32 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
       this.route.params.pipe(take(1)),
     ])
       .pipe(
+        takeUntilDestroyed(this.destroyRef),
         map(([events, routeParams]) => {
-          dd(events)
-          dd(routeParams)
-          let filteredEvents = events
-          const scheduleId = Number(routeParams['scheduleId']);
-          if (scheduleId) {
-            filteredEvents = filteredEvents.filter(e => e.schedule_id === scheduleId);
-          }
+          this.scheduleId = Number(routeParams['scheduleId']);
+          if (!this.scheduleId) throw new Error('no schedule id');
+          
+          const filteredEvents = events.filter(e => e.schedule_id === this.scheduleId);
           const sortedEvents = this._sortScheduleEvents(filteredEvents);
           return sortedEvents;
         }),
         switchMap((events: EventProps[]) => {
           const allScheduleEventsUnfiltered = events;
           const eventsToDisplay = events.filter(e => e.event_state_id !== EventProgress.COMPLETED);
-
-          if (!eventsToDisplay.length) throw new Error('no events to display. need suggestion');
+          dd(allScheduleEventsUnfiltered)
+          if (!eventsToDisplay.length) {
+            // throw new Error('no events to display. need suggestion');
+            const res: ViewState<EventPropsWithState> = {
+              status: ViewStatus.READY,
+              data: {
+                [EVENT_PROPS_KEY]: getEmptyEventProps(this.scheduleId),
+                [EVENT_STATE_KEY]: getEmptyEventState(),
+                allScheduleEvents: [],
+                allScheduleEventsUnfiltered: allScheduleEventsUnfiltered,
+              }
+            };
+            return of(res);
+          }
 
           const currentEvent = eventsToDisplay[0];
 
@@ -78,7 +78,7 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
             .pipe(
               // todo add build suggestion
               map((state: any) => {
-                return {
+                const res: ViewState<EventPropsWithState> = {
                   status: ViewStatus.READY,
                   data: {
                     [EVENT_PROPS_KEY]: currentEvent,
@@ -86,7 +86,8 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
                     allScheduleEvents: eventsToDisplay,
                     allScheduleEventsUnfiltered: allScheduleEventsUnfiltered,
                   }
-                } as ViewState<EventPropsWithState>;
+                };
+                return res;
               }),
               tap(() => {
                 // dd('inner tap')
@@ -147,25 +148,5 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
-  } 
+  }
 }
-// this.eventState$ = this.route.params.pipe(
-//   takeUntil(this.destroy$),
-//   take(1),
-//   switchMap(params => {
-//     const eventId = Number(params['id']);
-//     dd('Event ID from route:', eventId);
-//     return combineLatest([
-//       this._listenEventState(eventId),
-//       this._listenEventProps(eventId),
-//     ])
-//       .pipe(
-//         takeUntil(this.destroy$),
-//         map(([state]) => state),
-//         distinctUntilChanged((prev, curr) => {
-//           return JSON.stringify(prev) === JSON.stringify(curr);
-//         }),
-//         tap(res => dd(res))
-//       );
-//   })
-// )

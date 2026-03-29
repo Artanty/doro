@@ -9,7 +9,7 @@ import { findActiveTikTransitionEvent, findActiveTikBasicEvent } from "./helpers
 import { EventService } from "./services/basic-event/basic-event.service";
 import { AppStateService } from "./services/core/app-state.service";
 import { SettingsService } from "./services/settings/settings.service";
-import { NextEventService } from "./services/transition-event/transition-event.service";
+import { TransitionEventService } from "./services/transition-event/transition-event.service";
 
 @Component({
   selector: 'app-doro',   
@@ -42,7 +42,7 @@ export class DoroComponent implements OnInit {
     // private readonly eventBusPusher: (busEvent: BusEvent) => void,
     private router: Router,
     private readonly _eventService: EventService,
-    private readonly _nextEventService: NextEventService,
+    private readonly _nextEventService: TransitionEventService,
     private _state: AppStateService,
     private _settings: SettingsService,
     @Optional() @Inject(HOST_NAME) private hostName?: string,

@@ -33,6 +33,7 @@ export const eventTypes = {
 	WORK: 1,
 	REST: 2,
 	TRANSITION: 3,
+	TRANSITION_NEXT: 4,
 } as const;
 
 export type TEventType = typeof eventTypes[keyof typeof eventTypes];
@@ -54,3 +55,4 @@ export const DEFAULT_EVENT_STATE_HOOKS = [
 ]
 
 export const DEFAULT_WORK_EVENT_LENGTH = 60 * 25;
+export const DEFAULT_USER_BASE_ACCESS_ID = 1; // for creating event from scratch

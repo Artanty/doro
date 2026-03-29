@@ -13,6 +13,11 @@
                 [data]="data"
               ></app-transition-event>
             }
+            @else if(eventProps.type === eventTypes.TRANSITION_NEXT) {
+              <app-transition-next
+                [data]="data"
+              ></app-transition-next>
+            }
             @else {
               <app-base-event
                 [data]="data"

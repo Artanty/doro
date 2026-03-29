@@ -18,7 +18,7 @@ import { StorageService } from './services/core/storage.service';
 import { EventTypeService } from './services/event-type.service';
 import { ScheduleService } from './services/schedule/schedule.service';
 import { SettingsService } from './services/settings/settings.service';
-import { NextEventService } from './services/transition-event/transition-event.service';
+import { TransitionEventService } from './services/transition-event/transition-event.service';
 
 
 export const CHILD_ROUTES = [
@@ -96,7 +96,7 @@ export const CHILD_ROUTES = [
       deps: [EVENT_BUS],
     },
     EventService,
-    NextEventService,
+    TransitionEventService,
     AccessLevelService,
     EventTypeService,
     ScheduleService,

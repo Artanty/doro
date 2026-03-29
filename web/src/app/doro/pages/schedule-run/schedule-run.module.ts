@@ -7,6 +7,7 @@ import { BaseEventComponent } from "./components/base-event/base-event.component
 import { NgModule } from "@angular/core";
 import { ScheduleRunComponent } from "./components/schedule-run/schedule-run.component";
 import { LoadingComponent } from "../../components/loading/loading.component";
+import { TransitionNextComponent } from "./components/transition-next/transition-next.component";
 
 export const CHILD_ROUTES = [
 	{
@@ -18,6 +19,7 @@ export const CHILD_ROUTES = [
 	declarations: [
 		ScheduleRunComponent,
 		TransitionEventComponent,
+		TransitionNextComponent,
 		BaseEventComponent
 	],
 	imports: [

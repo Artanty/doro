@@ -1,3 +1,4 @@
+{{ 'transition-event-id: ' + id }}
 <div class="container">
   @if (view$ | async; as view) {
     @switch(view.status) {
@@ -32,7 +33,7 @@
           >
             Начать
           </button>
-          <!-- <button gui
+          <button gui
             type="button" 
             [inputs]="{
               icon: 'mu mu-i-cross',
@@ -41,7 +42,7 @@
             [outputs]="{click: finishTransitionAndClose.bind(this)}"
           >
             Закрыть
-          </button> -->
+          </button>
         </div>
       }
       @case(ViewStatus.ERROR) {

@@ -7,7 +7,7 @@ import { AppStateService } from "../core/app-state.service";
 
 
 @Injectable()
-export class NextEventService {
+export class TransitionEventService {
 	
 	constructor(
 		private _state: AppStateService,
@@ -60,9 +60,11 @@ export class NextEventService {
 		};
 		return this._api.setEventStateApi(payload).pipe(
 			concatMap(() => {
-				return this._api.playEventApi({ eventId: idToDuplicate }).pipe(tap(() => {
-					this._state.configHash.next(999);
-				}));
+				return this._api.playEventApi({ eventId: idToDuplicate }).pipe(
+					// 	tap(() => {
+					// 	this._state.configHash.next(999);
+					// })
+				);
 			}),
 			tap(() => {
 				this._state.configHash.next(999);

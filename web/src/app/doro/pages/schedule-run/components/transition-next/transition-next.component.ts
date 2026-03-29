@@ -1,7 +1,6 @@
 import { Component, OnInit, Input, ChangeDetectorRef, DestroyRef } from "@angular/core"
-import { takeUntilDestroyed } from "@angular/core/rxjs-interop"
 import { Observable, from, distinctUntilChanged, map, tap, startWith, catchError, of, lastValueFrom } from "rxjs"
-import { eventTypes, INITIAL_VIEW_STATE, EventProgress, BASE_SCHEDULE_ID, DEFAULT_WORK_EVENT_LENGTH, DEFAULT_EVENT_STATE_HOOKS } from "src/app/doro/constants"
+import { eventTypes, INITIAL_VIEW_STATE, EventProgress, BASE_SCHEDULE_ID, DEFAULT_WORK_EVENT_LENGTH, DEFAULT_EVENT_STATE_HOOKS, DEFAULT_USER_BASE_ACCESS_ID } from "src/app/doro/constants"
 import { dd } from "src/app/doro/helpers/dd"
 import { Nullable } from "src/app/doro/helpers/utility.types"
 import { CreateEventReq } from "src/app/doro/services/basic-event/basic-event-api.types"
@@ -12,14 +11,16 @@ import { ViewStatus, ViewState } from "src/app/doro/services/core/view-state.typ
 import { SuggestRestReq } from "src/app/doro/services/schedule/schedule.api.types"
 import { TransitionEventService } from "src/app/doro/services/transition-event/transition-event.service"
 import { NextSuggestionsRes, NextCalculatedEvent } from "src/app/doro/services/transition-event/transition-event.types"
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
 
 @Component({
-  selector: 'app-transition-event',
-  templateUrl: './transition-event.component.html',
-  styleUrl: './transition-event.component.scss',
+  selector: 'app-transition-next',
+  templateUrl: './transition-next.component.html',
+  styleUrl: './transition-next.component.scss',
   standalone: false,
 })
-export class TransitionEventComponent implements OnInit {
+export class TransitionNextComponent implements OnInit {
   eventTypes = eventTypes
   ViewStatus = ViewStatus
   public endedEvent!: EventProps
@@ -28,19 +29,19 @@ export class TransitionEventComponent implements OnInit {
   
   @Input() public data!: EventPropsWithState;
 
-  public id!: number;
   public view$!: Observable<ViewState<NextEventViewData>>
+
   constructor(
     private cdr: ChangeDetectorRef,
     private _eventService: EventService,
-    private _nextEventService: TransitionEventService,
+    private _transitionEventService: TransitionEventService,
     private _api: ApiService,
+    private _basicEventService: EventService,
     private destroyRef: DestroyRef
   ) {}
 
   ngOnInit(): void {
-    this.id = this.data[EVENT_PROPS_KEY].id;
-    this.view$ = from(this.getNextActionSuggestions(+this.id))     
+    this.view$ = of(this._getNextActionSuggestions(this.data[EVENT_PROPS_KEY]))     
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         distinctUntilChanged((prev, curr) => {
@@ -77,27 +78,7 @@ export class TransitionEventComponent implements OnInit {
       .find(hook => hook.id === Number(hookId));
   }
 
-  /**
-   * Отфильтровываем 
-   *  - тот же тип события, чтобы после работы не шла работа.
-   * 
-   * */
-  public getNextEventOfSchedule(scheduleId: number, event: EventProps): Nullable<EventProps> {
-    
-    const bySchedule = this.data.allScheduleEvents;
-    bySchedule.sort((a, b) => { // a-b => 1-5
-      return Number(a.schedule_position) - Number(b.schedule_position)
-    })
-    const byPassed = bySchedule
-      .filter(el => Number(el.schedule_position) > Number(event.schedule_position));
-
-    const byType = byPassed
-      .filter(el => el.type !== event.type);
-
-    return byType[0] ?? null;
-  }
-
-  public getNextPositionInSchedule(scheduleId: number) {
+  private _getNextPositionInSchedule(scheduleId: number): number {
 
     const filteredBySchedule = this.data.allScheduleEvents;
 
@@ -116,58 +97,20 @@ export class TransitionEventComponent implements OnInit {
     return result
   }
 
-  public async getNextActionSuggestions(transitionEventId: number): Promise<NextSuggestionsRes> {
-    
-    const transitionEvent = this.data[EVENT_PROPS_KEY];
+  private _getNextActionSuggestions(emptyEvent: EventProps): NextSuggestionsRes {
+    const scheduleId: number = emptyEvent.schedule_id;
 
-    const createdFromId = transitionEvent.created_from; // e_324 or h_123
-    const entityType = createdFromId.split('_')[0];
-    const entityId = Number(createdFromId.split('_')[1]);
-    if (entityType !== 'h') throw new Error(`Unknown entity type: ${entityType}`);
-    const hook = this.getHookById(entityId);
-    
-    const isOnCompleteEvent = hook.trigger_event_state_id === EventProgress.COMPLETED;
-    const isSuggestNext = hook.action_config?.scriptId === 'nextEvent';
-    if (!isOnCompleteEvent || !isSuggestNext) throw new Error('unknown hook config');
-
-    const creatorEvent = this.getEventByHook(hook.id);
-    if (!creatorEvent) throw new Error('hook without parent - not implemented');
-    const scheduleId = creatorEvent.schedule_id;
-    if (!scheduleId) throw new Error('event without schedule - not implemented');
-
-    const nextEventBySchedule = this.getNextEventOfSchedule(scheduleId, creatorEvent);
-    /**
-     * Если у расписания нет следующего события
-     * Вычисляем его
-     * */
     let nextCalculatedEvent: NextCalculatedEvent = {
       type: eventTypes.WORK,
-      length: 0,
-      schedule_id: BASE_SCHEDULE_ID,
-      schedule_position: 9999,
+      length: DEFAULT_WORK_EVENT_LENGTH,
+      schedule_id: scheduleId,
+      schedule_position: this._getNextPositionInSchedule(scheduleId),
       debug: null,
     };
-    if (!nextEventBySchedule) {
-      if (creatorEvent.type === eventTypes.REST) {
-        // SUGGESTING WORK
-        nextCalculatedEvent.type = eventTypes.WORK;
-        // todo ask if schedule has settings. otherwise default
-        nextCalculatedEvent.length = DEFAULT_WORK_EVENT_LENGTH;
-      } else {
-        // SUGGESTING REST
-        nextCalculatedEvent.type = eventTypes.REST;
-        const payload: SuggestRestReq = { scheduleId: creatorEvent.schedule_id }
-        const suggestRestApiRes = await lastValueFrom(this._api.suggestRestApi(payload));
-        nextCalculatedEvent.length = suggestRestApiRes.restDuration;
-        nextCalculatedEvent.debug = { suggestRestApiRes };
-      }
-      nextCalculatedEvent.schedule_id = creatorEvent.schedule_id;
-      nextCalculatedEvent.schedule_position = this.getNextPositionInSchedule(creatorEvent.schedule_id);
-    }
 
     return {
-      endedEvent: creatorEvent,
-      nextEventBySchedule,
+      endedEvent: emptyEvent,
+      nextEventBySchedule: null,
       nextCalculatedEvent
     } as NextSuggestionsRes
   }
@@ -185,62 +128,41 @@ export class TransitionEventComponent implements OnInit {
   }
    
   public finishTransitionAndDuplicateEvent(nextEventData: NextEventViewData) {
-    this._nextEventService.finishTransitionAndPlayDuplicatedEvent(
-      this.id, nextEventData.endedEvent.id)
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe(res => {
-        // this.location.back()
-      })
+    // this._nextEventService.finishTransitionAndPlayDuplicatedEvent(
+    //   this.id, nextEventData.endedEvent.id)
+    //   .subscribe(res => {
+    //     // this.location.back()
+    //   })
   }
   
   public finishTransitionAndClose() {
-    this._eventService.finishEvent(this.id)
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe(res => {
-        // this.router.navigateByUrl('/doro/event-list')
-      })
+    // this._eventService.finishEvent(this.id).subscribe(res => {
+    //   // this.router.navigateByUrl('/doro/event-list')
+    // })
   }
 
-  public finishTransitionAndStartNextEvent(nextEventData: NextEventViewData): void {
+  public startNextEvent(nextEventData: NextEventViewData): void {
     dd(nextEventData)
     if (nextEventData.startNewEventType === 'create') {
 
-      const transitionIdToFinish: number = this.id;
       const eventToCreate: CreateEventReq = {
-        name: `next calc from: ${this.id}`,
+        name: `empty event`,
         length: nextEventData.length,
         type: nextEventData.type,
-        base_access: nextEventData.endedEvent.base_access_id,
+        base_access: DEFAULT_USER_BASE_ACCESS_ID,
         state: EventProgress.PLAYING,
         hooks: DEFAULT_EVENT_STATE_HOOKS,
         schedule_id: nextEventData.endedEvent.schedule_id,
       };
-      this._nextEventService
-        .finishTransitionAndCreateNextEvent(transitionIdToFinish, eventToCreate)
-        .pipe(
-          takeUntilDestroyed(this.destroyRef),
-        )
+      this._basicEventService
+        .createEvent(eventToCreate)
         .subscribe(res => {
           dd(res);
           // this.location.back()
         });
     } else {
       dd('play next - not implemented')
-    }
-    // if (this.nextEventBySchedule?.id) {
-    //   const idToFinish = this.transitionEventId;
-    //   this._nextEventService.finishTransitionAndStartNextEvent(idToFinish, this.nextEventBySchedule.id)
-    //     .subscribe(res => {
-    //       dd(res)
-    //       this.location.back()
-    //     })
-    // } else {
-
-    // }
+    }    
   }
 
   private _buildViewData(nextSuggestionsRes: NextSuggestionsRes): NextEventViewData {
@@ -265,7 +187,9 @@ export class TransitionEventComponent implements OnInit {
     }
     dd('suggestion:')
     dd(result)
-    return result;    
+    return result;
+
+    
   }
 }
 

@@ -104,4 +104,12 @@ export class ScheduleService {
 		
 		return result
 	}
+
+	// public getLastEventOfSchedule (scheduleId: number): EventProps {
+	// 	const filteredBySchedule = this._state.events.getValue().filter(
+	// 		e => e.schedule_id === scheduleId);
+	// 	const sorted = filteredBySchedule.sort((a, b) => {
+	// 		return Number(b.schedule_position) - Number(a.schedule_position)
+	// 	});
+	// }
 }

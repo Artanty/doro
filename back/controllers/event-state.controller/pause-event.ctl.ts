@@ -36,7 +36,7 @@ export const pauseEventCtl = async (
         if (!updateEventResult.success) {
             throw new Error('state is not updated');
         }
-            
+        // debugger;
         addEventStateHistoryResult = await addEventStateHistory(connection, eventId, eventState);
         
         const eventsArr = Array.from(getAccessibleEventResult.results.values());

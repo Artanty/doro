@@ -2,8 +2,7 @@ import express from 'express'
 import { handleError } from '../utils/handleError'
 import { getUserFromRequest } from '../utils/getUserFromRequest';
 import { dd } from '../utils/dd';
-import ScheduleController from '../controllers/schedule.controller';
-import { ScheduleController2 } from '../controllers/schedule.controller2';
+import { ScheduleController } from '../controllers/schedule.controller';
 
 const router = express.Router();
 
@@ -32,7 +31,7 @@ router.post('/suggest-rest', async (req, res) => {
   try {
     const scheduleId = req.body.scheduleId;
     // const user = getUserFromRequest(req);
-    const result = await ScheduleController2.suggestRest(scheduleId)
+    const result = await ScheduleController.suggestRest(scheduleId)
     res.json(result);
   } catch (error) {
     handleError(res as unknown as Response, error) 
