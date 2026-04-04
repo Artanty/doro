@@ -4,7 +4,11 @@ import { dd } from "../../utils/dd";
 import { ensureArray } from "../../utils/ensureArray";
 import { calculateEventStatus } from "./calculate-event-status";
 
-export const buildTikEvents = async (connection, events: MinimalEventProps | MinimalEventProps[]): Promise<EventStateResItem[]> => {
+export const buildTikEvents = async (
+    connection, 
+    events: MinimalEventProps | MinimalEventProps[]
+): Promise<EventStateResItem[]> => {
+    
     events = ensureArray(events);
     
     const eventsWithStatus = await Promise.all(

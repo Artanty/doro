@@ -1,14 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { NgModule, CUSTOM_ELEMENTS_SCHEMA, DoBootstrap, Injector, Inject, ApplicationRef } from '@angular/core';
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA, Inject } from '@angular/core';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { BehaviorSubject, Observable, filter, map, switchMap } from 'rxjs';
 import { EVENT_BUS_LISTENER, BusEvent, EVENT_BUS, EVENT_BUS_PUSHER } from 'typlib';
 import { GuiDirective } from './components/_remote/web-component-wrapper/gui.directive';
 import { DoroComponent } from './doro.component';
-import { dd } from './helpers/dd';
-import { filterStreamDataEntries } from './helpers/filterStreamDataEntries';
-import { mapBusEventToConfigHashTikEntry, ConfigHashTikEntry } from './helpers/getConfigHashFromBusEvent';
 import { AccessLevelService } from './services/access-level.service';
 import { EventService } from './services/basic-event/basic-event.service';
 import { ApiService } from './services/common-api/common-api.service';
@@ -19,7 +16,9 @@ import { EventTypeService } from './services/event-type.service';
 import { ScheduleService } from './services/schedule/schedule.service';
 import { SettingsService } from './services/settings/settings.service';
 import { TransitionEventService } from './services/transition-event/transition-event.service';
-
+import { filterStreamDataEntries } from './helpers/filterStreamDataEntries';
+import { mapBusEventToConfigHashTikEntry } from './helpers/getConfigHashFromBusEvent';
+import { thisProjectResProp } from './helpers/getResProp';
 
 export const CHILD_ROUTES = [
   {
@@ -68,12 +67,8 @@ export const CHILD_ROUTES = [
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
-    
-    RouterModule.forChild(
-      CHILD_ROUTES
-    ),
+    RouterModule.forChild(CHILD_ROUTES),
     GuiDirective
-    
   ],
   exports: [DoroComponent],
   providers: [
@@ -82,7 +77,7 @@ export const CHILD_ROUTES = [
       useFactory: (eventBus$: BehaviorSubject<BusEvent>) => {
         return eventBus$
           .asObservable()
-        // .pipe(filter((res) => res.to === process.env['APP']));
+          .pipe(filter((res) => res.to === thisProjectResProp()));
       },
       deps: [EVENT_BUS],
     },
@@ -93,7 +88,7 @@ export const CHILD_ROUTES = [
           eventBus$.next(busEvent);
         };
       },
-      deps: [EVENT_BUS],
+      deps: [EVENT_BUS]
     },
     EventService,
     TransitionEventService,
@@ -102,28 +97,20 @@ export const CHILD_ROUTES = [
     ScheduleService,
     ApiService,
     StorageService,
-    SettingsService
+    SettingsService,
+    CompareConfigHashAction,
+    SetConfigHashAction
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class DoroModule implements DoBootstrap {
+export class DoroModule {
   constructor(
-    private injector: Injector,
-    @Inject(EVENT_BUS_LISTENER)
-    private readonly eventBusListener$: Observable<BusEvent>,
-    @Inject(EVENT_BUS_PUSHER)
-    private readonly eventBusPusher: (busEvent: BusEvent) => void,
+    @Inject(EVENT_BUS_LISTENER) private eventBusListener$: Observable<BusEvent>,
+    @Inject(EVENT_BUS_PUSHER) private eventBusPusher: (busEvent: BusEvent) => void,
     private _compareConfigHashAction: CompareConfigHashAction,
     private _setConfigHashAction: SetConfigHashAction,
     private eventService: EventService,
   ) {
-    console.log('doro module constructor');
-    // this.eventBusListener$.subscribe((res: BusEvent) => {
-    //   console.log('DORO BUS LISTENER');
-    // });
- 
-    // part of scenario
-    // При получении ответа с doro@back сохраняется configHash.
     this.eventBusListener$
       .pipe(
         filter((res) => res.to === `${process.env['PROJECT_ID']}@${process.env['NAMESPACE']}`),
@@ -133,42 +120,20 @@ export class DoroModule implements DoBootstrap {
         this._setConfigHashAction.init(res);
       });
 
-    // При получении состояния таймеров из tik@web сравниваем с configHash:
     this.eventBusListener$.pipe(
       filter(filterStreamDataEntries),
       map(busEvent => mapBusEventToConfigHashTikEntry(busEvent)),
       filter(Boolean),
-      map((configHashTikEntry: ConfigHashTikEntry): boolean => {
+      map((configHashTikEntry): boolean => {
         const isNeedRefresh = this._compareConfigHashAction.init(configHashTikEntry);
         return isNeedRefresh;
       }),
       filter(Boolean),
       switchMap(() => {
-        dd('configHash not equal. refresh...')
+        console.log('configHash not equal. refresh...');
         return this.eventService.loadEvents();
       })
     )
       .subscribe();
-    // part of scenario END
-    
-  }
-  ngDoBootstrap(appRef: ApplicationRef) {
-    // // console.log('DoroModule ngDoBootstrap');
-    // const customElement = createCustomElement(MyCustomElementComponent, {
-    //   injector: this.injector,
-    // });
-    // customElements.define('my-custom-element', customElement);
-    // appRef.bootstrap(CounterComponent);
-  }
-
-  private _sendAuthDoneEvent(): void { 
-    const doneBusEvent: BusEvent = {
-      from: `${process.env['PROJECT_ID']}@${process.env['NAMESPACE']}`,
-      to: `${process.env['PROJECT_ID']}@${process.env['NAMESPACE']}`,
-      event: `ACCESS_GRANTED`,
-      payload: {},
-      status: `ACCESS_GRANTED`,
-    }
-    this.eventBusPusher(doneBusEvent)
   }
 }
