@@ -1,0 +1,28 @@
+{
+	"folders":
+	[
+		{
+			"path": "back"
+		},
+		{
+			"path": "build"
+		},
+		{
+			"path": "contracts"
+		},
+		{
+			"path": "downloads"
+		},
+		{
+			"path": "web"
+		},
+		{
+			"path": "ai_cache"
+		}
+	],
+	"settings": {
+		"ai_assistant": {
+            "cache_prefix": "./ai_cache/"
+        }
+	}
+}

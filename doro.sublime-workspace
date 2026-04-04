@@ -1,0 +1,694 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"s",
+				"schedule_id"
+			],
+			[
+				"start",
+				"startWith"
+			],
+			[
+				"event",
+				"event_state_id"
+			],
+			[
+				"rout",
+				"routeParams"
+			],
+			[
+				"Ev",
+				"EventProps"
+			],
+			[
+				"route",
+				"routeParams"
+			],
+			[
+				"Event",
+				"EventController"
+			],
+			[
+				"c",
+				"connection"
+			],
+			[
+				"switch",
+				"switchMap"
+			],
+			[
+				"e",
+				"eventId"
+			],
+			[
+				"_",
+				"_nextEventService"
+			],
+			[
+				"last",
+				"lastValueFrom"
+			],
+			[
+				"Nu",
+				"Nullable"
+			],
+			[
+				"sc",
+				"schedule_id"
+			],
+			[
+				"tra",
+				"transitionEvent"
+			],
+			[
+				"sch",
+				"scheduleId"
+			],
+			[
+				"get",
+				"getValue"
+			],
+			[
+				"Eve",
+				"EventProps"
+			],
+			[
+				"lis",
+				"listenEventState"
+			],
+			[
+				"action_",
+				"action_type"
+			],
+			[
+				"ev",
+				"eventId"
+			],
+			[
+				"eve",
+				"eventStatus"
+			],
+			[
+				"P",
+				"PLAYING"
+			],
+			[
+				"ba",
+				"base_access_id"
+			],
+			[
+				"va",
+				"valuesTuple"
+			],
+			[
+				"us",
+				"userHandler"
+			],
+			[
+				"new",
+				"newConfigHash"
+			],
+			[
+				"re",
+				"result"
+			],
+			[
+				"de",
+				"detectChanges"
+			],
+			[
+				"u",
+				"uppercase"
+			],
+			[
+				"crea",
+				"created_at"
+			],
+			[
+				"catch",
+				"catchError"
+			],
+			[
+				"ali",
+				"align-items"
+			],
+			[
+				"di",
+				"display"
+			],
+			[
+				"Change",
+				"ChangeDetectorRef"
+			],
+			[
+				"vent",
+				"event"
+			],
+			[
+				"t",
+				"type"
+			],
+			[
+				"n",
+				"number"
+			],
+			[
+				"p",
+				"public"
+			],
+			[
+				"nu",
+				"number"
+			],
+			[
+				"isA",
+				"isAddingUserAccess"
+			],
+			[
+				"ma",
+				"margin-bottom"
+			],
+			[
+				"border-b",
+				"border-bottom"
+			],
+			[
+				"f",
+				"flex-start"
+			],
+			[
+				"al",
+				"align-items"
+			],
+			[
+				"fle",
+				"flex-direction"
+			],
+			[
+				"set",
+				"setTimeout"
+			],
+			[
+				"Chang",
+				"ChangeDetectionStrategy"
+			],
+			[
+				"user",
+				"usersData"
+			],
+			[
+				"res",
+				"result"
+			],
+			[
+				"b",
+				"busEventId"
+			],
+			[
+				"pr",
+				"providers"
+			],
+			[
+				"WebComponentWrapperComponent",
+				"WebComponentWrapperComponent"
+			],
+			[
+				"Router",
+				"Router"
+			],
+			[
+				"pre",
+				"private"
+			],
+			[
+				"mem",
+				"MemoryStorageService"
+			],
+			[
+				"isR",
+				"isReturnData"
+			],
+			[
+				"Re",
+				"Record"
+			],
+			[
+				"ta",
+				"text-align"
+			],
+			[
+				"com",
+				"Component"
+			]
+		]
+	},
+	"buffers":
+	[
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"new",
+				"OpenAI: New Message"
+			],
+			[
+				"ai",
+				"OpenAI: Chat Select Mode"
+			],
+			[
+				"ai: ",
+				"OpenAI: Chat Model Select"
+			],
+			[
+				"ai: chat",
+				"OpenAI: Chat Model Select"
+			],
+			[
+				"ai chat ",
+				"OpenAI: Chat Model Select"
+			],
+			[
+				"OpenAI: Chat Model Select",
+				"OpenAI: Chat Model Select"
+			],
+			[
+				"",
+				"Bookmarks: Select All"
+			],
+			[
+				"op",
+				"OpenAI: Chat Model Select"
+			],
+			[
+				"openAI: C",
+				"OpenAI: Chat Model Select"
+			],
+			[
+				"ope",
+				"OpenAI: Chat Model Select"
+			],
+			[
+				"pa",
+				"Package Control: Install Package"
+			],
+			[
+				"Package Control: ",
+				"Package Control: Install Package"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"insta",
+				"Package Control: Install Package"
+			],
+			[
+				"termin",
+				"Terminus: Open Default Shell in Panel"
+			],
+			[
+				"i",
+				"Package Control: Install Package"
+			],
+			[
+				"ter",
+				"Preferences: Terminus Settings"
+			],
+			[
+				"package control: ",
+				"Package Control: Remove Package"
+			],
+			[
+				"package control",
+				"Package Control: Install Package"
+			],
+			[
+				"install package",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 112.0,
+		"history":
+		[
+			"node -v"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+	],
+	"file_history":
+	[
+		"/Users/artyomantoshkin/server/doro/package-lock.json",
+		"/Users/artyomantoshkin/server/doro/package.json",
+		"/Users/artyomantoshkin/server/doro/README.md",
+		"/Users/artyomantoshkin/server/au/web/src/app/app.module.ts",
+		"/Users/artyomantoshkin/server/au/au.sublime-project",
+		"/Users/artyomantoshkin/server/au/au",
+		"/Users/artyomantoshkin/Desktop/index.html",
+		"/Users/artyomantoshkin/.continue/config.yaml",
+		"/Users/artyomantoshkin/.continue/package.json",
+		"/Users/artyomantoshkin/.continue/config.ts",
+		"/Users/artyomantoshkin/server/doro/back/controllers/event.controller/create-event.ctl.ts",
+		"/Users/artyomantoshkin/server/doro/back/controllers/helpers/calculate-event-status.ts",
+		"/Users/artyomantoshkin/server/doro/back/controllers/helpers/build-tik-events.ts",
+		"/Users/artyomantoshkin/server/doro/back/controllers/event-state.controller/pause-event.ctl.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/services/transition-event/transition-event.service.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/pages/schedule-run/components/base-event/base-event.component.html",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/pages/schedule-run/components/transition-event/transition-event.component.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/pages/schedule-run/components/schedule-run/schedule-run.component.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/pages/schedule-run/components/transition-next/transition-next.component.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/pages/schedule-run/components/transition-event/transition-event.component.html",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/doro.component.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/pages/schedule-run/components/schedule-run/schedule-run.component.html",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/services/schedule/schedule.service.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/services/basic-event/basic-event.types.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/services/basic-event/basic-event.service.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/constants.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/services/core/view-state.type.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/doro.module.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/pages/schedule-run/components/transition-next/transition-next.component.html",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/services/transition-event/transition-event.types.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/pages/schedule-run/components/transition-next/transition-next.helper.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/pages/schedule-run/schedule-run.module.ts",
+		"/Users/artyomantoshkin/server/doro/back/routes/schedule.routes.ts",
+		"/Users/artyomantoshkin/server/doro/back/db-actions/get-event-state.ts",
+		"/Users/artyomantoshkin/server/doro/back/controllers/schedule.controller/index.ts",
+		"/Users/artyomantoshkin/server/doro/back/controllers/schedule.controller.ts",
+		"/Users/artyomantoshkin/server/doro/back/controllers/schedule.controller2/create-schedule.ctl.ts",
+		"/Users/artyomantoshkin/server/doro/back/controllers/schedule.controller2/index.ts",
+		"/Users/artyomantoshkin/server/doro/back/controllers/schedule.controller2/get-schedules.ctl.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/pages/create-event/create-event.component.html",
+		"/Users/artyomantoshkin/server/doro/web/src/app/app.module.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/app.component.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/services/settings/settings.service.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/services/core/compare-config-hash.action.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/services/common-api/common-api.service.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/services/basic-event/basic-event-api.types.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/pages/settings/settings.module.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/pages/settings/settings.component.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/pages/schedule-list/schedule-list.module.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/pages/event-list/components/event-list-event/event-list-event.component.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/pages/event-list/components/event-list/event-list.component.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/pages/create-event/create-event.component.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/pages/create-schedule/create-schedule.component.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/pages/create-schedule/create-schedule.module.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/pages/schedule-run/components/base-event/base-event.component.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/services/core/app-state.service.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/services/schedule.service.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/services/schedule/schedule.types.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/services/transition-event/transition-event.api.types.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/services/event.service.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/services/app-state.service.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/services/api.service.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/helpers/tik-events.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/helpers/filterTransitionEvents.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/helpers/filterBasicEvents.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/services/api/event.types.api.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/services/event/event.types.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/types/view-state.type.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/components/loading/loading.component.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/pages/schedule-run/components/schedule-run/schedule-run.component.scss",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/components/loading/loading.component.scss",
+		"/Users/artyomantoshkin/server/doro/back/types/event-state.api.types.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/types/event-state.api.types.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/pages/timer/components/timer-wrapper/timer-wrapper.component.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/types/event.types.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/services/next-event/next-event.service.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/services/next-event/next-event.types.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/services/next-event.service.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/components/timer/timer.component.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/pages/next-event/next-event.component.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/pages/schedule-run/schedule-run.component.html",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/pages/schedule-run/schedule-run.component.ts",
+		"/Users/artyomantoshkin/server/doro/back/types/event-state.types.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/helpers/observable-variable.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/pages/timer/timer.module.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/pages/next-event/next-event.component.html",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/pages/schedule-run/components/transition/transition.component.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/pages/schedule-run/components/transition/transition.module.ts",
+		"/Users/artyomantoshkin/server/doro/back/core/db_connection.ts",
+		"/Users/artyomantoshkin/server/doro/back/db-actions/create-event.ts",
+		"/Users/artyomantoshkin/server/doro/back/controllers/outer-sync.service.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/services/router.service.ts",
+		"/Users/artyomantoshkin/server/doro/back/db-actions/upsert-event-state.ts",
+		"/Users/artyomantoshkin/server/doro/back/db-actions/get-accessible-event.ts",
+		"/Users/artyomantoshkin/server/doro/back/db-actions/add-event-state-history.ts",
+		"/Users/artyomantoshkin/server/doro/back/db-actions/get-event-state-history.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/helpers/filterStreamDataEntries.ts",
+		"/Users/artyomantoshkin/server/doro/back/controllers/event-state-hook.controller.ts",
+		"/Users/artyomantoshkin/server/doro/back/routes/eventStateRoutes.ts",
+		"/Users/artyomantoshkin/server/doro/back/controllers/event-state.controller/play-or-duplicate-event.ctl.ts",
+		"/Users/artyomantoshkin/server/doro/back/controllers/helpers/calculate-event-status.ts.ts",
+		"/Users/artyomantoshkin/server/doro/back/README.md",
+		"/Users/artyomantoshkin/server/doro/back/db-actions/update-event.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/pages/timer/components/timer-wrapper/timer-wrapper.component.html",
+		"/Users/artyomantoshkin/server/doro/back/types/event.types.ts",
+		"/Users/artyomantoshkin/server/doro/back/utils/ensureArray.ts",
+		"/Users/artyomantoshkin/server/doro/back/controllers/event-state.controller/index.ts",
+		"/Users/artyomantoshkin/server/doro/back/controllers/event-state.controller/stop-event-run-hooks.ts",
+		"/Users/artyomantoshkin/server/doro/back/app.ts",
+		"/Users/artyomantoshkin/server/doro/back/controllers/event.controller/delete-event.ctl.ts",
+		"/Users/artyomantoshkin/server/doro/web/src/app/doro/pages/timer/components/timer-wrapper/timer-wrapper.component.scss",
+		"/Users/artyomantoshkin/server/tik/back/src/controllers/outerEventsStateController.ts",
+		"/Users/artyomantoshkin/server/tik/back/src/controllers/poolConfigService.ts",
+		"/Users/artyomantoshkin/server/doro/back/routes/outer-api.routes.ts",
+		"/Users/artyomantoshkin/server/doro/back/controllers/event-state.controller/update-event-state.ctl.ts",
+		"/Users/artyomantoshkin/server/doro/back/db-actions/get-event.db.ts",
+		"/Users/artyomantoshkin/server/doro/back/db-actions/get-event-state-hooks.ts",
+		"/Users/artyomantoshkin/server/doro/back/controllers/event-state.controller/get-events-with-status.ctl.ts",
+		"/Users/artyomantoshkin/server/doro/back/controllers/event.controller/get-event.ctl.ts",
+		"/Users/artyomantoshkin/server/tik/back/src/pool-manager.ts",
+		"/Users/artyomantoshkin/server/doro/back/types/db-action.types.ts",
+		"/Users/artyomantoshkin/server/doro/back/types/controller.types.ts",
+		"/Users/artyomantoshkin/server/doro/back/controllers/config-manager.ts",
+		"/Users/artyomantoshkin/server/doro/back/controllers/access-level.controller.ts",
+		"/Users/artyomantoshkin/server/doro/back/controllers/eventStateController.ts",
+		"/Users/artyomantoshkin/server/doro/back/controllers/schedule.controller2/suggest-rest.ctl.ts",
+		"/Users/artyomantoshkin/server/doro/back/db-actions/delete-event.ts",
+		"/Users/artyomantoshkin/server/doro/back/db-actions/delete-finished-events.ts"
+	],
+	"find":
+	{
+		"height": 26.0
+	},
+	"find_in_files":
+	{
+		"height": 98.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": true,
+		"find_history":
+		[
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"scrollbar_highlights": true,
+		"show_context": true,
+		"use_buffer2": true,
+		"use_gitignore": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 26.0
+	},
+	"input":
+	{
+		"height": 38.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.AI Chat":
+	{
+		"height": 124.0,
+		"history":
+		[
+		]
+	},
+	"output.LSP Log Panel":
+	{
+		"height": 0.0,
+		"history":
+		[
+		]
+	},
+	"output.Terminus":
+	{
+		"height": 573.0,
+		"history":
+		[
+		]
+	},
+	"output.Terminus 1":
+	{
+		"height": 108.0,
+		"history":
+		[
+		]
+	},
+	"output.Terminus 2":
+	{
+		"height": 108.0
+	},
+	"output.diagnostics":
+	{
+		"height": 0.0,
+		"history":
+		[
+		]
+	},
+	"output.doc":
+	{
+		"height": 0.0,
+		"history":
+		[
+		]
+	},
+	"output.exec":
+	{
+		"height": 34.0,
+		"history":
+		[
+		]
+	},
+	"output.find_results":
+	{
+		"height": 124.0,
+		"history":
+		[
+		]
+	},
+	"output.mdpopups":
+	{
+		"height": 0.0,
+		"history":
+		[
+		]
+	},
+	"pinned_build_system": "",
+	"project": "doro.sublime-project",
+	"replace":
+	{
+		"height": 48.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"routes/authToken",
+				"back/routes/authToken.ts"
+			],
+			[
+				"src/app/doro/widgets/event-list/event-list.component.ts",
+				"web/src/app/doro/widgets/event-list/event-list.component.ts"
+			],
+			[
+				"core.service",
+				"web-host/src/app/services/core.service.ts"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 29.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 592.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+		"lsp_show_inlay_hints": false
+	},
+	"show_minimap": false,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 208.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
