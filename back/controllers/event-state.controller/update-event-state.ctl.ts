@@ -31,13 +31,13 @@ export const updateEventStateCtl = async (
             throw new Error(formatBulkErrors(getAccessibleEventResult));
         }
 
-        upsertStateResult = await bulkUpsertEventState(connection, eventStates) // todo add false return if no updated
+        //upsertStateResult = await bulkUpsertEventState(connection, eventStates) // todo add false return if no updated
             
         if (!upsertStateResult.success) {
             throw new Error('state is not updated');
         }
             
-        addEventStateHistoryResult = await bulkAddEventStateHistory(connection, eventStates)
+        //addEventStateHistoryResult = await bulkAddEventStateHistory(connection, eventStates)
         // debugger;
         const eventsArr = Array.from(getAccessibleEventResult.results.values());
         const minProps = eventsArr.map(e => toMinProps(e as EventPropsDbItem));

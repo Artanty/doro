@@ -2,18 +2,18 @@ import express from 'express'
 import { EventController } from '../controllers/event.controller';
 import { handleError } from '../utils/handleError'
 import { getUserFromRequest } from '../utils/getUserFromRequest';
+import { CreateEventReq } from '@contracts/event.contract';
+import typia from 'typia';
+const assertCreateEvent = typia.createAssert<CreateEventReq>();
+
 const router = express.Router();
 
 router.post('/create', async (req, res) => {
   try {
-    const { name, length, type, base_access, state, hooks, created_from,
-      schedule_id, schedule_position
-    } = req.body;
+    assertCreateEvent(req.body);
+
     const user = getUserFromRequest(req);
-    const result = await EventController.createEvent(
-      name, length, type, user, base_access, state, hooks, created_from,
-      schedule_id, schedule_position
-    );
+    const result = await EventController.createEvent({ ...req.body, userHandler: user });
     res.status(201).json(result);
   } catch (error: unknown) {
     res.status(500).json({ error: (error as any)?.message ? (error as any).message : error });

@@ -12,7 +12,7 @@ import { ApiService } from './services/common-api/common-api.service';
 import { CompareConfigHashAction } from './services/core/compare-config-hash.action';
 import { SetConfigHashAction } from './services/core/set-config-hash.action';
 import { StorageService } from './services/core/storage.service';
-import { EventTypeService } from './services/event-type.service';
+
 import { ScheduleService } from './services/schedule/schedule.service';
 import { SettingsService } from './services/settings/settings.service';
 import { TransitionEventService } from './services/transition-event/transition-event.service';
@@ -93,7 +93,7 @@ export const CHILD_ROUTES = [
     EventService,
     TransitionEventService,
     AccessLevelService,
-    EventTypeService,
+    
     ScheduleService,
     ApiService,
     StorageService,

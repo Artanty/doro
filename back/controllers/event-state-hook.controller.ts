@@ -1,13 +1,8 @@
 import { eventProgress } from "../core/constants";
 import { addEventStateHistory } from "../db-actions/add-event-state-history";
-import { createEvent } from "../db-actions/create-event";
 import { upsertEventAccess } from "../db-actions/upsert-event-access";
-import { upsertEventState } from "../db-actions/upsert-event-state";
-import { dd } from "../utils/dd";
 import { thisProjectResProp } from "../utils/getResProp";
-import { ConfigManager } from "./config-manager";
 import { OuterEntry, OuterSyncService } from "./outer-sync.service";
-
 
 export interface EventStateHook {
 	id: number;
@@ -79,12 +74,12 @@ export class EventStateHookController {
 								// next_event_type: 3,
 								// next_event_length: 86400,
 							}
-							const created_from = `h_${hook.id}`;
+							// const created_from = `h_${hook.id}`;
 
 							hookResult = await this.createTransitionEvent(
 								connection, 
 								hook.event_id,
-								created_from,
+								// created_from,
 								config,
 							);
 						}
@@ -137,7 +132,7 @@ export class EventStateHookController {
 	static async createTransitionEvent(
 		connection: any, 
 		eventId: number,
-		created_from: string,
+		// created_from: string,
 		config?: any
 	): Promise<CreateTransitionEvent> {
 		
@@ -166,20 +161,20 @@ export class EventStateHookController {
 			const transitionEventState = eventProgress.PLAYING; // 1 = PLAYING
 			const transitionEventLength = config?.next_event_length || 86400; // 1 day default
 
-			createEventResult = await createEvent(
-				connection, 
-				`On finish: ${sourceEvent.name}`, 
-				transitionEventLength, 
-				transitionEventType, 
-				sourceEvent.created_by, 
+			// createEventResult = await createEvent(
+			// 	connection, 
+			// 	`On finish: ${sourceEvent.name}`, 
+			// 	transitionEventLength, 
+			// 	transitionEventType, 
+			// 	sourceEvent.created_by, 
 
-				sourceEvent.schedule_id, // schedule_id: 
-				999, //schedule_position
+			// 	sourceEvent.schedule_id, // schedule_id: 
+			// 	999, //schedule_position
 
-				sourceEvent.base_access_id,
-				created_from,
-				transitionEventState
-			);
+			// 	sourceEvent.base_access_id,
+			// 	created_from,
+			// 	transitionEventState
+			// );
 			
 			if (createEventResult.error) {
 				throw new Error(createEventResult.error);
@@ -195,7 +190,10 @@ export class EventStateHookController {
 				3
 			);
 			
-			addHistoryResult = await addEventStateHistory(connection, eventId, transitionEventState)
+			const is_playing = Number(transitionEventState) !== 0;
+			const playhead = -1;
+
+			addHistoryResult = await addEventStateHistory(connection, eventId, is_playing, playhead);
 			
 			const eventsPayload: any[] = OuterSyncService.buildNewOuterEventPayload(
 				transitionEventId, 

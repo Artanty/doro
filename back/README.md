@@ -23,10 +23,13 @@ CREATE TABLE accessLevels (
  CREATE TABLE schedules (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL,
+    active_event_id INT NOT NULL,
+    is_playing BOOLEAN NOT NULL,
     created_by VARCHAR(255) NOT NULL COMMENT 'user_handler',
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL,
     INDEX idx_created_by (created_by)
+    
 );
 
 CREATE TABLE eventStatesDictionary (

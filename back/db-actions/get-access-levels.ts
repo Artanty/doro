@@ -1,5 +1,5 @@
 import { dd } from "../utils/dd";
-import { DbActionResult } from "./create-event";
+import { DbActionResult } from "./create-event.db";
 
 export const getAccessLevels = async (connection): Promise<DbActionResult> => {
 	const res = {

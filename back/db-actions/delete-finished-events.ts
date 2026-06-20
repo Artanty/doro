@@ -1,7 +1,7 @@
 import { dd } from "../utils/dd";
 import { getUTCDatetime } from "../utils/get-utc-datetime";
 import { Nullable } from "../utils/utility.types";
-import { DbActionResult } from "./create-event";
+import { DbActionResult } from "./create-event.db";
 
 export const deleteFinishedEvents = async (
 	connection: any,

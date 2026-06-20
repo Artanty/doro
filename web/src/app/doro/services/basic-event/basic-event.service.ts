@@ -72,8 +72,8 @@ export class EventService {
       )
   }
 
-  public playEvent(eventId: number, isGuiEvent: boolean): void {
-    this._api.playEventApi({ "eventId": eventId }).pipe(
+  public playEvent(eventId: number, scheduleId: number): void {
+    this._api.playEventApi({ "eventId": eventId, scheduleId: scheduleId }).pipe(
       catchError(error => {
         console.error('Failed to play event:', error);
         return throwError(() => new Error(`Failed to play event ${eventId}: ${error.message}`));

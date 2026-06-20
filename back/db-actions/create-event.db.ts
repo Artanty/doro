@@ -1,5 +1,4 @@
 import { dd } from "../utils/dd";
-import { getUTCDatetime } from "../utils/get-utc-datetime";
 import { Nullable } from "../utils/utility.types";
 
 export interface DbActionResult<T = any> {
@@ -9,15 +8,17 @@ export interface DbActionResult<T = any> {
 }
 
 export interface BulkCreateEventItem {
-	name: string;
-	length: number;
-	type: number;
-	schedule_id: number;
-	schedule_position: number;
-	base_access?: number;
-	created_from?: string;
-	event_state_id?: number;
+	name: string,
+	length: number,
+	playhead: number,
+	is_rest: boolean,
+	
+	schedule_id: number,
+	schedule_position: number,
+	
+	is_public: boolean,
 }
+
 
 export interface BulkCreateEventResult {
 	success: boolean;
@@ -25,7 +26,7 @@ export interface BulkCreateEventResult {
 	debug?: any;
 }
 
-export const bulkCreateEvents = async (
+export const bulkCreateEventsDb = async (
 	connection: any,
 	userHandler: string,
 	events: BulkCreateEventItem[]
@@ -53,20 +54,20 @@ export const bulkCreateEvents = async (
 			values.push(
 				event.name,
 				event.length,
-				event.type,
-				getUTCDatetime(),
-				userHandler,
-				event.base_access || 0,
-				event.created_from || '',
+				event.playhead,
+				event.is_rest,
+				
 				event.schedule_id,
 				event.schedule_position,
-				event.event_state_id || 0
+
+				event.is_public,
+				userHandler,
 			);
-			return '(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+			return '(?, ?, ?, ?, ?, ?, ?, ?)';
 		}).join(',');
 
 		const [bulkResult] = await connection.execute(
-			`INSERT INTO events (name, length, type, created_at, created_by, base_access_id, created_from, schedule_id, schedule_position, event_state_id) 
+			`INSERT INTO events (name, length, playhead, is_rest, schedule_id, schedule_position, is_public, created_by) 
 			 VALUES ${valuePlaceholders}`,
 			values
 		);
@@ -98,19 +99,19 @@ export const bulkCreateEvents = async (
 	}
 }
 
-// Keep the original single create function
-export const createEvent = async (
+export const createEventDb = async (
 	connection: any, 
+	userHandler: string,
+
 	name: string,
 	length: number,
-	type: number,
-	userHandler: string,
+	playhead: number,
+	is_rest: boolean,
+	
 	schedule_id: number,
 	schedule_position: number,
 	
-	base_access: number = 0,
-	created_from: string = '',
-	event_state_id: number = 0
+	is_public: boolean,
 ): Promise<DbActionResult> => {
 
 	const res: any = {
@@ -121,8 +122,8 @@ export const createEvent = async (
 	
 	try {
 		const [eventResult] = await connection.execute(
-			'INSERT INTO events (name, length, type, created_at, created_by, base_access_id, created_from, schedule_id, schedule_position, event_state_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-			[name, length, type, getUTCDatetime(), userHandler, base_access, created_from, schedule_id, schedule_position, event_state_id]
+			'INSERT INTO events (name, length, playhead, is_rest, schedule_id, schedule_position, is_public, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+			[name, length, playhead, is_rest, schedule_id, schedule_position, is_public, userHandler]
 		);
                 
 		res.success = true;

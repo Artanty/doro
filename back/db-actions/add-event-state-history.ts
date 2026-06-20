@@ -17,7 +17,7 @@ interface BulkAddEventStateHistoryResult {
 
 export const bulkAddEventStateHistory = async (
 	connection: any, 
-	eventStates: Array<{ eventId: any, state: any }>
+	eventStates: { eventId: any, is_playing: boolean, playhead: number }[]
 ): Promise<BulkAddEventStateHistoryResult> => {
 	
 	const result = {
@@ -36,12 +36,12 @@ export const bulkAddEventStateHistory = async (
 		// Build bulk insert query
 		const values: any[] = [];
 		const valuePlaceholders = eventStates.map(es => {
-			values.push(es.eventId, es.state, getUTCDatetime());
-			return '(?, ?, ?)';
+			values.push(es.eventId, es.is_playing, es.playhead, getUTCDatetime());
+			return '(?, ?, ?, ?)';
 		}).join(',');
 		
 		const [bulkResult] = await connection.execute(
-			`INSERT INTO eventStateHistory (eventId, event_state_id, created_at) 
+			`INSERT INTO eventStateHistory (eventId, is_playing, playhead, created_at) 
 			 VALUES ${valuePlaceholders}`,
 			values
 		);
@@ -91,10 +91,15 @@ export const bulkAddEventStateHistory = async (
 export const addEventStateHistory = async (
 	connection: any, 
 	eventId: any, 
-	state: any, 
+	is_playing: any , //boolean,
+	playhead?: number
 ): Promise<AddEventStateHistoryResult> => {
-
-	const bulkResult = await bulkAddEventStateHistory(connection, [{ eventId, state }]);
+	// quick fix! todo it. is_playing === state
+	if (!playhead) {
+		is_playing = Number(is_playing) === 1;
+		playhead = -1;
+	}
+	const bulkResult = await bulkAddEventStateHistory(connection, [{ eventId, is_playing, playhead }]);
 	
 	if (bulkResult.success && bulkResult.results.has(eventId)) {
 		const eventResult = bulkResult.results.get(eventId);
@@ -115,7 +120,7 @@ export const addEventStateHistory = async (
 // Optional: Advanced version with batch processing for very large datasets
 export const bulkAddEventStateHistoryBatched = async (
 	connection: any, 
-	eventStates: Array<{ eventId: any, state: any }>,
+	eventStates: Array<{ eventId: any, is_playing: boolean, playhead: number }>,
 	batchSize: number = 100
 ): Promise<BulkAddEventStateHistoryResult> => {
 	

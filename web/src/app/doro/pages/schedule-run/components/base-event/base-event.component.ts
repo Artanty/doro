@@ -42,7 +42,7 @@ export class BaseEventComponent {
   }
 
   playEvent(isGuiEvent = true): void {
-    this.eventService.playEvent(this.eventProps.id, isGuiEvent)
+    this.eventService.playEvent(this.eventProps.id, this.eventProps.schedule_id)
   }
 
   pauseEvent() {

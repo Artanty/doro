@@ -1,6 +1,6 @@
 import { DEFAULT_DURATIONS, SESSIONS_BEFORE_LONG_BREAK } from "../core/constants";
 import { dd } from "../utils/dd";
-import { DbActionResult } from "./create-event";
+import { DbActionResult } from "./create-event.db";
 
 
 // Event type constants

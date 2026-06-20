@@ -62,7 +62,7 @@ export const bulkUpsertEventState = async (
 				});
 				result.success = false;
 			}
-		}
+		} 
 
 		// Filter out invalid events
 		const validEventStates = eventStates.filter(es => currentStateMap.has(es.eventId));
@@ -75,7 +75,7 @@ export const bulkUpsertEventState = async (
 		// REMOVED: Active event check for schedule_id
 		// Now allows activating multiple events without restrictions
 
-		// Separate states that need updating from those that don't
+		// Отделяем стейты, которые нужно обновить
 		const statesToUpdate: Array<{ eventId: any, state: any }> = [];
 		
 		for (const es of validEventStates) {
@@ -186,7 +186,6 @@ export const bulkUpsertEventState = async (
 	}
 }
 
-// Keep the original function for backward compatibility
 export const upsertEventState = async (
 	connection: any, 
 	eventId: any, 

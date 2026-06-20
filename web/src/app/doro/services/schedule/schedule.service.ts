@@ -112,4 +112,13 @@ export class ScheduleService {
 	// 		return Number(b.schedule_position) - Number(a.schedule_position)
 	// 	});
 	// }
+
+	public createSchedule (): Observable<{data: number}> {
+		const now = new Date();
+		const payload = {
+			name: now.toTimeString().slice(0, 5),
+		}
+	
+		return this.http.post<{data: number}>(`${this.doroBaseUrl}/schedule/create`, payload)
+	}
 }

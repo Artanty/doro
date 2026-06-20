@@ -24,8 +24,8 @@ router.post('/set-event-state', async (req, res) => {
 router.post('/play', async (req, res) => {
   try {
     const user = getUserFromRequest(req);
-    const { eventId } = req.body;
-    const result = await EventStateController.playOrDuplicateEvent(user, eventId);
+    const { eventId, scheduleId } = req.body;
+    const result = await EventStateController.playOrDuplicateEvent(user, eventId, scheduleId);
     res.json(result);
   } catch (error) {
     handleError(res as unknown as Response, error) 

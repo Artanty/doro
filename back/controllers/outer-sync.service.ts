@@ -198,8 +198,11 @@ export class OuterSyncService {
 			
 			upsertStateResult = await upsertEventState(connection, eventId, state)
 			
+			const is_playing = state !== 0;
+			const playhead = -1;
+
 			if (upsertStateResult.isStateUpdated) {
-				addEventStateHistoryResult = await addEventStateHistory(connection, eventId, state)    
+				addEventStateHistoryResult = await addEventStateHistory(connection, eventId, is_playing, playhead)    
 			}
 			await connection.commit();
 			connection.release();

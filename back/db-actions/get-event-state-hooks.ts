@@ -117,7 +117,6 @@ export const getEventStateHooks = async (
 	return res;
 };
 
-// Convenience function to get hooks by state
 export const getEventStateHooksByState = async (
 	connection: any,
 	eventId: number,

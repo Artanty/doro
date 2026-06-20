@@ -1,7 +1,8 @@
 import { EventProgressType } from "../../constants"
 
 export interface SetPlayEventStateReq {
-	"eventId": number
+	eventId: number,
+	scheduleId: number,
 }
 
 export interface CreateEventReqHook {
@@ -15,10 +16,13 @@ export interface CreateEventReqHook {
 export interface CreateEventReq {
 	name: string
 	length: number
-	type: number
-	base_access: number
-	state: EventProgressType,
-	"hooks": CreateEventReqHook[],
-	schedule_id?: number,
+	is_rest: boolean,
+	is_playing: boolean,
+	playhead: number,
+	
+	schedule_id: number,
+	is_public: boolean,
+
+	hooks: CreateEventReqHook[],
 	schedule_position?: number,
 };

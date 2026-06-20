@@ -5,8 +5,6 @@ import { map, Observable } from "rxjs";
 export interface AccessLevel {
 	id: number;
 	name: string;
-	description: string;
-	sort_order: number;
 }
 @Injectable(
 	// {

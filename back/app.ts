@@ -1,6 +1,6 @@
 import express from 'express'
 import dotenv from 'dotenv'
-import eventTypeRoutes from './routes/eventTypeRoutes'
+
 import eventRoutes from './routes/event.routes'
 import saveTempRoutes from './routes/saveTempRoutes'
 import cookieParser from 'cookie-parser'
@@ -29,7 +29,7 @@ app.use(cookieParser());
 app.use(cors()) // todo dev only
 
 app.use('/access-level', accessLevelRoutes);
-app.use('/eventType', eventTypeRoutes);
+
 app.use('/event', validateUserAccessToken, injectConfigHashMiddleware, eventRoutes);
 app.use('/event-state', validateUserAccessToken, injectConfigHashMiddleware, eventStateRoutes);
 app.use('/schedule', validateUserAccessToken, injectConfigHashMiddleware, scheduleRoutes);

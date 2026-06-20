@@ -50,29 +50,7 @@
           </small>
         </div>
 
-        <!-- Статус события -->
-        <div class="form-group">
-          <label for="name">Статус события:</label>
-          <select 
-            id="state" 
-            name="state" 
-            [(ngModel)]="eventData.state" 
-            required
-            class="form-control"
-            [class.is-invalid]="submitted && !eventData.state"
-          >
-            <option value="" disabled selected>Выберите статус</option>
-            <option *ngFor="let stateItem of eventStates" [value]="stateItem.id"
-            [disabled]="stateItem.id !== 0">
-              {{ stateItem.name }} @if(stateItem.id !== 0){ <span>[v2.2]</span> }
-            </option>
-          </select>
-          <div class="invalid-feedback" *ngIf="submitted && !eventData.state">
-            Выберите статус события
-          </div>
-        </div>
-
-        <!-- Тип события -->
+         <!-- Тип события -->
         <div class="form-group">
           <label for="type">Тип события:</label>
           <select 
@@ -84,16 +62,29 @@
             [class.is-invalid]="submitted && !eventData.type"
           >
             <option value="" disabled selected>Выберите тип</option>
-            <!-- <option *ngFor="let type of eventTypes" [value]="type.id"
+            <option *ngFor="let type of eventTypes" [value]="type.id"
             >
               {{ type.name }}
-            </option> -->
+            </option>
           </select>
           <div class="invalid-feedback" *ngIf="submitted && !eventData.type">
             Выберите тип события
           </div>
         </div>
 
+        <!-- Запустить после создания -->
+        <div class="row">
+          <input 
+            type="checkbox" 
+            id="isPlaying" 
+            name="isPlaying"  
+            [(ngModel)]="eventData.isPlaying"
+            class="form-check-input"
+          >
+          <label for="isPlaying" class="form-check-label">Запустить после создания</label>
+        </div>
+
+        <!-- Расписание -->
         <div class="form-group">
           <label for="type">Расписание:</label>
           <select 
@@ -146,8 +137,7 @@
         <div *ngIf="successMessage" class="alert alert-success">
           <strong>Событие создано!</strong>
           <div>ID: {{ createdEventId }}</div>
-          <div>Название: {{ createdEventName }}</div>
-          <!-- <div>Доступ: {{ getAccessLabel(eventData.base_access_id) }}</div> -->
+          <div>Название: {{ createdEventName }}</div>          
         </div>
 
         <!-- Кнопки -->

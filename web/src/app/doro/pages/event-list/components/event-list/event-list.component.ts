@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef } from "@angular/core";
-import { Router } from "@angular/router";
+import { ActivatedRoute, Router } from "@angular/router";
 import { Observable, BehaviorSubject, combineLatest, map, tap, take } from "rxjs";
 import { filterBasicEvents } from "src/app/doro/helpers/filterBasicEvents";
 import { Nullable } from "src/app/doro/helpers/utility.types";
@@ -33,6 +33,13 @@ export class EventListComponent implements OnInit {
    * */
   ngOnInit() {
     // this.eventService.loadEvents().subscribe();
+    this.route.paramMap.subscribe(params => {
+      const scheduleId = params.get('id');
+      
+      if (scheduleId) {
+        this.switchToSchedule({ data: scheduleId })
+      }
+    });
   }
 
   constructor(
@@ -40,7 +47,8 @@ export class EventListComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private router: Router,
     private _state: AppStateService,
-    private _scheduleService: ScheduleService
+    private _scheduleService: ScheduleService,
+    private route: ActivatedRoute
   ) {
     this.events$ = combineLatest([
       this._state.events.listen(),

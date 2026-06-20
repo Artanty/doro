@@ -2,7 +2,7 @@ import { EventStateHistoryDbItem } from "../types/event-state-history.types";
 import { MinimalEventProps } from "../types/event-state.types";
 import { dd } from "../utils/dd";
 import { Nullable } from "../utils/utility.types";
-import { DbActionResult } from "./create-event";
+import { DbActionResult } from "./create-event.db";
 
 export const getEventStateHistory = async (
 	connection, 

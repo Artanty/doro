@@ -148,11 +148,14 @@ export class TransitionNextComponent implements OnInit {
       const eventToCreate: CreateEventReq = {
         name: `empty event`,
         length: nextEventData.length,
-        type: nextEventData.type,
-        base_access: DEFAULT_USER_BASE_ACCESS_ID,
-        state: EventProgress.PLAYING,
-        hooks: DEFAULT_EVENT_STATE_HOOKS,
+        is_rest: nextEventData.type === 2,
+        is_playing: true,
+        playhead: 0,
+
         schedule_id: nextEventData.endedEvent.schedule_id,
+        is_public: false,
+
+        hooks: DEFAULT_EVENT_STATE_HOOKS,
       };
       this._basicEventService
         .createEvent(eventToCreate)

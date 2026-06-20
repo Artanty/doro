@@ -1,4 +1,6 @@
-import { Component, OnInit } from "@angular/core";
+import { ChangeDetectorRef, Component, OnInit } from "@angular/core";
+import { ScheduleService } from "../../services/schedule/schedule.service";
+import { dd } from "../../helpers/dd";
 
 export interface CreateScheduleReq {
 	work: number,
@@ -21,6 +23,14 @@ export class CreateScheduleComponent implements OnInit {
 		bigRestStep: 4,
 		cycles: 3,
 	}
+	
+	public createdEmptyResult: null | string = null
+
+	constructor (
+		private _scheduleService: ScheduleService,
+		 private cdr: ChangeDetectorRef,
+	) {}
+
 	ngOnInit(): void {
 		//
 	}
@@ -33,5 +43,15 @@ export class CreateScheduleComponent implements OnInit {
     
 	onSubmit(): void {
 		console.log(this.scheduleConfig);
+	}
+
+	onCreateEmptySchedule () {
+		this.isLoading = true;
+		this._scheduleService.createSchedule().subscribe(res => {
+			dd(res);
+			this.isLoading = false;
+			this.createdEmptyResult = '/doro/event-list/' + res.data;
+			this.cdr.detectChanges()
+		})
 	}
 }

@@ -1,5 +1,5 @@
 import { eventProgress } from "../../core/constants";
-import { DbActionResult } from "../../db-actions/create-event";
+import { DbActionResult } from "../../db-actions/create-event.db";
 import { GetEventStateResult, getEventState } from "../../db-actions/get-event-state";
 import { getEventStateHistory } from "../../db-actions/get-event-state-history";
 import { MinimalEventProps, EventStatus, ActionResult } from "../../types/event-state.types";

@@ -58,5 +58,31 @@
   [outputs]="{click: onSubmit.bind(this)}"
 >
   <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
-  Сохранить
+  Создать таймер
 </button>
+
+<div [style.height.px]="'20'"></div>
+<div [class.row]="createdEmptyResult">
+  <button gui
+    type="button" 
+    [inputs]="{
+      label: isLoading ? 'Создание...' : 'Создать пустой таймер',
+      disabled: isLoading,
+    }"
+    [outputs]="{click: onCreateEmptySchedule.bind(this)}"
+  >
+    <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+    Создать пустой таймер
+  </button>
+
+  <button gui type="button" *ngIf="createdEmptyResult"
+    [inputs]="{
+      label: 'Перейти',
+      disabled: isLoading,
+      routerLink: createdEmptyResult
+    }"
+  ></button>
+  
+</div>
+
+

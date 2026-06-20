@@ -4,6 +4,7 @@ import { CreateEventReq } from "../basic-event/basic-event-api.types";
 import { EventStateReq } from "../basic-event/basic-event.types";
 import { ApiService } from "../common-api/common-api.service";
 import { AppStateService } from "../core/app-state.service";
+import { TransitionToFinishReq, EventToDuplicateReq } from "./transition-event.api.types";
 
 
 @Injectable()
@@ -49,7 +50,10 @@ export class TransitionEventService {
 		);
 	}
 
-	public finishTransitionAndPlayDuplicatedEvent(idToFinish: number, idToDuplicate: number): Observable<any> {
+	public finishTransitionAndPlayDuplicatedEvent(
+		idToFinish: TransitionToFinishReq,
+		eventToDuplicate: EventToDuplicateReq
+	): Observable<any> {
 		const payload: EventStateReq = {
 			eventStates: [
 				{
@@ -60,7 +64,10 @@ export class TransitionEventService {
 		};
 		return this._api.setEventStateApi(payload).pipe(
 			concatMap(() => {
-				return this._api.playEventApi({ eventId: idToDuplicate }).pipe(
+				return this._api.playEventApi({ 
+					eventId: eventToDuplicate.id,
+					scheduleId: eventToDuplicate.scheduleId
+				}).pipe(
 					// 	tap(() => {
 					// 	this._state.configHash.next(999);
 					// })

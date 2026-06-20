@@ -1,50 +1,42 @@
-import { HttpClient } from "@angular/common/http";
 import { Component, OnInit, Input, ChangeDetectorRef } from "@angular/core";
-import { EventType, Router } from "@angular/router";
 import { Observable } from "rxjs";
-import { EventProgressType, DEFAULT_EVENT_STATE_HOOKS } from "../../constants";
-import { AccessLevel, AccessLevelService } from "../../services/access-level.service";
+import { DEFAULT_EVENT_STATE_HOOKS } from "../../constants";
+import { AccessLevel } from "../../services/access-level.service";
 import { CreateEventReq } from "../../services/basic-event/basic-event-api.types";
 import { EventService } from "../../services/basic-event/basic-event.service";
 import { Schedule } from "../../services/basic-event/basic-event.types";
-import { EventTypeService } from "../../services/event-type.service";
 import { ScheduleService } from "../../services/schedule/schedule.service";
+import { dd } from "../../helpers/dd";
 
 
 @Component({
   selector: 'app-create-event',
   standalone: false,
-  // imports: [CommonModule, FormsModule],
   templateUrl: './create-event.component.html',
   styleUrl: './create-event.component.scss',
 })
 export class CreateEventComponent implements OnInit {
-  @Input() scheduleId?: string; // Automatically binds to the 'filter' query param
+  @Input() scheduleId?: string;
 
   // Данные события
   eventData = {
     name: '',
     length: 3600, // 1 час по умолчанию
     type: 1, // work
-    base_access: 1, // Значение по умолчанию
-    state: 0,
+    isPlaying: true,
     schedule_id: 1,
+    base_access: false
   };
 
   // Список типов событий
-  eventTypes: EventType[] = [];
-
-  eventStates = [
-    { id: 0, name: 'Остановлено' },
-    { id: 1, name: 'Проигрывается' },
-    { id: 2, name: 'На паузе' },
-    { id: 3, name: 'Завершено' },
-  ]
+  eventTypes: any[] = [{id: 1,name: 'Работа' },{id: 2,name: 'Отдых'}];
 
   // Уровни доступа
-  accessLevels: AccessLevel[] = [];
+  accessLevels: AccessLevel[] = [
+    { id: 1, name: 'Личный' },
+    { id: 2, name: 'Публичный' },
+  ];
 
-  // Состояние компонента
   isLoading = false;
   submitted = false;
   errorMessage = '';
@@ -54,33 +46,14 @@ export class CreateEventComponent implements OnInit {
   public schedules$: Observable<Schedule[]>
 
   constructor(
-    private http: HttpClient,
     private cdr: ChangeDetectorRef,
-    private router: Router,
     private _eventService: EventService,
-    private _accessLevelService: AccessLevelService,
-    private _eventTypeService: EventTypeService,
     private _scheduleService: ScheduleService
   ) {
     this.schedules$ = this._scheduleService.getSchedules()
   }
 
   ngOnInit(): void {
-    this._eventTypeService.getEventTypes().subscribe((res: any) => {
-      this.eventTypes = res;
-    })
-    this._accessLevelService.getAccessLevels()
-      .subscribe(res => {
-        this.accessLevels = res.slice(0, 2).map(el => {
-          return {
-            id: el.id, 
-            name: el.description,
-            description: el.description,
-            sort_order: el.sort_order
-          }
-        });
-        this.cdr.detectChanges()
-      });
   }
   // Отправка формы
   onSubmit() {
@@ -101,13 +74,16 @@ export class CreateEventComponent implements OnInit {
     const payload: CreateEventReq = {
       name: this.eventData.name,
       length: Number(this.eventData.length),
-      type: Number(this.eventData.type),
-      base_access: this.eventData.base_access,
-      state: this.eventData.state as EventProgressType,
-      hooks: DEFAULT_EVENT_STATE_HOOKS,
-      schedule_id: this.eventData.schedule_id,
-    };
+      is_rest: Number(this.eventData.type) === 2,
+      is_playing: this.eventData.isPlaying,
+      playhead: 0,
 
+      schedule_id: this.eventData.schedule_id,
+      is_public: this.eventData.base_access, 
+
+      hooks: DEFAULT_EVENT_STATE_HOOKS,
+    };
+    
     this._eventService.createEvent(payload).pipe().subscribe({
       next: (response: any) => {
 
@@ -139,10 +115,10 @@ export class CreateEventComponent implements OnInit {
     this.eventData = {
       name: '',
       length: 3600,
-      type: 2,
-      base_access: 1,
-      state: 0,
+      type: 1,
+      isPlaying: true,
       schedule_id: 1,
+      base_access: false,
     };
     this.submitted = false;
     this.errorMessage = '';
@@ -166,11 +142,5 @@ export class CreateEventComponent implements OnInit {
     } else {
       return `${this.eventData.length} секунд`;
     }
-  }
-
-  // Получение названия уровня доступа
-  getAccessLabel(value: number): string {
-    const access = this.accessLevels.find(a => a.id === value);
-    return access ? access.name : 'Не указано';
   }
 }

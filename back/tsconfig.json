@@ -7,17 +7,32 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
+    "strictNullChecks": true,
+    "plugins": [
+      {
+        "transform": "typia/lib/transform",
+        "functional": true, // default: false
+        "numeric": true,    // default: false
+        "finite": true      // default: false
+      }
+    ],
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "outDir": "./dist",
-    "rootDir": "./",
+    // "outDir": "./dist",
+    // "rootDir": "./",
     "resolveJsonModule": true,
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "paths": {
+      "@contracts/*": [ "../contracts/*"]
+    },
   },
   "ts-node": {
     "esm": false,
     "experimentalSpecifierResolution": "node"
   },
-  "include": ["**/*.ts"],
+  "include": [
+    "**/*.ts",
+    "../contracts/**/*"
+  ],
   "exclude": ["node_modules", "dist"]
 }

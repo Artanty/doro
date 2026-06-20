@@ -110,8 +110,8 @@ export class EventListEventComponent implements OnInit, OnDestroy {
     this.eventService.addToSchedule(this.eventProps.id, scheduleId).subscribe()
   }
 
-  playEvent(isGuiEvent = true): void {
-    this.eventService.playEvent(this.eventProps.id, isGuiEvent)
+  playEvent(): void {
+    this.eventService.playEvent(this.eventProps.id, this.eventProps.schedule_id)
   }
 
   pauseEvent() {

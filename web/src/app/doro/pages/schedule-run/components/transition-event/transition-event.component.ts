@@ -10,6 +10,7 @@ import { EventProps, EventPropsWithState, EVENT_PROPS_KEY, EventStateHook } from
 import { ApiService } from "src/app/doro/services/common-api/common-api.service"
 import { ViewStatus, ViewState } from "src/app/doro/services/core/view-state.type"
 import { SuggestRestReq } from "src/app/doro/services/schedule/schedule.api.types"
+import { EventToDuplicateReq } from "src/app/doro/services/transition-event/transition-event.api.types"
 import { TransitionEventService } from "src/app/doro/services/transition-event/transition-event.service"
 import { NextSuggestionsRes, NextCalculatedEvent } from "src/app/doro/services/transition-event/transition-event.types"
 
@@ -185,8 +186,12 @@ export class TransitionEventComponent implements OnInit {
   }
    
   public finishTransitionAndDuplicateEvent(nextEventData: NextEventViewData) {
+    const eventToDuplicate: EventToDuplicateReq = { 
+      id: nextEventData.endedEvent.id, 
+      scheduleId: nextEventData.endedEvent.schedule_id 
+    }
     this._nextEventService.finishTransitionAndPlayDuplicatedEvent(
-      this.id, nextEventData.endedEvent.id)
+      this.id, eventToDuplicate)
       .pipe(
         takeUntilDestroyed(this.destroyRef),
       )
@@ -213,11 +218,14 @@ export class TransitionEventComponent implements OnInit {
       const eventToCreate: CreateEventReq = {
         name: `next calc from: ${this.id}`,
         length: nextEventData.length,
-        type: nextEventData.type,
-        base_access: nextEventData.endedEvent.base_access_id,
-        state: EventProgress.PLAYING,
-        hooks: DEFAULT_EVENT_STATE_HOOKS,
+        is_rest: nextEventData.type === 2,
+        is_playing: true,
+        playhead: 0,
+        
         schedule_id: nextEventData.endedEvent.schedule_id,
+        is_public: false,
+
+        hooks: DEFAULT_EVENT_STATE_HOOKS,
       };
       this._nextEventService
         .finishTransitionAndCreateNextEvent(transitionIdToFinish, eventToCreate)

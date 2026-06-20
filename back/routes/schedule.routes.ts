@@ -19,8 +19,10 @@ router.post('/list', async (req, res) => {
 router.post('/create', async (req, res) => {
   try {
     const name = req.body.name;
+    const active_event_id = 0;
+    const is_playing = false;
     const user = getUserFromRequest(req);
-    const result = await ScheduleController.createSchedule(name, user);
+    const result = await ScheduleController.createSchedule(user, name, active_event_id, is_playing);
     res.json(result);
   } catch (error) {
     handleError(res as unknown as Response, error) 
