@@ -66,7 +66,6 @@ export class OuterSyncService {
 		}	
 	}
     
-
 	public static buildUpdateOuterHashPayload(action: string): EntryWithTikAction<OuterHash>[] {
 
 		return this.addOuterActionInEvents<OuterHash>(this.buildOuterHash(), action);

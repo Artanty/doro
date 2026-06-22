@@ -33,3 +33,28 @@ export const buildTikEvents = async (
     
     return eventsWithStatus;
 }
+
+export const buildTikPlayingEvents = async (
+    events: {id: number, playhead: number, length:number}[]
+): Promise<EventStateResItem[]> => {
+    
+    events = ensureArray(events);
+    
+    const eventsWithStatus = await Promise.all(
+        events.map(async (eventProps: {id: number, playhead: number, length:number}) => {
+            
+
+            const res: EventStateResItem = {
+
+                id: buildOuterEntityId('event', eventProps.id),
+                cur: eventProps.playhead,
+                len: eventProps.length,
+                stt: 1
+            }
+
+            return res;
+        })
+    );
+    
+    return eventsWithStatus;
+}

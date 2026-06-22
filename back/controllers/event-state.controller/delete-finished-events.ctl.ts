@@ -1,12 +1,5 @@
 import createPool from '../../core/db_connection';
-import axios from 'axios';
-import dotenv from 'dotenv';
-import { dd } from '../../utils/dd';
-import { thisProjectResProp, tikResProp } from '../../utils/getResProp';
-import { updateEvent } from '../../db-actions/update-event';
-import { getAccessibleEvent, ACCESS_CASE } from '../../db-actions/get-accessible-event';
-import { ConfigManager } from '../config-manager';
-import { OuterSyncService } from '../outer-sync.service';
+import { thisProjectResProp } from '../../utils/getResProp';
 import { deleteFinishedEvents } from '../../db-actions/delete-finished-events';
 
 export const deleteFinishedEventsCtl = async (

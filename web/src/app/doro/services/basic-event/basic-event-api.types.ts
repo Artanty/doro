@@ -21,7 +21,7 @@ export interface CreateEventReq {
 	playhead: number,
 	
 	schedule_id: number,
-	is_public: boolean,
+	// is_public: boolean,
 
 	hooks: CreateEventReqHook[],
 	schedule_position?: number,

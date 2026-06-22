@@ -20,7 +20,14 @@ CREATE TABLE accessLevels (
     sort_order INT DEFAULT 0
 );
 
- CREATE TABLE schedules (
+CREATE TABLE eventStatesDictionary (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(50) NOT NULL,
+    description VARCHAR(255),
+    sort_order INT DEFAULT 0
+);
+
+CREATE TABLE schedules (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL,
     active_event_id INT NOT NULL,
@@ -29,59 +36,28 @@ CREATE TABLE accessLevels (
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL,
     INDEX idx_created_by (created_by)
-    
 );
 
-CREATE TABLE eventStatesDictionary (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(50) NOT NULL,
-    description VARCHAR(255),
-    sort_order INT DEFAULT 0
-);
-
--- Create events table
 CREATE TABLE events (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL,
     length INT NOT NULL COMMENT 'Duration in seconds',
-    type INT NOT NULL,
-    base_access_id INT NOT NULL,
+    is_rest BOOLEAN NOT NULL,
     schedule_id INT NOT NULL,
     schedule_position FLOAT NOT NULL,
-    event_state_id INT NOT NULL,
-    created_by VARCHAR(255) NOT NULL COMMENT 'user_handler',
-    created_at DATETIME NOT NULL,
-    updated_at DATETIME NOT NULL,
-    created_from VARCHAR(255) NOT NULL,
-    FOREIGN KEY (type) REFERENCES eventTypes(id) ON DELETE RESTRICT,
+    playhead INT NOT NULL,
     FOREIGN KEY (schedule_id) REFERENCES schedules(id) ON DELETE CASCADE,
-    
     INDEX idx_schedule_order (schedule_id, schedule_position),
-    INDEX idx_created_by (created_by)
 );
 
--- Create eventToUser table
-CREATE TABLE eventToUser (
+CREATE TABLE scheduleToUser (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    event_id INT NOT NULL,
+    schedule_id INT NOT NULL,
     user_handler VARCHAR(255) NOT NULL COMMENT 'Reference to user from external system',
-    access_level ENUM('owner', 'editor', 'viewer') NOT NULL DEFAULT 'viewer',
-    created_at DATETIME NOT NULL,
-    FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
+    access_level_id INT NOT NULL COMMENT 'DELETE=3 UPDATE=2 READ=1',
+    FOREIGN KEY (schedule_id) REFERENCES schedules(id) ON DELETE CASCADE,
     INDEX idx_user_handler (user_handler),
-    INDEX idx_event_user (event_id, user_handler)
-);
-
-CREATE TABLE eventState (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    event_state_id INT NOT NULL COMMENT 'References eventStateDictionary.id'
-    eventId INT NOT NULL UNIQUE,
-    created_at DATETIME NOT NULL,
-    updated_at DATETIME NOT NULL,
-    FOREIGN KEY (eventId) REFERENCES events(id) ON DELETE CASCADE,
-    FOREIGN KEY (eventStateDictionaryId) eventStateDictionary(id),
-    INDEX idx_state (state),
-    INDEX idx_event_state (eventId, state)
+    INDEX idx_schedule_user (schedule_id, user_handler)
 );
 
 CREATE TABLE eventStateHooks (

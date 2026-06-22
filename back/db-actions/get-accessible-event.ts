@@ -1,11 +1,10 @@
 import { EventPropsDbItem } from "../types/event.types";
-import { dd } from "../utils/dd";
 import { ensureArray } from "../utils/ensureArray";
-import { getUTCDatetime } from "../utils/get-utc-datetime";
 
 export const ACCESS_CASE = {
 	DELETE: 3,
-	UPDATE: 2
+	UPDATE: 2,
+	READ: 1
 }
 
 interface DbActionResult {
@@ -96,17 +95,18 @@ export const getAccessibleEvents = async (
 			const sharedPlaceholders = eventsNeedingSharedCheck.map(() => '?').join(',');
 			
 			// Get all shared access records for these events in one query
-			const [sharedAccessResults] = await connection.execute(
-				`SELECT * FROM eventToUser 
-				 WHERE event_id IN (${sharedPlaceholders}) 
-				 AND user_handler = ?
-				 AND access_level_id >= ?`,
-				[...eventsNeedingSharedCheck, userHandler, accessLevel]
-			);
+			// const [sharedAccessResults] = await connection.execute(
+			// 	`SELECT * FROM eventToUser 
+			// 	 WHERE event_id IN (${sharedPlaceholders}) 
+			// 	 AND user_handler = ?
+			// 	 AND access_level_id >= ?`,
+			// 	[...eventsNeedingSharedCheck, userHandler, accessLevel]
+			// );
 
 			// Create a set of eventIds that have shared access
 			const accessibleViaShared = new Set(
-				sharedAccessResults.map((row: any) => row.event_id)
+				// sharedAccessResults.map((row: any) => row.event_id)
+				eventsNeedingSharedCheck
 			);
 
 			// Check each event that needed shared access

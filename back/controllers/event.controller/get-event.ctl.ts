@@ -10,9 +10,7 @@ import { bulkUpsertEventState } from '../../db-actions/upsert-event-state';
 
 dotenv.config();
 
-/**
- * Если ивент закончен по времени, но еще не знает об этом - он будет закончен перед отправкой.
- * */
+
 export const getEventCtl = async (userHandler: string, filters: any) => {
     const pool = createPool();
     const connection = await pool.getConnection();

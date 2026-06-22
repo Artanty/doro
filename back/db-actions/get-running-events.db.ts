@@ -1,31 +1,26 @@
 import { DbActionResult } from "../types/db-action.types";
+import { dd } from "../utils/dd";
 
-export interface GetEventResItem {
+export interface GetRunningEventsResItem {
     "id": number
     "name": string
     "length": number
-    "type": number
-    "created_at": string
-    "updated_at": string | null,
-    "schedule_id": number,
-    "schedule_position": number,
-    "created_by": string, //todo remve
-    "base_access_id": number //todo remve
-    event_state_id: number
+    // "type": number
+    // "created_at": string
+    // "updated_at": string | null,
+    // "schedule_id": number,
+    // "schedule_position": number,
+    // "created_by": string, //todo remve
+    // "base_access_id": number //todo remve
+    // event_state_id: number
 };
 
-
-export const getEventDb = async (
-    connection: any, 
-    userHandler: string, 
-    filters: any
-): Promise<DbActionResult<GetEventResItem[]>> => {
-    
+export const getRunningEventsDb = async (
+    connection: any,
+    userHandler: string
+): Promise<DbActionResult<GetRunningEventsResItem[]>> => {
+    dd(userHandler)
     try {
-        // Set default values
-        const intervalDays = filters?.interval || 1;
-        const limit = filters?.limit || 200;
-
         const query = `
             SELECT 
                 s.id AS schedule_id,
@@ -40,7 +35,7 @@ export const getEventDb = async (
                 s.created_by AS schedule_owner
             FROM schedules s
             INNER JOIN events e ON e.id = s.active_event_id
-            
+            WHERE s.is_playing = 1
             AND (
                 s.created_by = ?
                 OR EXISTS (
@@ -54,23 +49,23 @@ export const getEventDb = async (
             ORDER BY s.id
         `;
 
-        const [rows] = await connection.execute(query, [userHandler]);
+        const [rows] = await connection.execute(query, [userHandler, userHandler]);
 
         return {
             success: true,
             result: rows,
             error: null,
             debug: {
-                filters_applied: {
-                    interval_days: intervalDays,
-                    limit: limit
-                }
+                // filters_applied: {
+                //     interval_days: intervalDays,
+                //     limit: limit
+                // }
             }
         };
     } catch (error: any) { 
         return {
             success: false,
-            result: null,
+            result: [],
             error: error.message
         };
     }

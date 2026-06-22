@@ -12,13 +12,9 @@ export interface BulkCreateEventItem {
 	length: number,
 	playhead: number,
 	is_rest: boolean,
-	
 	schedule_id: number,
 	schedule_position: number,
-	
-	is_public: boolean,
 }
-
 
 export interface BulkCreateEventResult {
 	success: boolean;
@@ -60,7 +56,7 @@ export const bulkCreateEventsDb = async (
 				event.schedule_id,
 				event.schedule_position,
 
-				event.is_public,
+				
 				userHandler,
 			);
 			return '(?, ?, ?, ?, ?, ?, ?, ?)';
@@ -101,7 +97,6 @@ export const bulkCreateEventsDb = async (
 
 export const createEventDb = async (
 	connection: any, 
-	userHandler: string,
 
 	name: string,
 	length: number,
@@ -111,7 +106,7 @@ export const createEventDb = async (
 	schedule_id: number,
 	schedule_position: number,
 	
-	is_public: boolean,
+	
 ): Promise<DbActionResult> => {
 
 	const res: any = {
@@ -122,8 +117,8 @@ export const createEventDb = async (
 	
 	try {
 		const [eventResult] = await connection.execute(
-			'INSERT INTO events (name, length, playhead, is_rest, schedule_id, schedule_position, is_public, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-			[name, length, playhead, is_rest, schedule_id, schedule_position, is_public, userHandler]
+			'INSERT INTO events (name, length, playhead, is_rest, schedule_id, schedule_position) VALUES (?, ?, ?, ?, ?, ?, ?)',
+			[name, length, playhead, is_rest, schedule_id, schedule_position]
 		);
                 
 		res.success = true;

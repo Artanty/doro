@@ -8,10 +8,13 @@ import { EventStateController } from '../controllers/event-state.controller';
 
 const router = express.Router();
 
+/**
+ * tik@back дергает эту ручку, чтобы получить is_playing события
+ */
 router.post('/get-event-state', [validateUserAccessToken], async (req, res) => {
   try {
     const user = getUserFromRequest(req);
-    const data = await EventStateController.getEventsWithStatus(user);
+    const data = await EventStateController.getRunningEvents(user);
     dd(data)
     res.json(data);   
   } catch (error) {

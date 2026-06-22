@@ -223,7 +223,7 @@ export class TransitionEventComponent implements OnInit {
         playhead: 0,
         
         schedule_id: nextEventData.endedEvent.schedule_id,
-        is_public: false,
+        // is_public: false,
 
         hooks: DEFAULT_EVENT_STATE_HOOKS,
       };

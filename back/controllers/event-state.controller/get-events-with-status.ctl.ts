@@ -10,24 +10,26 @@ export const getEventsWithStatusCtl = async (userHandler: any) => {
     const pool = createPool();
     const connection = await pool.getConnection();
     try {
-        const [events] = await connection.execute(
-            `SELECT 
-                e.id,
-                e.name,
-                e.length,
-                e.type as event_type,
-                e.event_state_id as current_state,
-                e.updated_at as last_state_change,
-                e.created_at,
-                etu.access_level
-             FROM events e
-             INNER JOIN eventToUser etu ON e.id = etu.event_id
-             WHERE etu.user_handler = ? AND e.created_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 1 DAY)
-             ORDER BY e.created_at DESC`,
-            [userHandler]            
-        );
+        const events = [];
+        // const [events] = await connection.execute(
+        //     `SELECT 
+        //         e.id,
+        //         e.name,
+        //         e.length,
+        //         e.type as event_type,
+        //         e.event_state_id as current_state,
+        //         e.updated_at as last_state_change,
+        //         e.created_at,
+        //         etu.access_level
+        //      FROM events e
+        //      INNER JOIN eventToUser etu ON e.id = etu.event_id
+        //      WHERE etu.user_handler = ? AND e.created_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 1 DAY)
+        //      ORDER BY e.created_at DESC`,
+        //     [userHandler]            
+        // );
         // Process each event to determine status and current seconds
         const eventsWithStatus = await buildTikEvents(connection, events);
+        
 
         const eventsWithTikAction = OuterSyncService.addOuterActionInEvents(eventsWithStatus, 'add');
 

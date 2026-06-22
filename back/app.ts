@@ -35,7 +35,8 @@ app.use('/event-state', validateUserAccessToken, injectConfigHashMiddleware, eve
 app.use('/schedule', validateUserAccessToken, injectConfigHashMiddleware, scheduleRoutes);
 app.use('/save-temp', saveTempRoutes);
 
-app.use('/service', validateApiKey, outerApiRoutes);
+// app.use('/service', validateApiKey, outerApiRoutes);
+app.use('/service', outerApiRoutes);
 
 app.get('/get-updates', async (req, res) => {
   res.json({

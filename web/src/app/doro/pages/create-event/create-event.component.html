@@ -107,7 +107,7 @@
         </div>
 
         <!-- Уровень доступа -->
-        <div class="form-group">
+        <!-- <div class="form-group">
           <label for="base_access">Уровень доступа:</label>
           <div class="access-options">
             <div *ngFor="let access of accessLevels" class="form-check">
@@ -120,14 +120,11 @@
                 class="form-check-input"
               >
               <label [for]="'access_' + access.id" class="form-check-label">
-                <!-- <span class="access-icon">{{ access.icon }}</span> -->
-                <!-- <strong></strong> -->
                 {{ access.name }}
-                <!-- <small class="access-description">{{ access.description }}</small> -->
               </label>
             </div>
           </div>
-        </div>
+        </div> -->
 
         <!-- Сообщения об ошибке/успехе -->
         <div *ngIf="errorMessage" class="alert alert-danger">

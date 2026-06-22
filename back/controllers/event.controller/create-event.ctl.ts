@@ -1,6 +1,4 @@
 import createPool from '../../core/db_connection';
-import { CreateEventStateHookParams, createEventStateHooks } from '../../db-actions/create-event-state-hooks';
-import { upsertEventAccess } from '../../db-actions/upsert-event-access';
 import { addEventStateHistory } from '../../db-actions/add-event-state-history';
 import { ConfigManager } from '../config-manager';
 import { OuterSyncService } from '../outer-sync.service';
@@ -8,16 +6,15 @@ import { createEventDb } from '../../db-actions/create-event.db';
 import { buildScheduleInfo } from '../helpers/build-schedule-info';
 import { thisProjectResProp } from '../../utils/getResProp';
 import { CreateEventReq } from '@contracts/event.contract';
-import { upsertScheduleAccessDb } from '../../db-actions/upsert-schedule-access.db';
 
 type CreateEventCtlProps = CreateEventReq & { userHandler: string }
 
-export const createEventCtl = async (props: CreateEventCtlProps) => {
+export const createEventCtl = async (props: CreateEventCtlProps): Promise<{ data: any, debug: any }> => {
 	const { 
 			userHandler,
 			name, length, playhead, is_rest, 
 			schedule_id,
-			is_public, hooks, 
+			hooks, 
 			is_playing
 		} = props;
 
@@ -37,10 +34,10 @@ export const createEventCtl = async (props: CreateEventCtlProps) => {
 			(await buildScheduleInfo(connection, schedule_id)).schedule_position;
 
 		createEventResult = await createEventDb(
-			connection, userHandler,
+			connection,
 			name, length, playhead, is_rest, 
 			schedule_id, schedule_position,
-			is_public
+			
 		);
 		if (createEventResult.error) {
 			throw new Error(createEventResult.error);
@@ -86,7 +83,17 @@ export const createEventCtl = async (props: CreateEventCtlProps) => {
 	} catch (error) { 
 		console.log(error)
 		await connection.rollback();
-		throw error;
+		return {
+			data: null,
+			debug: {
+				[thisProjectResProp()]: {
+					createEventResult,
+					createEventStateHookResult,
+					upsertScheduleAccessResult,
+					addHistoryResult
+				},
+			}
+		};
 	} finally {
 		connection.release();
 	}

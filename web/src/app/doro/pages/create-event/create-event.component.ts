@@ -25,7 +25,7 @@ export class CreateEventComponent implements OnInit {
     type: 1, // work
     isPlaying: true,
     schedule_id: 1,
-    base_access: false
+    // base_access: false
   };
 
   // Список типов событий
@@ -78,8 +78,8 @@ export class CreateEventComponent implements OnInit {
       is_playing: this.eventData.isPlaying,
       playhead: 0,
 
-      schedule_id: this.eventData.schedule_id,
-      is_public: this.eventData.base_access, 
+      schedule_id: Number(this.eventData.schedule_id),
+      // is_public: this.eventData.base_access, 
 
       hooks: DEFAULT_EVENT_STATE_HOOKS,
     };
@@ -118,7 +118,7 @@ export class CreateEventComponent implements OnInit {
       type: 1,
       isPlaying: true,
       schedule_id: 1,
-      base_access: false,
+      // base_access: false,
     };
     this.submitted = false;
     this.errorMessage = '';
