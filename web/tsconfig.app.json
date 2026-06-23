@@ -1,19 +1,6 @@
 {
   "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "outDir": "./out-tsc/app",
-    "types": [
-      "node"
-    ],
-  },
-  "files": [
-    "src/main.ts"
-  ],
-  "include": [
-    "src/**/*.d.ts",
-    "../../contracts/*.ts"
-  ],
-  "paths": {
-    "mfe-component": ["http://localhost:4204/remoteEntry.js"]
-  }
+  "compilerOptions": { "outDir": "./out-tsc/app" },
+  "files": ["src/main.ts"],
+  "include": ["src/**/*.d.ts"]   // .d.ts only, because .ts is already in base include
 }

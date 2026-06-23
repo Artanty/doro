@@ -10,6 +10,8 @@ import { CreateEventReq } from "./basic-event-api.types";
 import { GetUserEventsRes, EventProps, EventStateResItem, EventState, EventStateReq } from "./basic-event.types";
 import { EventProgress } from "../../constants";
 import { dd } from "../../helpers/dd";
+import { PauseEventReq } from "@contracts/event-state.contract";
+
 
 @Injectable()
 export class EventService {
@@ -101,7 +103,7 @@ export class EventService {
   }
 
   public pauseEvent(eventId: number) {
-    const payload: any = {
+    const payload: PauseEventReq= {
       "eventId": eventId, 
       "state": 2
     }

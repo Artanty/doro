@@ -1,8 +1,6 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "baseUrl": "./",
-    "outDir": "./dist/doro",
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "noImplicitOverride": true,
@@ -26,7 +24,8 @@
       "dom"
     ],
     "paths": {
-      "mfe-component": ["http://localhost:4204/remoteEntry.js"]
+      "mfe-component": ["http://localhost:4204/remoteEntry.js"],
+      "@contracts/*": ["../contracts/*"]   // ← fix this
     }
   },
   "angularCompilerOptions": {
@@ -34,5 +33,9 @@
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
     "strictTemplates": true
-  }
+  },
+  "include": [
+    "src/**/*.ts",
+    "../contracts/**/*.ts"
+  ],
 }
