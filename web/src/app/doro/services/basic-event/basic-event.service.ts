@@ -10,7 +10,7 @@ import { CreateEventReq } from "./basic-event-api.types";
 import { GetUserEventsRes, EventProps, EventStateResItem, EventState, EventStateReq } from "./basic-event.types";
 import { EventProgress } from "../../constants";
 import { dd } from "../../helpers/dd";
-import { PauseEventReq } from "@contracts/event-state.contract";
+import { PauseEventReq, PlayEventReq } from "@contracts/event-state.contract";
 
 
 @Injectable()
@@ -31,6 +31,7 @@ export class EventService {
     const filters = {
       interval: daysInterval
     }
+
     return this.http.post<GetUserEventsRes>(`${this.doroBaseUrl}/event/get`, { filters })
       .pipe(
         tap((res: GetUserEventsRes) => {
@@ -38,6 +39,7 @@ export class EventService {
           if (!data) throw new Error('wrong response format');
 
           this._state.events.next(data)
+          dd(this._state.events.getValue())
         }),
         catchError((err: any) => {
           
@@ -76,15 +78,39 @@ export class EventService {
       )
   }
 
-  public playEvent(eventId: number, scheduleId: number): void {
-    this._api.playEventApi({ "eventId": eventId, scheduleId: scheduleId }).pipe(
-      catchError(error => {
-        console.error('Failed to play event:', error);
-        return throwError(() => new Error(`Failed to play event ${eventId}: ${error.message}`));
-      })
-    ).subscribe((res: any) => {
-      this._state.configHash.next(999);
-    })   
+  // {
+  //     "id": 921,
+  //     "name": "event 1",
+  //     "length": 360,
+  //     "is_rest": 1,
+  //     "schedule_id": 2,
+  //     "schedule_name": "schedule id 2",
+  //     "schedule_is_playing": 1,
+  //     "schedule_position": 1091,
+  //     "playhead": 2,
+  //     "schedule_owner": "74aa6454c1fcabffea7ff172:324c9c440c841889632429b574a39942",
+  //     "is_active_event": 1
+  // }
+
+  public playEvent(eventId: number, scheduleId: number): Observable<any> {
+    const payload: PlayEventReq = {
+      scheduleId: scheduleId,
+      eventIdToPlay: eventId,
+      playEventPlayhead: 0,
+    }
+    return this.http.post<any>(`${this.doroBaseUrl}/event-state/play`, payload)
+			.pipe(
+				map(res => {
+					if (res.data.success) {
+						return res.data;
+					} else {
+						throw new Error('playEventApi wrong response')
+					}
+				}),
+        tap(() => {
+          this._state.configHash.next(999);
+        })
+			)  
   }
 
   public deleteEvent(id: number) {

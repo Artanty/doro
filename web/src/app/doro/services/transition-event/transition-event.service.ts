@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { Observable, concatMap, tap } from "rxjs";
+import { Observable, concatMap, of, tap } from "rxjs";
 import { CreateEventReq } from "../basic-event/basic-event-api.types";
 import { EventStateReq } from "../basic-event/basic-event.types";
 import { ApiService } from "../common-api/common-api.service";
@@ -62,21 +62,22 @@ export class TransitionEventService {
 				},
 			]
 		};
-		return this._api.setEventStateApi(payload).pipe(
-			concatMap(() => {
-				return this._api.playEventApi({ 
-					eventId: eventToDuplicate.id,
-					scheduleId: eventToDuplicate.scheduleId
-				}).pipe(
-					// 	tap(() => {
-					// 	this._state.configHash.next(999);
-					// })
-				);
-			}),
-			tap(() => {
-				this._state.configHash.next(999);
-			})
-		);
+		// return this._api.setEventStateApi(payload).pipe(
+		// 	concatMap(() => {
+		// 		return this._api.playEventApi({ 
+		// 			eventId: eventToDuplicate.id,
+		// 			scheduleId: eventToDuplicate.scheduleId
+		// 		}).pipe(
+		// 			// 	tap(() => {
+		// 			// 	this._state.configHash.next(999);
+		// 			// })
+		// 		);
+		// 	}),
+		// 	tap(() => {
+		// 		this._state.configHash.next(999);
+		// 	})
+		// );
+		return of([])
 	}
 }
 

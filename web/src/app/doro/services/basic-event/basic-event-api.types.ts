@@ -1,7 +1,4 @@
-export interface SetPlayEventStateReq {
-	eventId: number,
-	scheduleId: number,
-}
+
 
 export interface CreateEventReqHook {
 	"trigger_event_state_id": number,

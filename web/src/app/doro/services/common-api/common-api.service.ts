@@ -1,7 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Observable, map } from "rxjs";
-import { CreateEventReq, SetPlayEventStateReq } from "../basic-event/basic-event-api.types";
+import { CreateEventReq } from "../basic-event/basic-event-api.types";
 import { EventStateReq, EventState, EventStateRes } from "../basic-event/basic-event.types";
 import { SuggestRestReq, SuggestRestRes } from "../schedule/schedule.api.types";
 
@@ -33,17 +33,6 @@ export class ApiService {
 		return this.http.post(apiUrl, payload);
 	}
 
-	public playEventApi(data: SetPlayEventStateReq): Observable<any> {
-		return this.http.post<any>(`${this.doroBaseUrl}/event-state/play`, data)
-			.pipe(
-				map(res => {
-					if (res.data.success) {
-						return res.data;
-					} else {
-						throw new Error('playEventApi wrong response')
-					}
-				})
-			);
-	}
+	
 
 }

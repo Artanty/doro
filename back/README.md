@@ -60,6 +60,16 @@ CREATE TABLE scheduleToUser (
     INDEX idx_schedule_user (schedule_id, user_handler)
 );
 
+CREATE TABLE eventStateHistory (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    event_id INT NOT NULL,
+    created_at DATETIME NOT NULL,
+    is_playing BOOLEAN NOT NULL,
+    playhead INT NOT NULL,
+    FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
+);
+
+
 CREATE TABLE eventStateHooks (
     id INT PRIMARY KEY AUTO_INCREMENT,
     event_id INT NOT NULL,
@@ -88,3 +98,8 @@ tik@ может быть использован как синхронизато�
 
 todo:
 сделать единое? апи, которое будет отдавать все ивенты
+
+
+i have these 3 tables. and i want to make query builder for changing state of event.
+one schedule can have one active(that is running) event. so i need following actions:
+1. play event (check that we have access to schedule, set event id to schedule's active_event_id, set schedule's is_playing to true. if there was another active and running event of this schedule - )

@@ -6,11 +6,24 @@ import { dd } from '../utils/dd';
 import { UpsertEventStateItem } from '../db-actions/upsert-event-state';
 import { EventStateController } from '../controllers/event-state.controller';
 import typia from 'typia';
-import { PauseEventReq } from '@contracts/event-state.contract';
+import { PauseEventReq, PlayEventReq } from '@contracts/event-state.contract';
 
-const assertCreateEvent = typia.createAssert<PauseEventReq>();
+const assertPlayEvent = typia.createAssert<PlayEventReq>();
+const assertPauseEvent = typia.createAssert<PauseEventReq>();
 
 const router = express.Router();
+
+router.post('/play', async (req, res) => {
+  try {
+    assertPlayEvent(req.body);
+    const user = getUserFromRequest(req);
+    
+    const result = await EventStateController.playEvent(user, req.body);
+    res.json(result);
+  } catch (error) {
+    handleError(res as unknown as Response, error) 
+  }
+});
 
 router.post('/set-event-state', async (req, res) => {
   try {
@@ -23,17 +36,6 @@ router.post('/set-event-state', async (req, res) => {
     res.status(201).json(result);
   } catch (error: unknown) {
     res.status(500).json({ error: (error as any)?.message ? (error as any).message : error });
-  }
-});
-
-router.post('/play', async (req, res) => {
-  try {
-    const user = getUserFromRequest(req);
-    const { eventId, scheduleId } = req.body;
-    const result = await EventStateController.playOrDuplicateEvent(user, eventId, scheduleId);
-    res.json(result);
-  } catch (error) {
-    handleError(res as unknown as Response, error) 
   }
 });
 
@@ -50,7 +52,7 @@ router.post('/stop', async (req, res,) => {
 
 router.post('/pause', async (req, res,) => {
   try {
-    assertCreateEvent(req.body);
+    assertPauseEvent(req.body);
     
     const user = getUserFromRequest(req);
     const { eventId, state } = req.body;

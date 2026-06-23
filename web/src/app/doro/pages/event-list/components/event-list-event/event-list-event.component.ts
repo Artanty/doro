@@ -47,6 +47,7 @@ export class EventListEventComponent implements OnInit, OnDestroy {
   };
   private destroy$ = new Subject<void>();
   public eventState: any = null
+  
   constructor(
     private cdr: ChangeDetectorRef,
     private eventService: EventService,
@@ -113,7 +114,11 @@ export class EventListEventComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
-  } 
+  }
+
+  playEvent(): void {
+    this.eventService.playEvent(this.eventProps.id, this.eventProps.schedule_id).subscribe()
+  }
 
   goToEventTimer() {
     this.router.navigateByUrl(`/doro/timer/${this.eventProps.id}`);
@@ -126,10 +131,6 @@ export class EventListEventComponent implements OnInit, OnDestroy {
   addToSchedule(data: any) {
     const scheduleId = data.id;
     this.eventService.addToSchedule(this.eventProps.id, scheduleId).subscribe()
-  }
-
-  playEvent(): void {
-    this.eventService.playEvent(this.eventProps.id, this.eventProps.schedule_id)
   }
 
   pauseEvent() {
