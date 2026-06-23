@@ -92,7 +92,7 @@ export class CreateEventComponent implements OnInit {
         this.createdEventId = response.id || 'N/A';
         this.createdEventName = this.eventData.name;
         
-        this.resetForm();
+        // this.resetForm();
       },
       error: (error) => {
         this.isLoading = false;

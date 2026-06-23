@@ -117,7 +117,7 @@ export const createEventDb = async (
 	
 	try {
 		const [eventResult] = await connection.execute(
-			'INSERT INTO events (name, length, playhead, is_rest, schedule_id, schedule_position) VALUES (?, ?, ?, ?, ?, ?, ?)',
+			'INSERT INTO events (name, length, playhead, is_rest, schedule_id, schedule_position) VALUES (?, ?, ?, ?, ?, ?)',
 			[name, length, playhead, is_rest, schedule_id, schedule_position]
 		);
                 
