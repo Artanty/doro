@@ -25,7 +25,9 @@
     ],
     "paths": {
       "mfe-component": ["http://localhost:4204/remoteEntry.js"],
-      "@contracts/*": ["../contracts/*"]   // ← fix this
+      "@contracts/*": ["../contracts/*"],
+      "@helpers/*": ["./src/app/doro/helpers/*"],
+      "@services/*": ["./src/app/doro/services/*"],
     }
   },
   "angularCompilerOptions": {

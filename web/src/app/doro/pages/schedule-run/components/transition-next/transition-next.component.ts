@@ -1,17 +1,19 @@
 import { Component, OnInit, Input, ChangeDetectorRef, DestroyRef } from "@angular/core"
 import { Observable, from, distinctUntilChanged, map, tap, startWith, catchError, of, lastValueFrom } from "rxjs"
-import { eventTypes, INITIAL_VIEW_STATE, EventProgress, BASE_SCHEDULE_ID, DEFAULT_WORK_EVENT_LENGTH, DEFAULT_EVENT_STATE_HOOKS, DEFAULT_USER_BASE_ACCESS_ID } from "src/app/doro/constants"
-import { dd } from "src/app/doro/helpers/dd"
-import { Nullable } from "src/app/doro/helpers/utility.types"
-import { CreateEventReq } from "src/app/doro/services/basic-event/basic-event-api.types"
-import { EventService } from "src/app/doro/services/basic-event/basic-event.service"
-import { EventProps, EventPropsWithState, EVENT_PROPS_KEY, EventStateHook } from "src/app/doro/services/basic-event/basic-event.types"
-import { ApiService } from "src/app/doro/services/common-api/common-api.service"
-import { ViewStatus, ViewState } from "src/app/doro/services/core/view-state.type"
-import { SuggestRestReq } from "src/app/doro/services/schedule/schedule.api.types"
-import { TransitionEventService } from "src/app/doro/services/transition-event/transition-event.service"
-import { NextSuggestionsRes, NextCalculatedEvent } from "src/app/doro/services/transition-event/transition-event.types"
+
+import { dd } from "@helpers/dd"
+import { Nullable } from "@helpers/utility.types"
+import { CreateEventReq } from "@services/basic-event/basic-event-api.types"
+import { EventService } from "@services/basic-event/basic-event.service"
+
+import { ApiService } from "@services/common-api/common-api.service"
+import { ViewStatus, ViewState } from "@services/core/view-state.type"
+import { SuggestRestReq } from "@services/schedule/schedule.api.types"
+import { TransitionEventService } from "@services/transition-event/transition-event.service"
+import { NextSuggestionsRes, NextCalculatedEvent, EventStateHook } from "@services/transition-event/transition-event.types"
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { EventProps, EventPropsWithState, EVENT_PROPS_KEY } from "@services/basic-event/basic-event.types"
+import { eventTypes, INITIAL_VIEW_STATE, DEFAULT_WORK_EVENT_LENGTH, DEFAULT_EVENT_STATE_HOOKS } from "../../../../constants"
 
 
 @Component({

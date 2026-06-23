@@ -1,15 +1,17 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, Injector, DestroyRef } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 import { Subject, Observable, takeUntil, take, map, combineLatest, switchMap, tap, startWith, of } from "rxjs";
-import { eventTypes, EventProgress, EventTypePrefix, INITIAL_VIEW_STATE } from "src/app/doro/constants";
-import { dd } from "src/app/doro/helpers/dd";
-import { Nullable } from "src/app/doro/helpers/utility.types";
-import { EventService } from "src/app/doro/services/basic-event/basic-event.service";
-import { EventPropsWithState, EVENT_PROPS_KEY, EVENT_STATE_KEY, EventProps } from "src/app/doro/services/basic-event/basic-event.types";
-import { AppStateService } from "src/app/doro/services/core/app-state.service";
-import { ViewState, ViewStatus } from "src/app/doro/services/core/view-state.type";
+
+import { dd } from "@helpers/dd";
+import { Nullable } from "@helpers/utility.types";
+import { EventService } from "@services/basic-event/basic-event.service";
+
+import { AppStateService } from "@services/core/app-state.service";
+import { ViewState, ViewStatus } from "@services/core/view-state.type";
 import { getEmptyEventProps, getEmptyEventState } from "../transition-next/transition-next.helper";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import { EventPropsWithState, EVENT_PROPS_KEY, EVENT_STATE_KEY, EventProps } from "@services/basic-event/basic-event.types";
+import { eventTypes, EventProgress, EventTypePrefix, INITIAL_VIEW_STATE } from "../../../../constants";
 
 @Component({
   selector: 'app-schedule-run',

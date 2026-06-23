@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
-import { eventTypes } from 'src/app/doro/constants';
-import { countPrc } from 'src/app/doro/helpers/count-percent.util';
-import { dd } from 'src/app/doro/helpers/dd';
+import { eventTypes } from '../../constants';
+import { countPrc } from '@helpers/count-percent.util';
+import { dd } from '@helpers/dd';
 import { CommonModule } from "@angular/common";
 import { GuiDirective } from '../_remote/web-component-wrapper/gui.directive';
 

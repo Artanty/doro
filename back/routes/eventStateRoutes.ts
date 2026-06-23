@@ -5,6 +5,11 @@ import { getUserFromRequest } from '../utils/getUserFromRequest';
 import { dd } from '../utils/dd';
 import { UpsertEventStateItem } from '../db-actions/upsert-event-state';
 import { EventStateController } from '../controllers/event-state.controller';
+import typia from 'typia';
+import { PauseEventReq } from '@contracts/event-state.contract';
+
+const assertCreateEvent = typia.createAssert<PauseEventReq>();
+
 const router = express.Router();
 
 router.post('/set-event-state', async (req, res) => {
@@ -45,6 +50,8 @@ router.post('/stop', async (req, res,) => {
 
 router.post('/pause', async (req, res,) => {
   try {
+    assertCreateEvent(req.body);
+    
     const user = getUserFromRequest(req);
     const { eventId, state } = req.body;
     const result = await EventStateController.pauseEvent(user, +eventId, +state);

@@ -10,7 +10,8 @@ import { WebComponentWrapperComponent } from './web-component-wrapper';
 import { Router } from '@angular/router';
 import { BusEvent, EVENT_BUS, EVENT_BUS_LISTENER, EVENT_BUS_PUSHER, HOST_NAME } from 'typlib';
 import { BehaviorSubject, filter, Observable, skipWhile, take, takeUntil } from 'rxjs';
-import { generateRandomId } from 'src/app/doro/helpers/generateRandomId';
+import { generateRandomId } from '@helpers/generateRandomId';
+
 
 
 export const GUI_PLACEHOLDER_TEMPLATE = new InjectionToken<TemplateRef<any>>('GUI_PLACEHOLDER_TEMPLATE');

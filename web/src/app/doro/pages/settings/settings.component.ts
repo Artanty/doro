@@ -1,6 +1,6 @@
 import { Component, EventEmitter, forwardRef, Input, OnInit, Output } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
-import { dd } from 'src/app/doro/helpers/dd';
+import { dd } from '@helpers/dd';
 import { StorageService } from '../../services/core/storage.service';
 
 export interface Settings {

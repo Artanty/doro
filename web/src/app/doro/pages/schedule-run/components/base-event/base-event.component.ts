@@ -1,10 +1,12 @@
 import { Component, ChangeDetectionStrategy, Input } from "@angular/core";
+import { EventService } from "@services/basic-event/basic-event.service";
 import { Subject, takeUntil } from "rxjs";
-import { EventStates } from "src/app/doro/constants";
-import { countPrc } from "src/app/doro/helpers/count-percent.util";
-import { dd } from "src/app/doro/helpers/dd";
-import { EventService } from "src/app/doro/services/basic-event/basic-event.service";
-import { EVENT_PROPS_KEY, EVENT_STATE_KEY, EventProps, EventPropsWithState, EventStateResItem } from "src/app/doro/services/basic-event/basic-event.types";
+
+
+import { EventStates } from "../../../../constants";
+import { countPrc } from "@helpers/count-percent.util";
+import { dd } from "../../../../helpers/dd";
+import { EventPropsWithState, EventProps, EVENT_PROPS_KEY, EventStateResItem, EVENT_STATE_KEY } from "@services/basic-event/basic-event.types";
 
 @Component({
   selector: 'app-base-event',

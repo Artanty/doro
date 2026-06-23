@@ -1,12 +1,12 @@
 import { Component, ChangeDetectionStrategy, OnInit, OnDestroy, Input, ChangeDetectorRef, Injector } from "@angular/core";
 import { Router } from "@angular/router";
 import { Subject, Observable, map, takeUntil, startWith, tap, catchError, EMPTY } from "rxjs";
-import { EventStates, EventTypePrefix } from "src/app/doro/constants";
-import { countPrc } from "src/app/doro/helpers/count-percent.util";
-import { dd } from "src/app/doro/helpers/dd";
-import { EventService } from "src/app/doro/services/basic-event/basic-event.service";
-import { EventProps, Schedule, EventViewState, EventStateResItem, EventStateResItemStateless, EventState } from "src/app/doro/services/basic-event/basic-event.types";
-import { ScheduleService } from "src/app/doro/services/schedule/schedule.service";
+import { countPrc } from "@helpers/count-percent.util";
+import { dd } from "@helpers/dd";
+import { EventService } from "@services/basic-event/basic-event.service";
+import { EventProps, Schedule, EventViewState, EventStateResItem, EventStateResItemStateless, EventState } from "@services/basic-event/basic-event.types";
+import { ScheduleService } from "@services/schedule/schedule.service";
+import { EventStates, EventTypePrefix } from "../../../../constants";
 // {
 //     "id": 921,
 //     "name": "event 1",

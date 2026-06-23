@@ -1,5 +1,5 @@
-import { eventTypes } from "src/app/doro/constants";
-import { EventProps, EventStateResItem } from "src/app/doro/services/basic-event/basic-event.types";
+import { EventProps, EventStateResItem } from "@services/basic-event/basic-event.types"
+import { eventTypes } from "../../../../constants"
 
 export const getEmptyEventProps = (scheduleId: number): EventProps => ({
 	id: 0,

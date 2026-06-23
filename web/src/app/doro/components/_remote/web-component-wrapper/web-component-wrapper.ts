@@ -13,7 +13,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { Observable, shareReplay, Subscription } from 'rxjs';
 import { waitForWebComponent } from './web-component-utils';
-import { dd } from 'src/app/doro/helpers/dd';
+import { dd } from '@helpers/dd';
 
 @Component({
   selector: 'app-web-component-wrapper',
