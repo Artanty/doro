@@ -2,7 +2,8 @@ import { EventStates, eventTypes } from "../constants";
 import { EventProps } from "../services/basic-event/basic-event.types";
 
 export const filterBasicEvents = (eventProps: EventProps) => {
-	return [eventTypes.WORK, eventTypes.REST].includes(eventProps.type as any)
+	// return [eventTypes.WORK, eventTypes.REST].includes(eventProps.type as any)
+	return true;
 };
 
 export const filterActiveBasicEvents = (eventProps: EventProps) => {
