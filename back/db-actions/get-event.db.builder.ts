@@ -5,6 +5,7 @@ export class GetEventsQueryBuilder {
     private selectClause: string;
     private fromClause: string;
     private orderBy: string;
+    private mode: 'all' | 'active' = 'all';
 
     constructor(userHandler: any) {
         this.userHandler = userHandler;
@@ -22,7 +23,11 @@ export class GetEventsQueryBuilder {
                 s.is_playing AS schedule_is_playing,
                 e.schedule_position,
                 e.playhead,
-                s.created_by AS schedule_owner
+                s.created_by AS schedule_owner,
+                CASE 
+                    WHEN e.id = s.active_event_id THEN 1 
+                    ELSE 0 
+                END AS is_active_event
         `;
         
         this.fromClause = `
@@ -33,7 +38,9 @@ export class GetEventsQueryBuilder {
         this.orderBy = 'ORDER BY s.id, e.schedule_position';
     }
 
-     onlyActiveEvents(): this {
+    // Only get active events (the currently playing one per schedule)
+    onlyActiveEvents(): this {
+        this.mode = 'active';
         this.fromClause = `
             FROM schedules s
             INNER JOIN events e ON e.id = s.active_event_id
@@ -41,7 +48,9 @@ export class GetEventsQueryBuilder {
         return this;
     }
 
+    // Get all events (default)
     allEvents(): this {
+        this.mode = 'all';
         this.fromClause = `
             FROM schedules s
             INNER JOIN events e ON e.schedule_id = s.id
@@ -49,22 +58,36 @@ export class GetEventsQueryBuilder {
         return this;
     }
 
+    // Filter by schedule
     schedule(id: number): this {
         return this.where('s.id = ?', id);
     }
 
-    isPlaying(value: boolean = true): this {
+    // Filter by schedule playing status
+    scheduleIsPlaying(value: boolean = true): this {
         return this.where('s.is_playing = ?', value ? 1 : 0);
     }
 
-    isStopped(): this {
+    scheduleIsStopped(): this {
         return this.where('s.is_playing = 0');
     }
 
+    // Filter by event being the active/playing event
+    isActiveEvent(value: boolean = true): this {
+        if (this.mode === 'all') {
+            // For all events mode, we need to filter on the fly
+            return this.where('e.id = s.active_event_id');
+        }
+        // In active mode, this is already filtered
+        return this;
+    }
+
+    // Filter by rest events
     isRest(value: boolean = true): this {
         return this.where('e.is_rest = ?', value ? 1 : 0);
     }
 
+    // Playhead conditions
     playheadEqualsLength(): this {
         return this.where('e.playhead = e.length');
     }
@@ -73,15 +96,17 @@ export class GetEventsQueryBuilder {
         return this.where('e.playhead < e.length');
     }
 
+    // Search by name
     eventName(name: string): this {
         return this.where('e.name LIKE ?', `%${name}%`);
     }
 
+    // Filter by creator
     createdBy(userId: string): this {
         return this.where('s.created_by = ?', userId);
     }
 
-    // Generic where for custom conditions
+    // Generic where
     where(condition: string, ...values: any[]): this {
         this.whereConditions.push(condition);
         if (values.length > 0) {

@@ -1,5 +1,3 @@
-import { EventProgressType } from "../../constants"
-
 export interface SetPlayEventStateReq {
 	eventId: number,
 	scheduleId: number,

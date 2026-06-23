@@ -25,7 +25,8 @@ export const getRunningEventsDb = async (
         const queryBuilder = new GetEventsQueryBuilder(userHandler);
         
         const [rows] = await queryBuilder
-            .isPlaying()
+            .onlyActiveEvents()
+            .scheduleIsPlaying(true)
             .execute(connection);
         dd(rows)
         return {

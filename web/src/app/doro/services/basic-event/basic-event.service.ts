@@ -8,6 +8,8 @@ import { AppStateService } from "../core/app-state.service";
 import { ScheduleService } from "../schedule/schedule.service";
 import { CreateEventReq } from "./basic-event-api.types";
 import { GetUserEventsRes, EventProps, EventStateResItem, EventState, EventStateReq } from "./basic-event.types";
+import { EventProgress } from "../../constants";
+import { dd } from "../../helpers/dd";
 
 @Injectable()
 export class EventService {
@@ -109,18 +111,47 @@ export class EventService {
       }))
   }
   
-  //EventTypePrefix
-  public listenEventState(eventTypePrefix: string, eventId: number): Observable<EventStateResItem> {
-    const receivedEventId = `${eventTypePrefix}_${eventId}`;
-  
-    return this.eventBusListener$.pipe(
-      filter(filterStreamDataEntries),
-      map((busEvent: BusEvent<EventStateResItem[]>): EventStateResItem | null => {
-        const foundEvent = busEvent.payload.find(event => event.id === receivedEventId);
-        return foundEvent || null;
-      }),
-      filter((event): event is EventStateResItem => event !== null),
-    );
+  // {
+//     "id": 921,
+//     "name": "event 1",
+//     "length": 360,
+//     "is_rest": 1,
+//     "schedule_id": 2,
+//     "schedule_name": "schedule  id 2",
+//     "schedule_is_playing": 1,
+//     "schedule_position": 1091,
+//     "playhead": 2,
+//     "schedule_owner": "74aa6454c1fcabffea7ff172:324c9c440c841889632429b574a39942",
+//     "is_active_event": 1
+// }
+//
+// 'STOPPED': 0,
+// 	'PLAYING': 1,
+// 	'PAUSED': 2,
+// 	'COMPLETED': 3
+  public listenEventState(eventTypePrefix: string, eventProps: any): Observable<EventStateResItem> {
+    const tikEventId = `${eventTypePrefix}_${eventProps.id}`;
+    // определяем, идет событие ли нет, в зависимости от этого
+    // получаем его динамический стейт или статический
+    dd(eventProps.schedule_is_playing)
+    dd(eventProps.is_active_event)
+    if (eventProps.schedule_is_playing && eventProps.is_active_event) {
+      return this.eventBusListener$.pipe(
+        filter(filterStreamDataEntries),
+        map((busEvent: BusEvent<EventStateResItem[]>): EventStateResItem | null => {
+          const foundEvent = busEvent.payload.find(event => event.id === tikEventId);
+          return foundEvent || null;
+        }),
+        filter((event): event is EventStateResItem => event !== null),
+      );
+    } else {
+      return of({
+          id: tikEventId, // no need here
+          cur: eventProps.playhead,
+          len: eventProps.length,
+          stt: EventProgress.STOPPED
+      })
+    }
   }
 
   public getAccessLevels() {

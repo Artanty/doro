@@ -3,10 +3,23 @@ import { Router } from "@angular/router";
 import { Subject, Observable, map, takeUntil, startWith, tap, catchError, EMPTY } from "rxjs";
 import { EventStates, EventTypePrefix } from "src/app/doro/constants";
 import { countPrc } from "src/app/doro/helpers/count-percent.util";
+import { dd } from "src/app/doro/helpers/dd";
 import { EventService } from "src/app/doro/services/basic-event/basic-event.service";
 import { EventProps, Schedule, EventViewState, EventStateResItem, EventStateResItemStateless, EventState } from "src/app/doro/services/basic-event/basic-event.types";
 import { ScheduleService } from "src/app/doro/services/schedule/schedule.service";
-
+// {
+//     "id": 921,
+//     "name": "event 1",
+//     "length": 360,
+//     "is_rest": 1,
+//     "schedule_id": 2,
+//     "schedule_name": "schedule  id 2",
+//     "schedule_is_playing": 1,
+//     "schedule_position": 1091,
+//     "playhead": 2,
+//     "schedule_owner": "74aa6454c1fcabffea7ff172:324c9c440c841889632429b574a39942",
+//     "is_active_event": 1
+// }
 @Component({
   selector: 'app-event-list-event',
   standalone: false,
@@ -56,12 +69,17 @@ export class EventListEventComponent implements OnInit, OnDestroy {
    * EventWithState = { eventProps, eventState }
    * */
   ngOnInit() {
+    dd(this.eventProps)
     const initalState: EventViewState<EventStateResItemStateless> = {
       viewState: 'LOADING_VIEW_STATE',
       eventState: -1 // pending
     }
+    /**
+     * те, что не is_playing - полностью отображаем из props.
+     * listen state - только для идущих событий.
+     */
     this.eventState$ = 
-      this.eventService.listenEventState(EventTypePrefix.BASIC, this.eventProps.id)
+      this.eventService.listenEventState(EventTypePrefix.BASIC, this.eventProps)
         .pipe(
           takeUntil(this.destroy$),
           map((res: EventStateResItem) => {
