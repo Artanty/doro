@@ -1,4 +1,4 @@
-interface EventUpdate {
+export interface EventUpdate {
     id: number;
     name?: string;
     length?: number;

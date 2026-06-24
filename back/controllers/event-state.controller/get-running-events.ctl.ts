@@ -24,7 +24,7 @@ export const getRunningEventsCtl = async (userHandler: any) => {
             connection,
             userHandler
         );
-dd(getRunningEventsResult)
+        
         if (!getRunningEventsResult.success) {
             throw new Error('getRunningEventsResult crashed')
         }

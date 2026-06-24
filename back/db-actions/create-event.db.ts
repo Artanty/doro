@@ -97,16 +97,12 @@ export const bulkCreateEventsDb = async (
 
 export const createEventDb = async (
 	connection: any, 
-
 	name: string,
 	length: number,
 	playhead: number,
 	is_rest: boolean,
-	
 	schedule_id: number,
 	schedule_position: number,
-	
-	
 ): Promise<DbActionResult> => {
 
 	const res: any = {

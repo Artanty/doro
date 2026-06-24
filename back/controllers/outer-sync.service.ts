@@ -11,6 +11,7 @@ import { EventStateResItem } from "../types/event-state.types";
 import { getEventStateHooksByState } from "../db-actions/get-event-state-hooks";
 import { EventStateHookController } from "./event-state-hook.controller";
 import { buildOuterEntityId, EntryType } from "../utils/buildOuterEntityId";
+import { TikUpdateEntriesRes } from "../types/outer-sync.types";
 
 export interface TikResStat {
 	added: string[],
@@ -34,6 +35,7 @@ export interface OuterEntry {
 	len?: number,
 	stt?: number
 }
+
 export interface OuterHash {
 	id: string,
 	cur: number,
@@ -136,7 +138,7 @@ export class OuterSyncService {
 	}
 
 	// todo: add api key.
-	public static async updateOuterEntries(payload: OuterEntry[]): Promise<any> {
+	public static async updateOuterEntries(payload: OuterEntry[]): Promise<TikUpdateEntriesRes> {
 		let tikResponse;
 		try {
 			// todo rename 'updateEventsState' -> updateEntries
