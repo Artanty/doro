@@ -18,6 +18,7 @@ export class GetEventsQueryBuilder {
                 e.name,
                 e.length,
                 e.is_rest,
+                e.updated_at,
                 s.id AS schedule_id,
                 s.name AS schedule_name,
                 s.is_playing AS schedule_is_playing,
@@ -143,8 +144,8 @@ export class GetEventsQueryBuilder {
 
     async execute(connection: any): Promise<any[]> {
         const { query, params } = this.build();
-        console.log('Query:', query);
-        console.log('Params:', params);
+        // console.log('Query:', query);
+        // console.log('Params:', params);
         const rows = await connection.execute(query, params);
         return rows;
     }

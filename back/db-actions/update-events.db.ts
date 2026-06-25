@@ -1,3 +1,5 @@
+import { getUTCDatetime } from "../utils/get-utc-datetime";
+
 export interface EventUpdate {
     id: number;
     name?: string;
@@ -6,6 +8,7 @@ export interface EventUpdate {
     schedule_id?: number;
     schedule_position?: number;
     playhead?: number;
+    updated_at?: string;
 }
 
 export async function updateEventsDb(
@@ -20,6 +23,8 @@ export async function updateEventsDb(
 	}
 
     try {
+        const currentDatetime = getUTCDatetime();
+        updates = updates.map(el => ({ ...el, updated_at: currentDatetime }));
         const ids = updates.map(u => u.id);
         
         // Build dynamic CASE statements for each field
@@ -51,6 +56,7 @@ export async function updateEventsDb(
         addCase('schedule_id', u => u.schedule_id);
         addCase('schedule_position', u => u.schedule_position);
         addCase('playhead', u => u.playhead);
+        addCase('updated_at', u => u.updated_at);
 
         if (caseStatements.length === 0) {
             res.error = 'no fields to update';

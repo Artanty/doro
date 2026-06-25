@@ -1,4 +1,5 @@
 import { dd } from "../utils/dd";
+import { getUTCDatetime } from "../utils/get-utc-datetime";
 import { Nullable } from "../utils/utility.types";
 
 export interface DbActionResult<T = any> {
@@ -22,6 +23,10 @@ export interface BulkCreateEventResult {
 	debug?: any;
 }
 
+/**
+ * 
+ * @deprecated not tested, old props in sql statement 
+ */
 export const bulkCreateEventsDb = async (
 	connection: any,
 	userHandler: string,
@@ -103,6 +108,7 @@ export const createEventDb = async (
 	is_rest: boolean,
 	schedule_id: number,
 	schedule_position: number,
+	updated_at?: string
 ): Promise<DbActionResult> => {
 
 	const res: any = {
@@ -112,9 +118,12 @@ export const createEventDb = async (
 	}
 	
 	try {
+		
+		const currentDatetime = updated_at ?? getUTCDatetime();
+		
 		const [eventResult] = await connection.execute(
-			'INSERT INTO events (name, length, playhead, is_rest, schedule_id, schedule_position) VALUES (?, ?, ?, ?, ?, ?)',
-			[name, length, playhead, is_rest, schedule_id, schedule_position]
+			'INSERT INTO events (name, length, playhead, is_rest, schedule_id, schedule_position, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+			[name, length, playhead, is_rest, schedule_id, schedule_position, currentDatetime]
 		);
                 
 		res.success = true;

@@ -37,7 +37,6 @@ export const createEventCtl = async (props: CreateEventCtlProps): Promise<{ data
 			connection,
 			name, length, playhead, is_rest, 
 			schedule_id, schedule_position,
-			
 		);
 		if (createEventResult.error) {
 			throw new Error(createEventResult.error);

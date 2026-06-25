@@ -1,3 +1,3 @@
-export const getUTCDatetime = () => {
+export const getUTCDatetime = (): string => {
 	return new Date().toISOString().slice(0, 19).replace('T', ' ');
 }

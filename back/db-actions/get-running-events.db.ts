@@ -3,19 +3,21 @@ import { dd } from "../utils/dd";
 import { GetEventsQueryBuilder } from "./get-event.db.builder";
 
 export interface GetRunningEventsResItem {
-    "id": number
-    "name": string
-    "length": number
-    // "type": number
-    // "created_at": string
-    // "updated_at": string | null,
-    // "schedule_id": number,
-    // "schedule_position": number,
-    // "created_by": string, //todo remve
-    // "base_access_id": number //todo remve
-    // event_state_id: number
+    id: number,
+    name: string,
+    length: number,
+    is_rest: number,
+    updated_at: string,
+    schedule_id: number,
+    schedule_name: string,
+    schedule_is_playing: number,
+    schedule_position: number,
+    playhead: number
+    schedule_owner: string
+    is_active_event: boolean
 };
-
+    
+    
 export const getRunningEventsDb = async (
     connection: any,
     userHandler: string
@@ -28,7 +30,7 @@ export const getRunningEventsDb = async (
             .onlyActiveEvents()
             .scheduleIsPlaying(true)
             .execute(connection);
-        dd(rows)
+            
         return {
             success: true,
             result: rows,

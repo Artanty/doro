@@ -1,12 +1,13 @@
 import { EVENT_TIK_ACTION_PROP } from "../../core/constants";
 import createPool from "../../core/db_connection"
-import { getRunningEventsDb } from "../../db-actions/get-running-events.db";
+import { getRunningEventsDb, GetRunningEventsResItem } from "../../db-actions/get-running-events.db";
 import { buildOuterEntityId } from "../../utils/buildOuterEntityId";
 import { dd } from "../../utils/dd";
 import { thisProjectResProp } from "../../utils/getResProp";
 import { ConfigManager } from "../config-manager";
 import { buildTikPlayingEvents } from "../helpers/build-tik-events";
 import { OuterSyncService } from "../outer-sync.service";
+import { calculatePlayhead } from "./get-running-events.helper";
 
 export const getRunningEventsCtl = async (userHandler: any) => {
     const pool = createPool();
@@ -29,7 +30,15 @@ export const getRunningEventsCtl = async (userHandler: any) => {
             throw new Error('getRunningEventsResult crashed')
         }
 
-        eventsWithTikStatus = await buildTikPlayingEvents(getRunningEventsResult.result);
+        /**
+         * Рассчитываем текущий плейхэд каждого запущенного ивента,
+         * удаляем из данных для @tik зкончившиеся ивенты.
+         */
+        const filteredEvents: GetRunningEventsResItem[] = getRunningEventsResult.result
+            .map(el => ({ ...el, playhead: calculatePlayhead(el) }))
+            .filter(el => el.length !== el.playhead);        
+
+        eventsWithTikStatus = await buildTikPlayingEvents(filteredEvents);
         
         
         eventsWithTikAction = OuterSyncService.addOuterActionInEvents(eventsWithTikStatus, 'upsert');

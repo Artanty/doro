@@ -1,3 +1,4 @@
+import { GetRunningEventsResItem } from "../../db-actions/get-running-events.db";
 import { MinimalEventProps, EventStateResItem } from "../../types/event-state.types";
 import { buildOuterEntityId } from "../../utils/buildOuterEntityId";
 import { dd } from "../../utils/dd";
@@ -35,13 +36,13 @@ export const buildTikEvents = async (
 }
 
 export const buildTikPlayingEvents = async (
-    events: {id: number, playhead: number, length:number}[]
+    events: GetRunningEventsResItem[]
 ): Promise<EventStateResItem[]> => {
     
     events = ensureArray(events);
     
     const eventsWithStatus = await Promise.all(
-        events.map(async (eventProps: {id: number, playhead: number, length:number}) => {
+        events.map(async (eventProps: GetRunningEventsResItem) => {
             
 
             const res: EventStateResItem = {
