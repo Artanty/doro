@@ -161,8 +161,8 @@ export class EventService {
     const tikEventId = `${eventTypePrefix}_${eventProps.id}`;
     // определяем, идет событие ли нет, в зависимости от этого
     // получаем его динамический стейт или статический
-    dd(eventProps.schedule_is_playing)
-    dd(eventProps.is_active_event)
+    // dd(eventProps.schedule_is_playing)
+    // dd(eventProps.is_active_event)
     if (eventProps.schedule_is_playing && eventProps.is_active_event) {
       return this.eventBusListener$.pipe(
         filter(filterStreamDataEntries),

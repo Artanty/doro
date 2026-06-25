@@ -11,6 +11,7 @@ export interface GetRunningEventsResItem {
     schedule_id: number,
     schedule_name: string,
     schedule_is_playing: number,
+    schedule_active_event_id: number,
     schedule_position: number,
     playhead: number
     schedule_owner: string

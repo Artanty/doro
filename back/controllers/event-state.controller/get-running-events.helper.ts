@@ -6,7 +6,7 @@ export const calculateDates = (date1: string, date2: string, operation: string, 
 
     const d1 = new Date(date1);
     const d2 = new Date(date2);
-    debugger;
+    
     switch(operation) {
         case '-':
             result = d1.getTime() - d2.getTime();

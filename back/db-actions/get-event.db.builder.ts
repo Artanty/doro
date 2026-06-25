@@ -22,6 +22,7 @@ export class GetEventsQueryBuilder {
                 s.id AS schedule_id,
                 s.name AS schedule_name,
                 s.is_playing AS schedule_is_playing,
+                s.active_event_id AS schedule_active_event_id,
                 e.schedule_position,
                 e.playhead,
                 s.created_by AS schedule_owner,
@@ -64,6 +65,18 @@ export class GetEventsQueryBuilder {
         return this.where('s.id = ?', id);
     }
 
+    // Filter by event ID
+    eventId(id: number): this {
+        return this.where('e.id = ?', id);
+    }
+
+    // Filter by multiple event IDs
+    eventIds(ids: number[]): this {
+        if (ids.length === 0) return this;
+        const placeholders = ids.map(() => '?').join(', ');
+        return this.where(`e.id IN (${placeholders})`, ...ids);
+    }
+
     // Filter by schedule playing status
     scheduleIsPlaying(value: boolean = true): this {
         return this.where('s.is_playing = ?', value ? 1 : 0);
@@ -95,6 +108,14 @@ export class GetEventsQueryBuilder {
 
     playheadLessThanLength(): this {
         return this.where('e.playhead < e.length');
+    }
+
+    playheadGreaterThanLength(): this {
+        return this.where('e.playhead > e.length');
+    }
+
+    playheadBetween(min: number, max: number): this {
+        return this.where('e.playhead BETWEEN ? AND ?', min, max);
     }
 
     // Search by name

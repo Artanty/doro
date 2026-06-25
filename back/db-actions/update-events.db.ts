@@ -14,75 +14,85 @@ export interface EventUpdate {
 export async function updateEventsDb(
     connection: any,
     updates: EventUpdate[]
-): Promise<boolean> {
+): Promise<any> {
 
     const res: any = {
-		success: false,
-		result: null,
-		error: null
-	}
+        success: false,
+        result: null,
+        error: null
+    }
 
     try {
-        const currentDatetime = getUTCDatetime();
-        updates = updates.map(el => ({ ...el, updated_at: currentDatetime }));
-        const ids = updates.map(u => u.id);
-        
-        // Build dynamic CASE statements for each field
-        const caseStatements: string[] = [];
-        const values: any[] = [];
-
-        // Helper to add CASE for a field
-        const addCase = (field: string, getValue: (u: EventUpdate) => any) => {
-            const hasValue = updates.some(u => getValue(u) !== undefined);
-            if (!hasValue) return;
-
-            const cases = updates
-                .filter(u => getValue(u) !== undefined)
-                .map(u => `WHEN id = ? THEN ?`)
-                .join(' ');
-            
-            const caseValues = updates
-                .filter(u => getValue(u) !== undefined)
-                .flatMap(u => [u.id, getValue(u)]);
-
-            caseStatements.push(`${field} = CASE ${cases} ELSE ${field} END`);
-            values.push(...caseValues);
-        };
-
-        // Add each field
-        addCase('name', u => u.name);
-        addCase('length', u => u.length);
-        addCase('is_rest', u => u.is_rest !== undefined ? (u.is_rest ? 1 : 0) : undefined);
-        addCase('schedule_id', u => u.schedule_id);
-        addCase('schedule_position', u => u.schedule_position);
-        addCase('playhead', u => u.playhead);
-        addCase('updated_at', u => u.updated_at);
-
-        if (caseStatements.length === 0) {
-            res.error = 'no fields to update';
+        if (!updates || updates.length === 0) {
+            throw new Error('Empty updates array');
         }
 
-        // Add IDs for WHERE clause
-        values.push(...ids);
+        // Получаем текущее время один раз для всех обновлений
+        const currentDatetime = getUTCDatetime();
+        
+        let totalAffectedRows = 0;
 
-        const query = `
-            UPDATE events 
-            SET ${caseStatements.join(', ')}
-            WHERE id IN (${ids.map(() => '?').join(', ')})
-        `;
+        // Выполняем простой UPDATE для каждого элемента массива
+        for (const update of updates) {
+            // Собираем только те поля, которые были переданы для обновления
+            const setClauses: string[] = [];
+            const values: any[] = [];
 
-        const [result] = await connection.execute(query, values);
-        res.result = result;
+            if ('name' in update && update.name !== undefined) {
+                setClauses.push('name = ?');
+                values.push(update.name);
+            }
+            if ('length' in update && update.length !== undefined) {
+                setClauses.push('length = ?');
+                values.push(update.length);
+            }
+            // ... и так далее для других полей
+            if ('is_rest' in update && update.is_rest !== undefined) {
+                setClauses.push('is_rest = ?');
+                values.push(update.is_rest ? 1 : 0);
+            }
+            if ('schedule_id' in update && update.schedule_id !== undefined) {
+                setClauses.push('schedule_id = ?');
+                values.push(update.schedule_id);
+            }
+            if ('schedule_position' in update && update.schedule_position !== undefined) {
+                setClauses.push('schedule_position = ?');
+                values.push(update.schedule_position);
+            }
+            if ('playhead' in update && update.playhead !== undefined) {
+                setClauses.push('playhead = ?');
+                values.push(update.playhead);
+            }
 
-        if(result.affectedRows > 0) {
-            res.success = true;    
+            // Поле updated_at добавляем всегда, если есть хоть одно другое поле для обновления
+            if (setClauses.length > 0) {
+                setClauses.push('updated_at = ?'); // Добавляем его последним в список SET
+                values.push(currentDatetime);      // И соответствующее значение в конец массива
+                values.push(update.id);            // Значение для WHERE идем самым последним
+
+                const query = `
+                    UPDATE events 
+                    SET ${setClauses.join(', ')}
+                    WHERE id = ?
+                `;
+                debugger;
+                const [result] = await connection.execute(query, values);
+                totalAffectedRows += result.affectedRows;
+            }
+        }
+
+        res.result = { affectedRows: totalAffectedRows };
+
+        if(totalAffectedRows > 0) {
+            res.success = true;
+        } else {
+            res.error = 'no rows were affected';
         }
 
         return res;
 
     } catch(error: any) {
-        res.error = error.message
-
+        res.error = error.message;
         return res;
     }
 }

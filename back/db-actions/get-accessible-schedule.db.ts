@@ -18,7 +18,7 @@ export interface GetAccessibleScheduleRes {
     updated_at: string,
     active_event_id: number,
     is_playing: number,
-    event?: GetAccessibleScheduleEventRes
+    event: GetAccessibleScheduleEventRes
 }
 
 export async function getAccessinleScheduleDb(
@@ -88,7 +88,16 @@ export async function getAccessinleScheduleDb(
             created_at: result.created_at,
             updated_at: result.updated_at,
             active_event_id: result.active_event_id,
-            is_playing: result.is_playing
+            is_playing: result.is_playing,
+            event: {
+                id: 0,
+                name: '',
+                length: 0,
+                is_rest: 0,
+                schedule_id: 0,
+                schedule_position: 0,
+                playhead: 0
+            }
         };
 
         // Add event if it exists

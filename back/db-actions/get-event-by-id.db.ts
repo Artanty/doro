@@ -1,6 +1,5 @@
 import { DbActionResult } from "../types/db-action.types";
 import { GetEventsQueryBuilder } from "./get-event.db.builder";
-import { GetRunningEventsResItem } from "./get-running-events.db";
 
 export interface GetEventResItem {
     "id": number
@@ -12,18 +11,18 @@ export interface GetEventResItem {
 };
 
 
-export const getEventDb = async (
+export const getEventByIdDb = async (
     connection: any, 
     userHandler: string, 
-    filters: any
-): Promise<DbActionResult<GetRunningEventsResItem[]>> => {
+    eventId: number
+): Promise<DbActionResult<GetEventResItem[]>> => {
     
     try {
        
         const queryBuilder = new GetEventsQueryBuilder(userHandler);
 
         const [rows] = await queryBuilder
-        .allEvents()
+        .eventId(eventId)
         .execute(connection);
 
         return {
