@@ -6,10 +6,14 @@ import { createEventDb } from '../../db-actions/create-event.db';
 import { buildScheduleInfo } from '../helpers/build-schedule-info';
 import { thisProjectResProp } from '../../utils/getResProp';
 import { CreateEventReq } from '@contracts/event.contract';
+import { CtlResult } from '../../types/controller.types';
+import { Nullable } from '../../utils/utility.types';
 
 type CreateEventCtlProps = CreateEventReq & { userHandler: string }
 
-export const createEventCtl = async (props: CreateEventCtlProps): Promise<{ data: any, debug: any }> => {
+export const createEventCtl = async (
+	props: CreateEventCtlProps
+): Promise<CtlResult<Nullable<{id: number}>>> => {
 	const { 
 			userHandler,
 			name, length, playhead, is_rest, 
@@ -79,10 +83,11 @@ export const createEventCtl = async (props: CreateEventCtlProps): Promise<{ data
 				},
 			}
 		};
-	} catch (error) { 
+	} catch (error: any) { 
 		console.log(error)
 		await connection.rollback();
 		return {
+			error: error?.message,
 			data: null,
 			debug: {
 				[thisProjectResProp()]: {

@@ -4,6 +4,7 @@ import { Observable, map } from "rxjs";
 import { CreateEventReq } from "../basic-event/basic-event-api.types";
 import { EventStateReq, EventState, EventStateRes } from "../basic-event/basic-event.types";
 import { SuggestRestReq, SuggestRestRes } from "../schedule/schedule.api.types";
+import { CreateEventRes } from "@contracts/event.contract";
 
 
 @Injectable()
@@ -27,10 +28,10 @@ export class ApiService {
 			map(res => res.data));
 	}
 
-	public createEventApi(payload: CreateEventReq) {
+	public createEventApi(payload: CreateEventReq): Observable<CreateEventRes> {
 		const apiUrl = `${process.env['DORO_BACK_URL']}/event/create`;
     
-		return this.http.post(apiUrl, payload);
+		return this.http.post<CreateEventRes>(apiUrl, payload);
 	}
 
 	

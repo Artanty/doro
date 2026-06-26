@@ -11,6 +11,7 @@ import { GetUserEventsRes, EventProps, EventStateResItem, EventState, EventState
 import { EventProgress } from "../../constants";
 import { dd } from "../../helpers/dd";
 import { PauseEventReq, PlayEventReq } from "@contracts/event-state.contract";
+import { CreateEventRes } from "@contracts/event.contract";
 
 
 @Injectable()
@@ -49,7 +50,7 @@ export class EventService {
       )
   }
 
-  public createEvent(payload: CreateEventReq) {
+  public createEvent(payload: CreateEventReq): Observable<CreateEventRes> {
     return this._api.createEventApi(payload).pipe(
       tap(() => {
         this._state.configHash.next(999);
