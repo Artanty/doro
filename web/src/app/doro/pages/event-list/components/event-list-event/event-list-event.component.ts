@@ -134,7 +134,7 @@ export class EventListEventComponent implements OnInit, OnDestroy {
   }
 
   pauseEvent() {
-    this.eventService.pauseEvent(this.eventProps.id).subscribe()
+    this.eventService.pauseEvent(this.eventProps.id, this.eventProps.schedule_id).subscribe()
   }
 
  

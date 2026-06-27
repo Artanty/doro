@@ -129,10 +129,10 @@ export class EventService {
     ).subscribe()
   }
 
-  public pauseEvent(eventId: number) {
+  public pauseEvent(eventId: number, scheduleId: number) {
     const payload: PauseEventReq= {
-      "eventId": eventId, 
-      "state": 2
+      eventId, 
+      scheduleId,
     }
     return this.http.post<any>(`${this.doroBaseUrl}/event-state/pause`, payload).pipe(
       tap(() => {

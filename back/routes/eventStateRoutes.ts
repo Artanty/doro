@@ -11,6 +11,7 @@ import { PauseEventReq, PlayEventReq } from '@contracts/event-state.contract';
 const assertPlayEvent = typia.createAssert<PlayEventReq>();
 const assertPauseEvent = typia.createAssert<PauseEventReq>();
 
+
 const router = express.Router();
 
 router.post('/play', async (req, res) => {
@@ -52,11 +53,11 @@ router.post('/stop', async (req, res,) => {
 
 router.post('/pause', async (req, res,) => {
   try {
-    assertPauseEvent(req.body);
+    const props = assertPauseEvent(req.body);
     
     const user = getUserFromRequest(req);
-    const { eventId, state } = req.body;
-    const result = await EventStateController.pauseEvent(user, +eventId, +state);
+    const { eventId, scheduleId } = props;
+    const result = await EventStateController.pauseEvent(user, eventId, scheduleId);
     res.json(result);
   } catch (error) {
     handleError(res as unknown as Response, error) 

@@ -48,7 +48,7 @@ export class BaseEventComponent {
   }
 
   pauseEvent() {
-    this.eventService.pauseEvent(this.eventProps.id)
+    this.eventService.pauseEvent(this.eventProps.id, this.eventProps.schedule_id)
       .pipe(takeUntil(this.destroy$))
       .subscribe()
   }

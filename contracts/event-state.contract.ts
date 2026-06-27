@@ -6,5 +6,5 @@ export interface PlayEventReq {
 
 export interface PauseEventReq {
     "eventId": number
-    "state": number
+    "scheduleId": number
 }
