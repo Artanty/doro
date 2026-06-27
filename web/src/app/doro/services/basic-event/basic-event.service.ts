@@ -93,11 +93,11 @@ export class EventService {
   //     "is_active_event": 1
   // }
 
-  public playEvent(eventId: number, scheduleId: number): Observable<any> {
+  public playEvent(eventId: number, scheduleId: number, playEventPlayhead?: number): Observable<any> {
     const payload: PlayEventReq = {
       scheduleId: scheduleId,
       eventIdToPlay: eventId,
-      playEventPlayhead: 0,
+      playEventPlayhead
     }
     return this.http.post<any>(`${this.doroBaseUrl}/event-state/play`, payload)
 			.pipe(

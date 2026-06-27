@@ -14,7 +14,7 @@ export const updateEventStateCtl = async (
     userHandler: any, 
     eventStates: UpsertEventStateItem[],
 ): Promise<any> => {
-    // debugger;
+    
     const pool = createPool();
     const connection = await pool.getConnection();
     let getAccessibleEventResult,
@@ -38,7 +38,7 @@ export const updateEventStateCtl = async (
         }
             
         //addEventStateHistoryResult = await bulkAddEventStateHistory(connection, eventStates)
-        // debugger;
+        
         const eventsArr = Array.from(getAccessibleEventResult.results.values());
         const minProps = eventsArr.map(e => toMinProps(e as EventPropsDbItem));
         // const eventProps: EventPropsDbItem = getAccessibleEventResult.results.get(eventId);

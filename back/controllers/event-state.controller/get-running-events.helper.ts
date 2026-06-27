@@ -45,7 +45,6 @@ export const getDatesDiffInSeconds = curryCalculateDates('-', 'seconds');
  */
 export const calculatePlayhead = (event: GetRunningEventsResItem): number => {
     const currentTime = getUTCDatetime();
-    
     /**
      * Сколько прошло времени с последнего действия
      */
@@ -53,7 +52,7 @@ export const calculatePlayhead = (event: GetRunningEventsResItem): number => {
     /**
      *  Актуальный плейхэд
      */
-    const lastActionPlayheadSec = event.playhead * 1000;
+    const lastActionPlayheadSec = event.playhead;// * 1000;
     const totalPlayed = lastActionPlayheadSec + fromLastActionToNowSec;
     /**
      * Если актуальный плейхэд больше или равен длительности события,

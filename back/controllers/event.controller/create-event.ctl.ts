@@ -8,14 +8,21 @@ import { thisProjectResProp } from '../../utils/getResProp';
 import { CreateEventReq } from '@contracts/event.contract';
 import { CtlResult } from '../../types/controller.types';
 import { Nullable } from '../../utils/utility.types';
+import { dd } from '../../utils/dd';
+import { PlayEventReq } from '@contracts/event-state.contract';
+import { playEventCtl, PlayEventResult } from '../event-state.controller/play-event.ctl';
 
-type CreateEventCtlProps = CreateEventReq & { userHandler: string }
+type CreateEventCtlProps = CreateEventReq & { userHandler: string };
+type CreateStoppedEventResult = CtlResult<Nullable<{id: number}>>
 
-export const createEventCtl = async (
+type CreateEventCtlResult = CtlResult<Nullable<{ id: number, is_playing: boolean }>>
+
+export const createStoppedEvent = async (
+	userHandler: any,
 	props: CreateEventCtlProps
-): Promise<CtlResult<Nullable<{id: number}>>> => {
+): Promise<CreateStoppedEventResult> => {
 	const { 
-			userHandler,
+			
 			name, length, playhead, is_rest, 
 			schedule_id,
 			hooks, 
@@ -28,15 +35,14 @@ export const createEventCtl = async (
 	let createEventResult,
 		createEventStateHookResult,
 		upsertScheduleAccessResult,
-		addHistoryResult
-		;
+		addHistoryResult;
 	try {
 		await connection.beginTransaction();
-
+	
 		const schedule_position = 
 			props.schedule_position ?? 
 			(await buildScheduleInfo(connection, schedule_id)).schedule_position;
-
+	
 		createEventResult = await createEventDb(
 			connection,
 			name, length, playhead, is_rest, 
@@ -49,25 +55,22 @@ export const createEventCtl = async (
 
 		// createEventStateHookResult = await createEventStateHooks(connection, eventId, hooks);
 
-		addHistoryResult = await addEventStateHistory(connection, eventId, is_playing, playhead)
+		// addHistoryResult = await addEventStateHistory(connection, eventId, is_playing, playhead)
 			
 		/**
 		 * Нужно чтобы doro@web подтянул новое cобытие.
 		 * Для этого обновляем хэш, который doro@web впоследствии получит от tik@web
+		 * 
+		 * Не делаем этого, если is_playing, чтобы дважды не обновлять все клиенты.
+		 * Можно использовать отдельно для содания остановленных ивентов.
 		 * */
-		ConfigManager.setConfigHash();
-		const entitiesToUpdate: any[] = [];
-		const hashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert');
-		entitiesToUpdate.push(...hashPayload)
-		/**
-		 * Стейт события (ecли is_playing === true) нужно передать в tik@, чтобы отобразился прогресс.
-		 * Передаем обе сущности в одном запросе.
-		 * */
-		if (is_playing) {
-			const eventsPayload = OuterSyncService.buildNewOuterEventPayload(eventId, length, Number(is_playing), 'event');
-			entitiesToUpdate.push(...eventsPayload)
+		if (!is_playing) {
+			ConfigManager.setConfigHash();
+			const entitiesToUpdate: any[] = [];
+			const hashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert');
+			entitiesToUpdate.push(...hashPayload)
+			await OuterSyncService.updateOuterEntries(entitiesToUpdate);
 		}
-		await OuterSyncService.updateOuterEntries(entitiesToUpdate);
 		
 		await connection.commit();
 		return {
@@ -100,5 +103,42 @@ export const createEventCtl = async (
 		};
 	} finally {
 		connection.release();
+	}
+}
+
+export const createEventCtl = async (
+	userHandler: any,
+	props: CreateEventCtlProps
+): Promise<CreateEventCtlResult> => {
+	let
+		createStoppedEventResult: CreateStoppedEventResult,
+		playEventResult: PlayEventResult;
+
+	createStoppedEventResult = await createStoppedEvent(userHandler, props);
+	
+	if (!createStoppedEventResult.error && props.is_playing) {	
+		const playEventProps: PlayEventReq = {
+			scheduleId: props.schedule_id,
+			eventIdToPlay: createStoppedEventResult.data!.id,
+			playEventPlayhead: props.playhead
+		}
+		playEventResult = await playEventCtl(userHandler, playEventProps)
+	}
+
+	return {
+		data: {
+			id: createStoppedEventResult.data!.id,
+			is_playing: playEventResult! ? playEventResult.data.success : false,
+		},
+		debug: {
+			create: createStoppedEventResult.debug,
+			play: playEventResult! ? playEventResult.debug : undefined,
+		},
+		error: createStoppedEventResult.error
+		? {
+			create: createStoppedEventResult.error,
+			play: playEventResult! ? playEventResult.error : undefined,
+		}
+		: undefined
 	}
 }

@@ -13,7 +13,7 @@ router.post('/create', async (req, res) => {
     assertCreateEvent(req.body);
 
     const user = getUserFromRequest(req);
-    const result = await EventController.createEvent({ ...req.body, userHandler: user });
+    const result = await EventController.createEvent(user, req.body);
     res.status(201).json(result);
   } catch (error: unknown) {
     res.status(500).json({ error: (error as any)?.message ? (error as any).message : error });

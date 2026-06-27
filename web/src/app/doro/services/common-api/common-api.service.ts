@@ -6,7 +6,6 @@ import { EventStateReq, EventState, EventStateRes } from "../basic-event/basic-e
 import { SuggestRestReq, SuggestRestRes } from "../schedule/schedule.api.types";
 import { CreateEventRes } from "@contracts/event.contract";
 
-
 @Injectable()
 export class ApiService {
 	

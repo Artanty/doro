@@ -42,11 +42,11 @@ export const getAccessibleEvents = async (
 	if (!eventIds || eventIds.length === 0) {
 		return result;
 	}
-	// debugger;
+	
 	try {
 		// Create placeholders for the IN clause
 		const placeholders = eventIds.map(() => '?').join(',');
-		// debugger;
+		
 		// Get all events in one query
 		const [events] = await connection.execute(
 			`SELECT * FROM events WHERE id IN (${placeholders})`,

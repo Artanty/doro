@@ -13,11 +13,14 @@ import { calculatePlayhead } from './get-running-events.helper';
 import { DbActionResult } from '../../types/db-action.types';
 import { getEventByIdDb } from '../../db-actions/get-event-by-id.db';
 import { GetRunningEventsResItem } from '../../db-actions/get-running-events.db';
+import { CtlResult } from '../../types/controller.types';
+
+export type PlayEventResult = CtlResult<{success: boolean}>
 
 export const playEventCtl = async (
     userHandler: any, 
     params: PlayEventReq
-): Promise<any>  => {
+): Promise<PlayEventResult>  => {
     const state = eventProgress.PLAYING; // 1
     const pool = createPool();
     const connection = await pool.getConnection();
@@ -62,7 +65,9 @@ export const playEventCtl = async (
         if (eventCalculatedPlayhead === eventToPlay.length) {
             
             if (eventCalculatedPlayhead !== eventToPlay.playhead) {
-                updatedPlayheadResult = await updateEventsDb(connection, [{ id: eventToPlay.id, playhead: eventCalculatedPlayhead }]);
+                updatedPlayheadResult = await updateEventsDb(connection, [
+                    { id: eventToPlay.id, playhead: eventCalculatedPlayhead }
+                ]);
 
                 const tikEventToDelete: OuterEntry = {
                     id: buildOuterEntityId('event', params.eventIdToPlay),
@@ -88,7 +93,6 @@ export const playEventCtl = async (
                 eventIdToStop = schedule.active_event_id;
             }
             
-
             updateScheduleResult = await updateScheduleDb(
                 connection,
                 params.scheduleId,
@@ -105,7 +109,7 @@ export const playEventCtl = async (
             const tikEventToPlay: OuterEntry = {
                 id: buildOuterEntityId('event', params.eventIdToPlay),
                 [EVENT_TIK_ACTION_PROP]: 'upsert',
-                cur: params.playEventPlayhead ?? 0,
+                cur: params.playEventPlayhead ?? eventToPlay.playhead,
                 len: eventToPlay.length,
                 stt: 1
             }
@@ -129,13 +133,20 @@ export const playEventCtl = async (
 
             if (eventIdToStop) {
                 // doro__e_928
-                const receivedDeletedTikEventId = tikResponse.data.stat.deletedItems
+                const receivedDeletedTikEvent = tikResponse.data.stat.deletedItems
                 .find(el => el.id ===`doro__e_${eventIdToStop}`);
 
-                if (!receivedDeletedTikEventId) {
-                    throw new Error('doro prev running event & tik deleted event id mismatch');
+                if (receivedDeletedTikEvent) {
+                    updateEventsPayload.push({ 
+                        id: eventIdToStop, 
+                        playhead: receivedDeletedTikEvent?.cur 
+                    })
+                } else {
+                    /**
+                     * Ситуация, когда @tik неконсистентен с @doro
+                     */
+                    // throw new Error('doro prev running event & tik deleted event id mismatch');
                 }
-                updateEventsPayload.push({ id: eventIdToStop, playhead: receivedDeletedTikEventId.cur})
             }
             
             updateEventsPayload.push({ id: params.eventIdToPlay, playhead: params.playEventPlayhead ?? 0 });
@@ -143,10 +154,7 @@ export const playEventCtl = async (
             updateEventsResult = await updateEventsDb(connection, updateEventsPayload);
         }
 
-        
-
         // addHistoryResult = await addEventStateHistory(connection, eventId, state)
-        
         
         await connection.commit();
 
@@ -178,8 +186,8 @@ export const playEventCtl = async (
         return {
             data: {
                 success: false,
-                error: error?.message ?? String(error),
             },
+            error: error?.message ?? String(error),
             debug: {
                 [thisProjectResProp()]: {
                     getEventByIdResult,

@@ -75,7 +75,7 @@ export async function updateEventsDb(
                     SET ${setClauses.join(', ')}
                     WHERE id = ?
                 `;
-                debugger;
+                
                 const [result] = await connection.execute(query, values);
                 totalAffectedRows += result.affectedRows;
             }
