@@ -3,6 +3,7 @@ import { getUTCDatetime } from "../utils/get-utc-datetime";
 import { Nullable } from "../utils/utility.types";
 import { DbActionResult } from "./create-event.db";
 
+// todo add permisions check
 export const deleteEvent = async (
 	connection: any, 
 	eventId: number,

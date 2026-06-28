@@ -96,33 +96,6 @@ export class GetEventsQueryBuilder {
         return this;
     }
 
-    // Filter by rest events
-    isRest(value: boolean = true): this {
-        return this.where('e.is_rest = ?', value ? 1 : 0);
-    }
-
-    // Playhead conditions
-    playheadEqualsLength(): this {
-        return this.where('e.playhead = e.length');
-    }
-
-    playheadLessThanLength(): this {
-        return this.where('e.playhead < e.length');
-    }
-
-    playheadGreaterThanLength(): this {
-        return this.where('e.playhead > e.length');
-    }
-
-    playheadBetween(min: number, max: number): this {
-        return this.where('e.playhead BETWEEN ? AND ?', min, max);
-    }
-
-    // Search by name
-    eventName(name: string): this {
-        return this.where('e.name LIKE ?', `%${name}%`);
-    }
-
     // Filter by creator
     createdBy(userId: string): this {
         return this.where('s.created_by = ?', userId);

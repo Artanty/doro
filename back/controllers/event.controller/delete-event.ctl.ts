@@ -6,24 +6,38 @@ import { thisProjectResProp, tikResProp } from '../../utils/getResProp';
 import { updateEvent } from '../../db-actions/update-event';
 import { getAccessibleEvent, ACCESS_CASE } from '../../db-actions/get-accessible-event';
 import { ConfigManager } from '../config-manager';
-import { OuterSyncService } from '../outer-sync.service';
+import { OuterEntry, OuterSyncService } from '../outer-sync.service';
 import { deleteEvent } from '../../db-actions/delete-event';
 import { buildOuterEntityId } from '../../utils/buildOuterEntityId';
 import { parseServerResponse } from '../../utils/parseServerResponse';
 
+/**
+ * 1. получить event & schedule
+ * 
+ * Если этот ивент последний в schedule ! прикрутить events count к запросу event+schedule
+ * 
+ * 
+ * Если этот ивент - активный в schedule
+ * 1. 
+ * 
+ * Если этот ивент сейчас is_running
+ * 1. удалить его из tik@
+ * 2. остановить schedule
+ * 3. удалить его из events
+ * 
+ 
+ */
 export const deleteEventCtl = async (eventId: number, userHandler: string) => {
 	const pool = createPool();
 	const connection = await pool.getConnection();
 
-	let getAccessibleEventResult,
-		deleteEventResult;
+	let 
+		deleteEventResult,
+		tikEventsPayload: OuterEntry[] = [],
+		tikResponse
+		;
 	try {
 		await connection.beginTransaction();
-
-		getAccessibleEventResult = await getAccessibleEvent(connection, eventId, userHandler, ACCESS_CASE.DELETE);
-		if (!getAccessibleEventResult.success) {
-			throw new Error(getAccessibleEventResult.error!);
-		}
 
 		deleteEventResult = await deleteEvent(connection, eventId);
 		if (!deleteEventResult.success) {
@@ -38,8 +52,8 @@ export const deleteEventCtl = async (eventId: number, userHandler: string) => {
 
 		const outerEvent = { id: buildOuterEntityId('event', eventId) };
 		const eventsPayload = OuterSyncService.addOuterActionInEvents(outerEvent, 'delete');
-			
-		const tikResponse = await OuterSyncService.updateOuterEntries([...hashPayload, ...eventsPayload]);
+		tikEventsPayload = [...hashPayload, ...eventsPayload];
+		tikResponse = await OuterSyncService.updateOuterEntries(tikEventsPayload);
 			
 		return {
 			data: {
@@ -47,10 +61,13 @@ export const deleteEventCtl = async (eventId: number, userHandler: string) => {
 			},
 			debug: {
 				[thisProjectResProp()]: {
-					getAccessibleEventResult,
-					deleteEventResult
+					deleteEventResult,
+		
 				},
-				[tikResProp()]: tikResponse,
+				[tikResProp()]: {
+					request: tikEventsPayload,
+					response: tikResponse
+				}
 			}
 		}
 	} catch (error) { 
