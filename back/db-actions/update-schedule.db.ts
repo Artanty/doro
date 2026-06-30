@@ -64,11 +64,9 @@ export async function updateScheduleDb(
             res.error = 'No access or schedule not found'
         }
 
-        return res;
-        
     } catch (error: any) {
-        res.error = error.message
-
+        res.error = error.message;
+    } finally {
         return res;
     }
     

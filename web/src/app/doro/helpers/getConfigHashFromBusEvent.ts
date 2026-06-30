@@ -4,10 +4,12 @@ import { dd } from "./dd";
 export interface ConfigHashTikEntry { id: string, cur: number };
 
 export const mapBusEventToConfigHashTikEntry = (
-	busEvent: BusEvent
+	busEvent: BusEvent,
+	hashType: string
 ): ConfigHashTikEntry | undefined => {
+	const hashId = hashType === 'events' ? 'h_1' : 'h_2';
 	const foundEntry = busEvent.payload
-		.find((entry: any) => entry.id === 'h_1');
+		.find((entry: any) => entry.id === hashId);
 	// dd('config hash entry found')
 	return foundEntry;
 };

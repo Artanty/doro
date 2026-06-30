@@ -20,7 +20,7 @@ export type PlayEventResult = CtlResult<{success: boolean}>
 export const playEventCtl = async (
     userHandler: any, 
     params: PlayEventReq
-): Promise<PlayEventResult>  => {
+): Promise<PlayEventResult> => {
     const state = eventProgress.PLAYING; // 1
     const pool = createPool();
     const connection = await pool.getConnection();
@@ -34,7 +34,8 @@ export const playEventCtl = async (
         updateScheduleResult,
         updateEventsPayload: EventUpdate[] = [],
         updateEventsResult,
-        tikResponse;
+        tikResponse
+        ;
     try {
         await connection.beginTransaction();
         
@@ -187,7 +188,7 @@ export const playEventCtl = async (
             data: {
                 success: false,
             },
-            error: error?.message ?? String(error),
+            error: error.message,
             debug: {
                 [thisProjectResProp()]: {
                     getEventByIdResult,

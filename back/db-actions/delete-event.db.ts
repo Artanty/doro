@@ -4,7 +4,7 @@ import { Nullable } from "../utils/utility.types";
 import { DbActionResult } from "./create-event.db";
 
 // todo add permisions check
-export const deleteEvent = async (
+export const deleteEventDb = async (
 	connection: any, 
 	eventId: number,
 ): Promise<DbActionResult> => {
@@ -26,9 +26,10 @@ export const deleteEvent = async (
 
 		return res;
 	} catch (error: any) {
-		dd(error.message)
+		res.success = false;
 		res.error = error.message
 
+	} finally {
 		return res;
 	}
 }

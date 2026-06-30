@@ -46,10 +46,23 @@ export type EntryWithTikAction<T> = T & { [EVENT_TIK_ACTION_PROP]: string };
 
 export class OuterSyncService {
 
-	public static buildOuterHash(): OuterHash {
+	public static buildOuterHash(params?: {
+        userHandler: string, 
+        hashType: string
+    }): OuterHash {
+		let userHandler = params?.userHandler;
+		let hashType = params?.hashType;
+
+		if (!userHandler) {
+			userHandler = '74aa6454c1fcabffea7ff172:324c9c440c841889632429b574a39942';
+		}
+		if (!hashType) {
+			hashType = 'events';
+		}
+		
 		return {
 			id: buildOuterEntityId('configHash', 1), // 1 - id
-			cur: ConfigManager.configHash,
+			cur: ConfigManager.getConfigHash(params),
 		};
 	}
 
@@ -68,9 +81,9 @@ export class OuterSyncService {
 		}	
 	}
     
-	public static buildUpdateOuterHashPayload(action: string): EntryWithTikAction<OuterHash>[] {
+	public static buildUpdateOuterHashPayload(action: string, params?): EntryWithTikAction<OuterHash>[] {
 
-		return this.addOuterActionInEvents<OuterHash>(this.buildOuterHash(), action);
+		return this.addOuterActionInEvents<OuterHash>(this.buildOuterHash(params), action);
 	}
 	// todo add prop tikAction, default = upsert
 	public static buildNewOuterEventPayload(
@@ -97,10 +110,22 @@ export class OuterSyncService {
 		}));
 	}
 
+	// sending initial state
+	// should be after login in future
 	public static async updateOuterConfigHash(): Promise<TikRes> {
-		dd('updateOuterConfigHash started: ' + ConfigManager.configHash)
-        
-		const payload = this.buildUpdateOuterHashPayload('upsert');
+		const userHandler = '74aa6454c1fcabffea7ff172:324c9c440c841889632429b574a39942';
+   
+		const outerHash1 = {
+			id: buildOuterEntityId('configHash', 1),
+			cur: ConfigManager.getConfigHash({ userHandler, hashType: 'events' }),
+		};
+		const outerHash2 = {
+			id: buildOuterEntityId('configHash', 2),
+			cur: ConfigManager.getConfigHash({ userHandler, hashType: 'schedules' }),
+		};
+
+		const payload = this.addOuterActionInEvents([outerHash1,outerHash2], 'upsert');
+		
 		let tikResponse;
 		try {
 			tikResponse = await axios.post(`${process.env['TIK_BACK_URL']}/updateEventsState`,
@@ -132,8 +157,7 @@ export class OuterSyncService {
 			console.error('process.env[TIK_BACK_URL]/updateEventsState error:', error.message);
 			throw new Error(error);
 		}
-		dd('updateOuterConfigHash result:')
-		dd(parseServerResponse(tikResponse))
+		
 		return tikResponse;
 	}
 

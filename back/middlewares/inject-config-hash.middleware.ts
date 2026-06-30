@@ -1,9 +1,15 @@
 import { ConfigManager } from '../controllers/config-manager';
+import { createShortHash } from '../utils/createHash';
 import { dd } from '../utils/dd';
 import { thisProjectResProp } from '../utils/getResProp';
+import { getUserFromRequest } from '../utils/getUserFromRequest';
+import { MemoryStorageService } from '../utils/memoryStorageService';
+import { sanitizePath } from '../utils/sanitizePath';
 
 export const injectConfigHashMiddleware = async (req, res, next) => {
     await next(); // Continue processing request handlers
+
+    const userHandler = getUserFromRequest(req);
 
     // Intercept the final response
     const originalSend = res.send.bind(res);
@@ -15,7 +21,8 @@ export const injectConfigHashMiddleware = async (req, res, next) => {
                 
                 const augmentedBody = { 
                     ...parsedBody, 
-                    config_hash: ConfigManager.configHash 
+                    config_hash: ConfigManager.getConfigHash({ userHandler, hashType: 'events' }),
+                    config_hash_schedules: ConfigManager.getConfigHash({ userHandler, hashType: 'schedules' }),
                 };
 
                 originalSend(JSON.stringify(augmentedBody));

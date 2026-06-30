@@ -1,7 +1,7 @@
 
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { Observable, BehaviorSubject, map, shareReplay, finalize, tap, catchError, of } from "rxjs";
+import { Observable, BehaviorSubject, map, shareReplay, finalize, tap, catchError, of, filter, Subject, switchMap } from "rxjs";
 import { filterBasicEvents } from "../../helpers/filterBasicEvents";
 import { EventProps } from "../basic-event/basic-event.types";
 import { AppStateService } from "../core/app-state.service";
@@ -13,39 +13,45 @@ export class ScheduleService {
 	_appStateService: any;
 	events$: any;
 	
+	private schedulesSubject = new BehaviorSubject<Schedule[]>([]);
+    public schedules$ = this.schedulesSubject.asObservable();
+    private isReady = false;
+    private isFetching = false;
+    private refreshTrigger = new Subject<void>();
+
 	constructor(
 		private http: HttpClient,
 		private _state: AppStateService,
-	) {}
+	) {
+		this._initSchedules()
+	}	
 
-	private cache$: Observable<Schedule[]> | null = null;
-	private isFetching = false;
-  
-	// Optional: loading state for UI
-	loading$ = new BehaviorSubject<boolean>(false);
+	public getSchedules(): Observable<Schedule[]> {
+        // If data is ready, return it
+        if (this.isReady) {
+            return this.schedules$;
+        }
+        
+        // If currently fetching, return the observable
+        if (this.isFetching) {
+            return this.schedules$;
+        }
+        
+        // First request - trigger refresh
+        this.refreshSchedules();
+        
+        return this.schedules$;
+    }
 
-	getSchedules(): Observable<Schedule[]> {
-		if (this.isFetching && this.cache$) {
-			return this.cache$;
-		}
-    
-		if (!this.cache$) {
-			this.isFetching = true;
-			this.loading$.next(true);
-      
-			this.cache$ = this.http.post<any>(`${this.doroBaseUrl}/schedule/list`, null)
-				.pipe(
-					map(res => res.data),
-					shareReplay(1),
-					finalize(() => {
-						this.isFetching = false;
-						this.loading$.next(false);
-					})
-				);
-		}
-    
-		return this.cache$;
-	}
+    public refreshSchedules(): void {
+        this.refreshTrigger.next();
+    }
+
+    public clearCache(): void {
+        this.schedulesSubject.next([]);
+        this.isReady = false;
+        this.isFetching = false;
+    }
 	
 	public getScheduleWithEvents(scheduleId: number): Observable<boolean> {
 		const payload = {
@@ -120,5 +126,30 @@ export class ScheduleService {
 		}
 	
 		return this.http.post<{data: number}>(`${this.doroBaseUrl}/schedule/create`, payload)
+	}
+
+	private _initSchedules (): void {
+		// Subscribe to refresh triggers
+        this.refreshTrigger.pipe(
+            switchMap(() => {
+                this.isFetching = true;
+                return this.http.post<any>(`${this.doroBaseUrl}/schedule/list`, null).pipe(
+                    map(res => res.data),
+                    finalize(() => {
+                        this.isFetching = false;
+                    })
+                );
+            })
+        ).subscribe({
+            next: (data) => {
+                this.schedulesSubject.next(data);
+                this.isReady = true;
+            },
+            error: (error) => {
+                console.error('Failed to fetch schedules:', error);
+                this.schedulesSubject.next([]);
+                this.isReady = true;
+            }
+        });
 	}
 }

@@ -1,6 +1,10 @@
 import { dd } from "../utils/dd";
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
+export interface ConfigHash{
+    events: Record<string, number>,
+    schedules: Record<string, number>,
+}
 
 // Настраиваем повторные попытки
 axiosRetry(axios, {
@@ -17,32 +21,90 @@ axiosRetry(axios, {
 });
 
 export class ConfigManager {
-    private static _configHash: number;
+    private static _configHash: ConfigHash = {
+        events: {
+            
+        },
+        schedules: {
 
-    /**
-     * Static getter to retrieve the current configuration hash
-     *
-     * @returns {number} The current configuration hash
-     */
-    public static get configHash(): number {
-        return ConfigManager._configHash;
+        }
+    }
+    
+    /**@deprecated use getConfigHash */
+    public static get configHash() {
+        return ConfigManager.getConfigHash();
     }
 
-    /**
-     * used by:
-     * EventController.createEvent
-     * 
-     *
-     * @param {number} newHash New configuration hash
-     */
-    public static setConfigHash(newHash?: number) {
-        newHash = newHash ?? new Date().getTime();
-        ConfigManager._configHash = newHash;
+    // если хэш не создан - создаем.
+    public static getConfigHash(params?: {
+        userHandler: string, 
+        hashType: string
+    }): number {
+        try {
+            let userHandler = params?.userHandler;
+            let hashType = params?.hashType;
+
+            if (!userHandler) {
+                userHandler = '74aa6454c1fcabffea7ff172:324c9c440c841889632429b574a39942';
+            }
+            if (!hashType) {
+                hashType = 'events';
+            }
+
+            let resultHash = ConfigManager._configHash[hashType][userHandler];
+            
+            if (resultHash) {
+                return resultHash;
+            } else {
+                resultHash = ConfigManager._makeHash();
+
+                ConfigManager.setConfigHash({
+                    userHandler,
+                    hashType,
+                    hash: resultHash
+                });
+            }
+            return resultHash;
+        } catch (error: any) {
+            dd(error.message);
+            throw new Error(error.message);
+        }
+    }
+   
+    public static setConfigHash(params?: {
+        userHandler: string,
+        hashType: string,
+        hash?: number,
+    }): void {
+        let userHandler = params?.userHandler;
+        let hashType = params?.hashType;
+        let hashFromProps = params?.hash;
+        
+        if (!userHandler) {
+            userHandler = '74aa6454c1fcabffea7ff172:324c9c440c841889632429b574a39942';
+        }
+        if (!hashType) {
+            hashType = 'events';
+        }
+
+        const newHash = hashFromProps ?? ConfigManager._makeHash();
+
+        switch (hashType) {
+            case 'events': 
+                ConfigManager._configHash[hashType][userHandler] = newHash;
+                break;
+            
+            case 'schedules':
+                ConfigManager._configHash[hashType][userHandler] = newHash;
+                break;
+            default: 
+                throw new Error(`setConfigHash err: hashType "${hashType}" not implemented`);
+        }
+        
         dd(`Setting configHash to ${newHash}`);
     }
-}
 
-// Usage:
-// ConfigManager.init(); // Optional, could move initialization elsewhere
-// console.log(ConfigManager.configHash); // Access globally
-// ConfigManager.configHash = 1234567890; // Modify globally
+    private static _makeHash(): number {
+        return new Date().getTime();
+    }
+}

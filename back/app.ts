@@ -50,6 +50,10 @@ app.get('/get-updates', async (req, res) => {
 app.listen(PORT, () => {
   dd(`Server is running on port ${PORT}`);
   checkDBConnection()
-  ConfigManager.setConfigHash(); // принудительно сеттим, потому что чтение не меняет хэш.
-  OuterSyncService.updateOuterConfigHash(); // todo дождаться, пока tik@ сам сюда стукнется?
+  // ConfigManager.setConfigHash(); // принудительно сеттим, потому что чтение не меняет хэш.
+
+  // todo дождаться, пока tik@ сам сюда стукнется?
+  // при первом запросе - хэши создадутся.
+  OuterSyncService.updateOuterConfigHash(); 
 });
+

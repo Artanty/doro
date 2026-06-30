@@ -117,10 +117,12 @@ export class EventService {
   public deleteEvent(id: number) {
     const payload = { id: id };
     this.http.post<any>(`${this.doroBaseUrl}/event/delete`, payload).pipe(
-      tap(() => {
-        const currentEvents = this._state.events.getValue();
-        const updatedEvents = currentEvents.filter(e => e.id !== id);
-        this._state.events.next(updatedEvents);
+      tap((res: any) => {
+        if (res.data.success) {
+          const currentEvents = this._state.events.getValue();
+          const updatedEvents = currentEvents.filter(e => e.id !== id);
+          this._state.events.next(updatedEvents);
+        }
       }),
       catchError(error => {
         console.error('Failed to delete event:', error);

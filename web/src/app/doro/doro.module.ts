@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { NgModule, CUSTOM_ELEMENTS_SCHEMA, Inject } from '@angular/core';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { BehaviorSubject, Observable, filter, map, switchMap } from 'rxjs';
+import { BehaviorSubject, Observable, filter, map, switchMap, tap } from 'rxjs';
 import { EVENT_BUS_LISTENER, BusEvent, EVENT_BUS, EVENT_BUS_PUSHER } from 'typlib';
 import { GuiDirective } from './components/_remote/web-component-wrapper/gui.directive';
 import { DoroComponent } from './doro.component';
@@ -19,6 +19,7 @@ import { TransitionEventService } from './services/transition-event/transition-e
 import { filterStreamDataEntries } from './helpers/filterStreamDataEntries';
 import { mapBusEventToConfigHashTikEntry } from './helpers/getConfigHashFromBusEvent';
 import { thisProjectResProp } from './helpers/getResProp';
+import { dd } from '@helpers/dd';
 
 export const CHILD_ROUTES = [
   {
@@ -110,6 +111,7 @@ export class DoroModule {
     private _compareConfigHashAction: CompareConfigHashAction,
     private _setConfigHashAction: SetConfigHashAction,
     private eventService: EventService,
+    private _scheduleService: ScheduleService,
   ) {
     this.eventBusListener$
       .pipe(
@@ -119,10 +121,10 @@ export class DoroModule {
       .subscribe((res: BusEvent) => {
         this._setConfigHashAction.init(res);
       });
-
+    // listen events changes
     this.eventBusListener$.pipe(
       filter(filterStreamDataEntries),
-      map(busEvent => mapBusEventToConfigHashTikEntry(busEvent)),
+      map(busEvent => mapBusEventToConfigHashTikEntry(busEvent, 'events')),
       filter(Boolean),
       map((configHashTikEntry): boolean => {
         const isNeedRefresh = this._compareConfigHashAction.init(configHashTikEntry);
@@ -130,8 +132,25 @@ export class DoroModule {
       }),
       filter(Boolean),
       switchMap(() => {
-        console.log('configHash not equal. refresh...');
+        console.log('EVENTS HASH not equal. refresh...');
         return this.eventService.loadEvents();
+      })
+    )
+      .subscribe();
+
+    // listen schedule changes
+    this.eventBusListener$.pipe(
+      filter(filterStreamDataEntries),
+      map(busEvent => mapBusEventToConfigHashTikEntry(busEvent, 'schedules')),
+      filter(Boolean),
+      map((configHashTikEntry): boolean => {
+        const isNeedRefresh = this._compareConfigHashAction.init(configHashTikEntry);
+        return isNeedRefresh;
+      }),
+      filter(Boolean),
+      tap(() => {
+        console.log('SCHEDULES HASH not equal. refresh...');
+        this._scheduleService.refreshSchedules(); // todo make separate hashes from events and schedules?
       })
     )
       .subscribe();

@@ -10,8 +10,8 @@ export class SetConfigHashAction {
 	constructor(
 		private _appStateService: AppStateService
 	) {}
-
-	public init(busEvent: BusEvent): Observable<boolean> {
+// no need to return
+	public init(busEvent: BusEvent): void {
 
 		const res = busEvent.payload?.response?.body;
 		if (!res) {
@@ -24,9 +24,21 @@ export class SetConfigHashAction {
 			if (typeof configHash !== 'number') {
 				throw new Error(`config_hash is not a number`);
 			} else {
-				const result = this._appStateService.configHash.next(configHash);
-				return of(result)
+				this._appStateService.configHash.next(configHash);
 			}
 		}
+
+		const configHashSchedules = res.config_hash_schedules;
+		if (!configHashSchedules) {
+			throw new Error(`no config_hash_schedules prop in response`);
+		} else {
+			if (typeof configHashSchedules !== 'number') {
+				throw new Error(`config_hash_schedules is not a number`);
+			} else {
+				this._appStateService.configHashSchedules.next(configHashSchedules);
+			}
+		}
+
+		
 	}
 }

@@ -6,7 +6,8 @@ export class GetEventsQueryBuilder {
     private fromClause: string;
     private orderBy: string;
     private mode: 'all' | 'active' = 'all';
-
+    private targetEventId: number | null = null;
+    
     constructor(userHandler: any) {
         this.userHandler = userHandler;
         this.params = [userHandler, userHandler];
@@ -40,6 +41,23 @@ export class GetEventsQueryBuilder {
         this.orderBy = 'ORDER BY s.id, e.schedule_position';
     }
 
+    // Count events in the schedule of a specific event
+    countEventsForSchedule(): this {
+        if (!this.targetEventId) {
+            throw new Error('Must call eventId() before countEventsForSchedule()');
+        }
+        // Append the count as a subquery to the existing select clause
+        this.selectClause += `,
+            (SELECT COUNT(*) FROM events e2 WHERE e2.schedule_id = s.id) AS schedule_total_events`;
+        this.orderBy = 'ORDER BY s.id, e.schedule_position';
+        return this;
+    }
+
+    // Filter by event ID
+    eventId(id: number): this {
+        this.targetEventId = id;
+        return this.where('e.id = ?', id);
+    }
     // Only get active events (the currently playing one per schedule)
     onlyActiveEvents(): this {
         this.mode = 'active';
@@ -65,11 +83,6 @@ export class GetEventsQueryBuilder {
         return this.where('s.id = ?', id);
     }
 
-    // Filter by event ID
-    eventId(id: number): this {
-        return this.where('e.id = ?', id);
-    }
-
     // Filter by multiple event IDs
     eventIds(ids: number[]): this {
         if (ids.length === 0) return this;
@@ -89,10 +102,8 @@ export class GetEventsQueryBuilder {
     // Filter by event being the active/playing event
     isActiveEvent(value: boolean = true): this {
         if (this.mode === 'all') {
-            // For all events mode, we need to filter on the fly
             return this.where('e.id = s.active_event_id');
         }
-        // In active mode, this is already filtered
         return this;
     }
 
@@ -138,8 +149,6 @@ export class GetEventsQueryBuilder {
 
     async execute(connection: any): Promise<any[]> {
         const { query, params } = this.build();
-        // console.log('Query:', query);
-        // console.log('Params:', params);
         const rows = await connection.execute(query, params);
         return rows;
     }

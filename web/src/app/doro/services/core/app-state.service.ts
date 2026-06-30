@@ -9,6 +9,8 @@ import { EventProps, Schedule } from "../basic-event/basic-event.types";
 export class AppStateService {
   public events = obs$<EventProps[]>([]);
   public configHash = obs$<number>(0);
+  public configHashSchedules = obs$<number>(0);
+
   public recentEvent = obs$<Nullable<number>>(null);
   
   public currentSchedule = obs$<Nullable<Schedule>>(null);
