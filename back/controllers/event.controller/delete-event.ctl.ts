@@ -26,6 +26,10 @@ import { CtlResult } from '../../types/controller.types';
  * 4. Если это был активный идущий ивент - 
  * Отправить в @tik delete. 
  * Ответ не нужен, здесь же обновляем configHash.
+ * 
+ * TODO: сделать настройку - при удалении последнего события:
+ * 1. спрашивать про удаление расписания
+ * 2. удалять расписание автоматически
  */
 export type DeleteEventResult = CtlResult<{success: boolean, deletedSchedule?: number}>
 

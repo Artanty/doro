@@ -53,7 +53,7 @@
         },
         {
             "on": "RESPONSE",
-            "url_pattern": "/^http:\/\/localhost:3201\/(event|event-state)(\/.*)?$/",
+            "url_pattern": "/^http:\/\/localhost:3201\/(event1|event-state1)(\/.*)?$/",
             "push": {
                 "type": "TRIGGER_ACTION",
                 "action": "SET_CONFIG_HASH",

@@ -50,18 +50,14 @@ export class OuterSyncService {
         userHandler: string, 
         hashType: string
     }): OuterHash {
-		let userHandler = params?.userHandler;
-		let hashType = params?.hashType;
-
-		if (!userHandler) {
-			userHandler = '74aa6454c1fcabffea7ff172:324c9c440c841889632429b574a39942';
-		}
-		if (!hashType) {
-			hashType = 'events';
-		}
+		// let userHandler = params?.userHandler ?? '74aa6454c1fcabffea7ff172:324c9c440c841889632429b574a39942';
+		let hashType = params?.hashType ?? 'events';
+		let tikEntryId = hashType === 'events' 
+		 ? 1
+		 : 2;
 		
 		return {
-			id: buildOuterEntityId('configHash', 1), // 1 - id
+			id: buildOuterEntityId('configHash', tikEntryId),
 			cur: ConfigManager.getConfigHash(params),
 		};
 	}
