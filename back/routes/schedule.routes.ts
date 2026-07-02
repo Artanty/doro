@@ -3,6 +3,10 @@ import { handleError } from '../utils/handleError'
 import { getUserFromRequest } from '../utils/getUserFromRequest';
 import { dd } from '../utils/dd';
 import { ScheduleController } from '../controllers/schedule.controller';
+import typia from 'typia';
+import { CreateFullScheduleReq } from '@contracts/schedule.contracts';
+
+
 
 const router = express.Router();
 
@@ -23,6 +27,19 @@ router.post('/create', async (req, res) => {
     const is_playing = false;
     const user = getUserFromRequest(req);
     const result = await ScheduleController.createSchedule(user, name, active_event_id, is_playing);
+    res.json(result);
+  } catch (error) {
+    handleError(res as unknown as Response, error) 
+  }
+});
+
+router.post('/create-full', async (req, res) => {
+  try {
+    const assertCreateFullSchedule = typia.createAssert<CreateFullScheduleReq>();
+    assertCreateFullSchedule(req.body)
+
+    const user = getUserFromRequest(req);
+    const result = await ScheduleController.createFullSchedule(user, req.body);
     res.json(result);
   } catch (error) {
     handleError(res as unknown as Response, error) 

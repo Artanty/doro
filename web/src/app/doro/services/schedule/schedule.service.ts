@@ -6,6 +6,7 @@ import { filterBasicEvents } from "../../helpers/filterBasicEvents";
 import { EventProps } from "../basic-event/basic-event.types";
 import { AppStateService } from "../core/app-state.service";
 import { Schedule } from "./schedule.types";
+import { CreateFullScheduleReq, CreateScheduleRes } from "@contracts/schedule.contracts";
 
 @Injectable()
 export class ScheduleService {
@@ -119,14 +120,21 @@ export class ScheduleService {
 	// 	});
 	// }
 
-	public createSchedule (): Observable<{data: number}> {
+	public createSchedule (): Observable<CreateScheduleRes> {
 		const now = new Date();
 		const payload = {
 			name: now.toTimeString().slice(0, 5),
 		}
 	
-		return this.http.post<{data: number}>(`${this.doroBaseUrl}/schedule/create`, payload)
+		return this.http.post<CreateScheduleRes>(`${this.doroBaseUrl}/schedule/create`, payload)
 	}
+
+	public createFullSchedule (payload: CreateFullScheduleReq): Observable<CreateScheduleRes> {
+	
+		return this.http.post<CreateScheduleRes>(`${this.doroBaseUrl}/schedule/create-full`, payload)
+	}
+
+	
 
 	private _initSchedules (): void {
 		// Subscribe to refresh triggers

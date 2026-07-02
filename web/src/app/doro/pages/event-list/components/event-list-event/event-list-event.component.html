@@ -10,11 +10,16 @@
         <ng-container [ngTemplateOutlet]="playButton"></ng-container>
 
         <ng-container [ngTemplateOutlet]="pauseButton"></ng-container>
+        
+        <div class="row-start">
+          <ng-container 
+            [ngTemplateOutlet]="progressBar" 
+            [ngTemplateOutletContext]="{$implicit: eventState.data}"
+          ></ng-container>
 
-        <ng-container 
-          [ngTemplateOutlet]="progressBar" 
-          [ngTemplateOutletContext]="{$implicit: eventState.data}"
-        ></ng-container>
+          <ng-container [ngTemplateOutlet]="eventLength"></ng-container>
+        </div>
+  
 
        <!--  <ng-container [ngSwitch]="eventState.eventState">
           <ng-container *ngSwitchCase="EventStates.COMPLETED">
@@ -49,7 +54,7 @@
 
       <ng-template #name let-data>
         <div class="name" (click)="goToEventTimer()">
-          [{{ eventProps.schedule_id }}: {{ eventProps.schedule_position }}] {{ eventProps.id }} | {{ eventProps.name }}
+          Sch: [{{ eventProps.schedule_id }}: {{ eventProps.schedule_position }}] | Evnt: {{ eventProps.id }} | {{ eventProps.name }}
           <ng-container [ngTemplateOutlet]="deleteButton"></ng-container>
         </div>
       </ng-template>
@@ -83,6 +88,10 @@
             {{ data?.prc }}%
           </div>
         </div>
+      </ng-template>
+
+      <ng-template #eventLength>
+        {{(eventState.data?.len ?? 0) / 60}}
       </ng-template>
 
       <ng-template #deleteButton>

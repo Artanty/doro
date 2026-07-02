@@ -99,7 +99,11 @@ export const deleteEventCtl = async (
 		tikEventsPayload.push(...eventsHashPayload, ...schedulesHashPayload);
 
 		tikResponse = await OuterSyncService.updateOuterEntries(tikEventsPayload);
-			
+		
+		if (!tikResponse.data.success) {
+            throw new Error(tikResponse.data.error!);
+        }
+		
 		return {
 			data: {
 				success: deleteEventResult?.success,

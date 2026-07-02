@@ -23,10 +23,7 @@ export const deleteEventDb = async (
                 
 		res.success = true;
 		res.result = result.affectedRows
-
-		return res;
 	} catch (error: any) {
-		res.success = false;
 		res.error = error.message
 
 	} finally {

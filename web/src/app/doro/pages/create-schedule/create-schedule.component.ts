@@ -1,30 +1,26 @@
 import { ChangeDetectorRef, Component, OnInit } from "@angular/core";
 import { ScheduleService } from "../../services/schedule/schedule.service";
 import { dd } from "../../helpers/dd";
+import { CreateFullScheduleReq, CreateScheduleRes } from "@contracts/schedule.contracts";
 
-export interface CreateScheduleReq {
-	work: number,
-	rest: number,
-	bigRest: number,
-	bigRestStep: number,
-	cycles: number,
-}
 @Component({
 	selector: 'app-create-schedule',
 	templateUrl: './create-schedule.component.html',
 	standalone: false,
 })
 export class CreateScheduleComponent implements OnInit {
-	public isLoading = false;
-	public scheduleConfig: CreateScheduleReq = {
+	public isLoadingEmpty = false;
+	public isLoadingFull = false;
+	public scheduleConfig: CreateFullScheduleReq = {
 		work: 25,
 		rest: 5,
 		bigRest: 15,
 		bigRestStep: 4,
-		cycles: 3,
+		cycles: 6,
 	}
 	
 	public createdEmptyResult: null | string = null
+	public createdFullResult: null | string = null
 
 	constructor (
 		private _scheduleService: ScheduleService,
@@ -42,15 +38,20 @@ export class CreateScheduleComponent implements OnInit {
 	onCyclesInputChange(data: any): void { this.scheduleConfig.cycles = data }
     
 	onSubmit(): void {
-		console.log(this.scheduleConfig);
+		this.isLoadingFull = true;
+		this._scheduleService.createFullSchedule(this.scheduleConfig)
+		.subscribe((res: CreateScheduleRes) => {
+			this.isLoadingFull = false;
+			this.createdFullResult = '/doro/event-list/' + res.data.scheduleId;
+			this.cdr.detectChanges()
+		})
 	}
 
 	onCreateEmptySchedule () {
-		this.isLoading = true;
-		this._scheduleService.createSchedule().subscribe(res => {
-			dd(res);
-			this.isLoading = false;
-			this.createdEmptyResult = '/doro/event-list/' + res.data;
+		this.isLoadingEmpty = true;
+		this._scheduleService.createSchedule().subscribe((res: CreateScheduleRes) => {
+			this.isLoadingEmpty = false;
+			this.createdEmptyResult = '/doro/event-list/' + res.data.scheduleId;
 			this.cdr.detectChanges()
 		})
 	}

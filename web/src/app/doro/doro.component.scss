@@ -28,3 +28,9 @@
   column-gap: 20px;
   align-items: center;
 }
+
+::ng-deep .row-start {
+  display: flex;
+  column-gap: 20px;
+  align-items: center;
+}

@@ -70,7 +70,7 @@ export class EventListEventComponent implements OnInit, OnDestroy {
    * EventWithState = { eventProps, eventState }
    * */
   ngOnInit() {
-    dd(this.eventProps)
+    // dd(this.eventProps)
     const initalState: EventViewState<EventStateResItemStateless> = {
       viewState: 'LOADING_VIEW_STATE',
       eventState: -1 // pending
