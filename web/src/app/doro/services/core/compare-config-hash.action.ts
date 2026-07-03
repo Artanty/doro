@@ -29,7 +29,7 @@ export class CompareConfigHashAction {
 		
 		switch (hashId) {
 			case 'h_1':
-				currentValue = this._appStateService.configHash.value;
+				currentValue = this._appStateService.configHash.getValue();
 				const valuesTuple1 = [
 					currentValue, 
 					newConfigHash
@@ -46,7 +46,7 @@ export class CompareConfigHashAction {
 				
 				break;
 			case 'h_2':
-				currentValue = this._appStateService.configHashSchedules.value;
+				currentValue = this._appStateService.configHashSchedules.getValue();
 				const valuesTuple2 = [
 					currentValue, 
 					newConfigHash

@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, Injector, DestroyRef } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
-import { Subject, Observable, takeUntil, take, map, combineLatest, switchMap, tap, startWith, of } from "rxjs";
+import { Subject, Observable, takeUntil, take, map, combineLatest, switchMap, tap, startWith, of, catchError } from "rxjs";
 
 import { dd } from "@helpers/dd";
 import { Nullable } from "@helpers/utility.types";
@@ -39,7 +39,7 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.view$ = combineLatest([
-      this._state.events.listenReal(),
+      this._state.events.listen().pipe(take(1)),
       this.route.params.pipe(take(1)),
     ])
       .pipe(
@@ -47,54 +47,62 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
         map(([events, routeParams]) => {
           this.scheduleId = Number(routeParams['scheduleId']);
           if (!this.scheduleId) throw new Error('no schedule id');
-          
+          // debugger;
           const filteredEvents = events.filter(e => e.schedule_id === this.scheduleId);
-          const sortedEvents = this._sortScheduleEvents(filteredEvents);
-          return sortedEvents;
+          if(!filteredEvents.length) throw new Error(`events of schedule ${this.scheduleId} not found`);
+          // const sortedEvents = this._sortScheduleEvents(filteredEvents);
+          // return sortedEvents;
+          return INITIAL_VIEW_STATE;
         }),
-        switchMap((events: EventProps[]) => {
-          const allScheduleEventsUnfiltered = events;
-          const eventsToDisplay = events.filter(e => e.event_state_id !== EventProgress.COMPLETED);
-          dd(allScheduleEventsUnfiltered)
-          if (!eventsToDisplay.length) {
-            // throw new Error('no events to display. need suggestion');
-            const res: ViewState<EventPropsWithState> = {
-              status: ViewStatus.READY,
-              data: {
-                [EVENT_PROPS_KEY]: getEmptyEventProps(this.scheduleId),
-                [EVENT_STATE_KEY]: getEmptyEventState(),
-                allScheduleEvents: [],
-                allScheduleEventsUnfiltered: allScheduleEventsUnfiltered,
-              }
-            };
-            return of(res);
-          }
+        // switchMap((events: EventProps[]) => {
+        //   const allScheduleEventsUnfiltered = events;
+        //   const eventsToDisplay = events.filter(e => e.event_state_id !== EventProgress.COMPLETED);
+        //   dd(allScheduleEventsUnfiltered)
+        //   if (!eventsToDisplay.length) {
+        //     // throw new Error('no events to display. need suggestion');
+        //     const res: ViewState<EventPropsWithState> = {
+        //       status: ViewStatus.READY,
+        //       data: {
+        //         [EVENT_PROPS_KEY]: getEmptyEventProps(this.scheduleId),
+        //         [EVENT_STATE_KEY]: getEmptyEventState(),
+        //         allScheduleEvents: [],
+        //         allScheduleEventsUnfiltered: allScheduleEventsUnfiltered,
+        //       }
+        //     };
+        //     return of(res);
+        //   }
 
-          const currentEvent = eventsToDisplay[0];
+        //   const currentEvent = eventsToDisplay[0];
 
-          const eventTypePrefix = currentEvent.type === eventTypes.TRANSITION
-            ? EventTypePrefix.TRANSITION
-            : EventTypePrefix.BASIC;
+        //   const eventTypePrefix = currentEvent.type === eventTypes.TRANSITION
+        //     ? EventTypePrefix.TRANSITION
+        //     : EventTypePrefix.BASIC;
   
-          return this._eventService.listenEventState(eventTypePrefix, currentEvent.id)
-            .pipe(
-              // todo add build suggestion
-              map((state: any) => {
-                const res: ViewState<EventPropsWithState> = {
-                  status: ViewStatus.READY,
-                  data: {
-                    [EVENT_PROPS_KEY]: currentEvent,
-                    [EVENT_STATE_KEY]: state,
-                    allScheduleEvents: eventsToDisplay,
-                    allScheduleEventsUnfiltered: allScheduleEventsUnfiltered,
-                  }
-                };
-                return res;
-              }),
-              tap(() => {
-                // dd('inner tap')
-              })
-            );
+        //   return this._eventService.listenEventState(eventTypePrefix, currentEvent.id)
+        //     .pipe(
+        //       // todo add build suggestion
+        //       map((state: any) => {
+        //         const res: ViewState<EventPropsWithState> = {
+        //           status: ViewStatus.READY,
+        //           data: {
+        //             [EVENT_PROPS_KEY]: currentEvent,
+        //             [EVENT_STATE_KEY]: state,
+        //             allScheduleEvents: eventsToDisplay,
+        //             allScheduleEventsUnfiltered: allScheduleEventsUnfiltered,
+        //           }
+        //         };
+        //         return res;
+        //       }),
+        //       tap(() => {
+        //         // dd('inner tap')
+        //       })
+        //     );
+        // }),
+        
+        catchError((err: any) => {
+          dd('ERROR CATCHED')
+          
+          return of({ status: ViewStatus.ERROR, error: err.message })
         }),
         tap(res => {
           // dd('outer tap')
@@ -102,7 +110,8 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
             this.cdr.detectChanges()
           }, 1000); // crutch to update state
         }),
-        startWith(INITIAL_VIEW_STATE),
+        // startWith(INITIAL_VIEW_STATE),
+        
       );
   }
 
