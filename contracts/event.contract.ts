@@ -16,3 +16,21 @@ export interface CreateEventResData {
 };
 
 export type CreateEventRes = Res<CreateEventResData>
+
+export interface GetEventResDataItem {
+    "id": number
+    "name": string
+    "length": number
+    "is_rest": number
+    "updated_at": string
+    "schedule_id": number
+    "schedule_name": string
+    "schedule_is_playing": number
+    "schedule_active_event_id": number
+    "schedule_position": number
+    "playhead": number
+    "schedule_owner": string
+    "is_active_event": number
+}
+
+export type GetEventRes = Res<GetEventResDataItem[]>

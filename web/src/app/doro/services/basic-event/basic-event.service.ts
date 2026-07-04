@@ -11,7 +11,7 @@ import { GetUserEventsRes, EventProps, EventStateResItem, EventState, EventState
 import { EventProgress } from "../../constants";
 import { dd } from "../../helpers/dd";
 import { PauseEventReq, PlayEventReq } from "@contracts/event-state.contract";
-import { CreateEventRes } from "@contracts/event.contract";
+import { CreateEventRes, GetEventRes, GetEventResDataItem } from "@contracts/event.contract";
 
 
 @Injectable()
@@ -26,9 +26,36 @@ export class EventService {
     private _state: AppStateService,
     private _scheduleService: ScheduleService,
     private _api: ApiService,
-  ) {}
+  ) {
+    this.connectEventsProvider();
+  }
 
-  loadEvents(daysInterval: number = 1): Observable<boolean> {
+  connectEventsProvider() {
+    this._state.events.setProvider(this._loadEventsApi.bind(this))
+  }
+
+  private _loadEventsApi(
+    daysInterval: number = 1
+  ): Observable<GetEventResDataItem[] | any> {
+    const filters = {
+      interval: daysInterval
+    }
+
+    return this.http.post<GetEventRes>(`${this.doroBaseUrl}/event/get`, { filters })
+      .pipe(
+        map(res => res.data), 
+        catchError((err: any) => {
+          throw new Error(err.message);
+        }),
+      )
+  }
+
+//todo delete
+  loadEvents(params?: any): Observable<boolean> {
+    return this._loadEvents(params)
+  }
+
+  private _loadEvents(daysInterval: number = 1): Observable<boolean> {
     const filters = {
       interval: daysInterval
     }
@@ -56,7 +83,7 @@ export class EventService {
         this._state.configHash.next(999);
       }))
   }
-
+// todo check;
   public addToSchedule(eventId: number, scheduleId: number): Observable<unknown> {
     const payload = {
       id: eventId,

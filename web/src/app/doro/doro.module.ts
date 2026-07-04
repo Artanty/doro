@@ -20,6 +20,7 @@ import { filterStreamDataEntries } from './helpers/filterStreamDataEntries';
 import { mapBusEventToConfigHashTikEntry } from './helpers/getConfigHashFromBusEvent';
 import { thisProjectResProp } from './helpers/getResProp';
 import { dd } from '@helpers/dd';
+import { AppStateService } from '@services/core/app-state.service';
 
 export const CHILD_ROUTES = [
   {
@@ -112,6 +113,7 @@ export class DoroModule {
     private _setConfigHashAction: SetConfigHashAction,
     private eventService: EventService,
     private _scheduleService: ScheduleService,
+    private _state: AppStateService,
   ) {
     this.eventBusListener$
       .pipe(
@@ -131,9 +133,9 @@ export class DoroModule {
         return isNeedRefresh;
       }),
       filter(Boolean),
-      switchMap(() => {
+      tap(() => {
         console.log('EVENTS HASH not equal. refresh...');
-        return this.eventService.loadEvents();
+        this._state.events.refresh()
       })
     )
       .subscribe();

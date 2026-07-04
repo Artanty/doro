@@ -7,15 +7,15 @@ import { EventProps, Schedule } from "../basic-event/basic-event.types";
   providedIn: 'root'
 })
 export class AppStateService {
-  public events = obs$<EventProps[]>([]);
-  public configHash = obs$<number>(0);
-  public configHashSchedules = obs$<number>(0);
+  public events = obs$<EventProps[]>([]); //GetEventResDataItem
+  public configHash = obs$<number>(0, true);
+  public configHashSchedules = obs$<number>(0, true);
 
-  public recentEvent = obs$<Nullable<number>>(null);
+  public recentEvent = obs$<Nullable<number>>(null, true);
   
-  public currentSchedule = obs$<Nullable<Schedule>>(null);
-  public staticEventsState$ = obs$<Record<number, number>>({});
+  public currentSchedule = obs$<Nullable<Schedule>>(null, true);
+  public staticEventsState$ = obs$<Record<number, number>>({}, true);
 
-  public lastAutoRedirect = obs$<string>('');
+  public lastAutoRedirect = obs$<string>('', true);
   
 }

@@ -32,7 +32,6 @@ export class EventListComponent implements OnInit {
    * 
    * */
   ngOnInit() {
-    // this.eventService.loadEvents().subscribe();
     this.route.paramMap.subscribe(params => {
       const scheduleId = params.get('id');
       

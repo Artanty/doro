@@ -28,17 +28,19 @@ export interface EventProps {
 	id: number;
 	name: string;
 	length: number;
-	type: number;
-	// type_name: string; // replace to dictionaries
-	created_at: string;
+
 	updated_at: string | null;
-	created_by: string; // hide on backend
 	schedule_id: number;
 	schedule_position: number;
-	// base_access: "public-read"; //remove on backend
+
+
+	type: number;	
+	created_at: string;
+	
+	created_by: string; // hide on backend
+	
 	base_access_id: number;
 	event_state_id: number;
-	// access_level: "owner" | "editor" | "viewer"; //remove on backend
 	has_access: number; // 0 or 1 (boolean)
 	state_hooks: EventStateHook[],
 	created_from: string,
