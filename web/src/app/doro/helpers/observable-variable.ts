@@ -1,9 +1,9 @@
-import { BehaviorSubject, Observable, Subject, switchMap, finalize, tap } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, switchMap, finalize, tap, skipUntil, filter } from 'rxjs';
 import { dd } from './dd';
 
 export class ObservableVariable<T> {
   private _bs: BehaviorSubject<T>;
-  private _isReady = false;
+  private _readySubject = new BehaviorSubject<boolean>(false);
   private _isFetching = false;
   private _refreshTrigger = new Subject<void>();
   private _provider: (() => Observable<T>) | null = null;
@@ -13,10 +13,9 @@ export class ObservableVariable<T> {
   constructor(initialValue: T, isReady: boolean = false) {
     this._bs = new BehaviorSubject<T>(initialValue);
     this._initialValue = initialValue;
-    this._isReady = isReady;
+    this._readySubject.next(isReady);
   }
 
-  // Register the provider function that fetches data
   setProvider(provider: () => Observable<T>): this {
     if (this._isProviderSet) {
       return this;
@@ -24,13 +23,15 @@ export class ObservableVariable<T> {
     this._provider = provider;
     this._isProviderSet = true;
     
-    // Setup refresh trigger
     this._refreshTrigger.pipe(
       tap(() => {
         this._isFetching = true;
-        this._isReady = false;
+        this._readySubject.next(false);
       }),
       switchMap(() => this._provider!().pipe(
+        tap(() => {
+          this._readySubject.next(true);
+        }),
         finalize(() => {
           this._isFetching = false;
         })
@@ -38,10 +39,11 @@ export class ObservableVariable<T> {
     ).subscribe({
       next: (data) => {
         this.next(data);
+        
       },
       error: (error) => {
-        this._isReady = true;
-        throw new Error('Failed to fetch data:', error?.message ?? error);
+        this._readySubject.next(true);
+        console.error('Failed to fetch data:', error?.message ?? error);
       },
     });
     
@@ -54,27 +56,42 @@ export class ObservableVariable<T> {
   
   next(newValue: T): void {
     this._bs.next(newValue);
-    this._isReady = true;
+    this._readySubject.next(true);
   }
   
-  // Get the observable with lazy loading
   listen(): Observable<T> {
-    if (this._isReady) {
+    if (!this._isProviderSet) {
+      if (this._readySubject.getValue()) {
+        return this._bs.asObservable();
+      }
+      
+      if (this._isFetching) {
+        return this._bs.asObservable();
+      }
+      
+      // First request - trigger refresh
+      this.refresh();
+      
       return this._bs.asObservable();
+    } else {
+      // If not ready and not fetching, trigger the load
+      if (!this._readySubject.getValue() && !this._isFetching) {
+        this.refresh();
+      }
+      
+      // Skip emissions until ready
+      return this._bs.asObservable().pipe(
+        skipUntil(this._readySubject
+          .pipe(
+            filter(Boolean)
+          )
+        )
+      );
     }
-    
-    if (this._isFetching) {
-      return this._bs.asObservable();
-    }
-    
-    // First request - trigger refresh
-    this.refresh();
-    return this._bs.asObservable();
   }
   
-  // Force refresh
   refresh(): void {
-    if (!this._provider) {
+    if (!this._isProviderSet) {
       throw new Error('No provider registered. Call setProvider() first.');
     }
     this._refreshTrigger.next();
@@ -82,7 +99,7 @@ export class ObservableVariable<T> {
   
   reset(): void {
     this._bs.next(this._initialValue);
-    this._isReady = false;
+    this._readySubject.next(true);
     this._isFetching = false;
   }
 }

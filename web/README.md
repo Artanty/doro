@@ -28,3 +28,17 @@ https://www.svgrepo.com/svg/347287/play-circle
 event types:
 
  // work = 2, rest = 3;
+
+
+
+ // gui implementation examples:
+
+ <div gui type="dropdown"
+    [inputs]="{
+    buttonIcon: 'mu mu-calendar',
+    items: scheduleMenuItems$
+    }"
+    [outputs]="{
+    itemSelected: goToScheduleRun.bind(this)
+    }"
+></div>

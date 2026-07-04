@@ -40,7 +40,7 @@ export type TEventType = typeof eventTypes[keyof typeof eventTypes];
 
 export const BASE_SCHEDULE_ID = 1;
 
-export const INITIAL_VIEW_STATE = {
+export const INITIAL_VIEW_STATE: any = {
 	status: ViewStatus.LOADING,
 }
 

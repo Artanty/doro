@@ -33,7 +33,7 @@
 	        [outputs]="{
 	          itemSelected: switchToSchedule.bind(this)
 	        }"
-	      ></div>
+		></div>
 
  		@if(currentSchedule$ | async; as schedule) {
  			{{schedule.name}}
@@ -44,7 +44,7 @@
  		<span (click)="loadEvents(30)">all events</span> | 
  		<span (click)="goToCreateEvent()">create event</span>
  	</div>
- </div>
+</div>
 
 @if (events$ | async; as events) {
 	<div class="list-wrapper">

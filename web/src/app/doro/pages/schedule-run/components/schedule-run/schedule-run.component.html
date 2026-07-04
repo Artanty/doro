@@ -1,4 +1,16 @@
 <div class="container">
+  <select gui
+    [inputs]="{
+      label: 'Таймеры',
+      options: scheduleMenuItems$,
+        value: currentSchedule,
+        showEmptyOption: true,
+        emptyOptionText: 'Выбрать таймер'
+    }"
+    [outputs]="{
+      valueChange: goToScheduleRun.bind(this)
+    }"
+  ></select>
   @if (view$ | async; as view) {
     @switch(view.status) {
       @case(ViewStatus.LOADING) {
@@ -33,4 +45,3 @@
     }
   }
 </div>
-

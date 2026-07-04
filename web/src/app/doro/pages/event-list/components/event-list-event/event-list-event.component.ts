@@ -7,6 +7,7 @@ import { EventService } from "@services/basic-event/basic-event.service";
 import { EventProps, Schedule, EventViewState, EventStateResItem, EventStateResItemStateless, EventState } from "@services/basic-event/basic-event.types";
 import { ScheduleService } from "@services/schedule/schedule.service";
 import { EventStates, EventTypePrefix } from "../../../../constants";
+import { AppStateService } from "@services/core/app-state.service";
 // {
 //     "id": 921,
 //     "name": "event 1",
@@ -53,14 +54,17 @@ export class EventListEventComponent implements OnInit, OnDestroy {
     private eventService: EventService,
     private injector: Injector,
     private router: Router,
-    private _scheduleService: ScheduleService
+    private _scheduleService: ScheduleService,
+    private _state: AppStateService,
   ) {
-    this.scheduleMenuItems$ = this._scheduleService.getSchedules().pipe(
+    this.scheduleMenuItems$ = this._state.schedules.listen()
+    .pipe(
       map(res => {
+        let result = res
         if (this.eventProps.schedule_id) {
-          return res.filter(el => el.id !== this.eventProps.schedule_id);
+          result = res.filter(el => el.id !== this.eventProps.schedule_id);
         }
-        return res;
+        return result;
       }));
   }
 

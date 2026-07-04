@@ -6,7 +6,8 @@ import { filterBasicEvents } from "../../helpers/filterBasicEvents";
 import { EventProps } from "../basic-event/basic-event.types";
 import { AppStateService } from "../core/app-state.service";
 import { Schedule } from "./schedule.types";
-import { CreateFullScheduleReq, CreateScheduleRes } from "@contracts/schedule.contracts";
+import { CreateFullScheduleReq, CreateScheduleRes, ScheduleListRes, ScheduleListResDataItem } from "@contracts/schedule.contracts";
+import { dd } from "@helpers/dd";
 
 @Injectable()
 export class ScheduleService {
@@ -24,9 +25,14 @@ export class ScheduleService {
 		private http: HttpClient,
 		private _state: AppStateService,
 	) {
-		this._initSchedules()
+		this._initSchedules();
+		this.connectEventsProvider();
 	}	
 
+	connectEventsProvider() {
+		this._state.schedules.setProvider(this._loadSchedulesApi.bind(this))
+	}
+	
 	public getSchedules(): Observable<Schedule[]> {
         // If data is ready, return it
         if (this.isReady) {
@@ -159,5 +165,16 @@ export class ScheduleService {
                 this.isReady = true;
             }
         });
+	}
+
+	private _loadSchedulesApi (): Observable<ScheduleListResDataItem[]> {
+		
+		return this.http.post<ScheduleListRes>(`${this.doroBaseUrl}/schedule/list`, null)
+			.pipe(
+				map(res => res.data), 
+				catchError((err: any) => {
+					throw new Error(err.message);
+				}),
+			)
 	}
 }

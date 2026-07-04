@@ -112,7 +112,7 @@
       <div gui type="dropdown"
         [inputs]="{
           buttonIcon: 'mu mu-calendar',
-          items$: scheduleMenuItems$
+          items: scheduleMenuItems$
         }"
         [outputs]="{
           itemSelected: addToSchedule.bind(this)
