@@ -13,6 +13,7 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { EventPropsWithState, EVENT_PROPS_KEY, EVENT_STATE_KEY, EventProps, EventStateResItem, Schedule } from "@services/basic-event/basic-event.types";
 import { eventTypes, EventProgress, EventTypePrefix, INITIAL_VIEW_STATE } from "../../../../constants";
 import { GetEventResDataItem } from "@contracts/event.contract";
+import { ScheduleService } from "@services/schedule/schedule.service";
 
 export interface ScheduleState {
   state: any,
@@ -43,7 +44,8 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private _state: AppStateService,
-    private destroyRef: DestroyRef
+    private destroyRef: DestroyRef,
+    private _scheduleService: ScheduleService
   ) {
     this.scheduleMenuItems$ = this._state.schedules.listen()
   }
@@ -145,6 +147,14 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
     this.router.navigate(
       [`doro/schedule-run/${scheduleId}`],
     );
+  }
+
+  public deleteCurrentSchedule () {
+    this._scheduleService.deleteSchedule(this.scheduleId).subscribe(res =>{
+      dd('schedule delete result')
+      dd(res);
+      // todo some reload...
+    })
   }
 
   //todo EventProps -> GetEventResDataItem

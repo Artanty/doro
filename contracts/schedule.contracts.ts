@@ -26,3 +26,8 @@ export interface ScheduleListResDataItem {
 }
 
 export type ScheduleListRes = Res<ScheduleListResDataItem[]>
+
+export interface DeleteScheduleReq {
+    scheduleId: number
+}
+// export type DeleteSchedule = Res<{}>

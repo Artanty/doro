@@ -177,4 +177,17 @@ export class ScheduleService {
 				}),
 			)
 	}
+
+	public deleteSchedule (id: number) {
+		const payload = {
+			scheduleId: id
+		}
+		return this.http.post<any>(`${this.doroBaseUrl}/schedule/delete`, payload)
+			.pipe(
+				map(res => res.data), 
+				catchError((err: any) => {
+					throw new Error(err.message);
+				}),
+			)
+	}
 }

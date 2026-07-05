@@ -41,6 +41,12 @@
       @case(ViewStatus.ERROR) {
         <h1>error</h1>
         <pre style="white-space: normal;">{{view.error}}</pre>
+        <button gui type="button"
+          [inputs]="{
+            label: 'Удалить таймер ' + scheduleId,
+          }"
+          [outputs]="{click: deleteCurrentSchedule.bind(this)}"
+        ></button>
       }
     }
   }

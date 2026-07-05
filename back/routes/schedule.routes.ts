@@ -4,7 +4,7 @@ import { getUserFromRequest } from '../utils/getUserFromRequest';
 import { dd } from '../utils/dd';
 import { ScheduleController } from '../controllers/schedule.controller';
 import typia from 'typia';
-import { CreateFullScheduleReq } from '@contracts/schedule.contracts';
+import { CreateFullScheduleReq, DeleteScheduleReq } from '@contracts/schedule.contracts';
 
 
 
@@ -57,7 +57,18 @@ router.post('/suggest-rest', async (req, res) => {
   }
 });
 
-
+router.post('/delete', async (req, res) => {
+  try {
+    const assertDeleteSchedule = typia.createAssert<DeleteScheduleReq>();
+    assertDeleteSchedule(req.body)
+    
+    const user = getUserFromRequest(req);
+    const result = await ScheduleController.deleteSchedule(user, req.body.scheduleId)
+    res.json(result);
+  } catch (error) {
+    handleError(res as unknown as Response, error) 
+  }
+});
 
 
 export default router;
