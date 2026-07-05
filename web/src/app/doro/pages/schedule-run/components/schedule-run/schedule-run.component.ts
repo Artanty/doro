@@ -72,7 +72,6 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
         takeUntilDestroyed(this.destroyRef),
      )
     .subscribe(res => {
-      dd('changes')
       this._initView(res);
       this.currentSchedule.next(Number(res[2]['scheduleId']))
     })
@@ -104,7 +103,14 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
            * и, значит нужно вывести или транзишн, или конечный экран.
            */
           if(res.state === 'PLAYING') {
-            return this._eventService.listenEventState(EventTypePrefix.BASIC, res.result.id)
+            const listenEventProps = {
+              id: res.result.id,
+              is_active_event: res.result.is_active_event,
+              schedule_is_playing: res.result.schedule_is_playing,
+              playhead: res.result.playhead,
+              length: res.result.length
+            }
+            return this._eventService.listenEventState(EventTypePrefix.BASIC, listenEventProps)
               .pipe(map(tikRes => {
                 return {
                   state: tikRes,
@@ -134,6 +140,7 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
             }
           };
           this.view$.next(result)
+          this.cdr.detectChanges()
         }),
         startWith(INITIAL_VIEW_STATE),
         catchError((err: any) => {

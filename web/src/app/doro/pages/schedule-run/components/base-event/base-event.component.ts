@@ -20,7 +20,6 @@ export class BaseEventComponent {
   @Input() public data!: EventPropsWithState;
   
   public get eventProps(): GetEventResDataItem {
-    dd(this.data)
     return this.data[EVENT_PROPS_KEY];
   }
   

@@ -24,7 +24,7 @@ export class ScheduleListItemComponent {
   ) {}
 
   goToSchedule() {
-    this.router.navigateByUrl(`/doro/schedule-list/${this.schedule.id}`);
+    this.router.navigateByUrl(`/doro/schedule-run/${this.schedule.id}`);
   }
 
   deleteSchedule() {

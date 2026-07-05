@@ -3,7 +3,7 @@
   <app-timer 
  		[length]="eventState?.len ?? 0"
     [time]="eventState?.cur ?? 0"
-    [eventType]="eventProps.is_rest"
+    [eventType]="eventProps.is_rest ? 2 : 1"
   >
   </app-timer>
 

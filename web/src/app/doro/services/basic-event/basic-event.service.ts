@@ -165,7 +165,17 @@ export class EventService {
 // 	'PLAYING': 1,
 // 	'PAUSED': 2,
 // 	'COMPLETED': 3
-  public listenEventState(eventTypePrefix: string, eventProps: any): Observable<EventStateResItem> {
+
+// eventProps:
+// id: number,
+// is_active_event: boolean,
+// schedule_is_playing: boolean,
+// playhead: number,
+// length: number
+  public listenEventState(
+    eventTypePrefix: string, 
+    eventProps: any
+  ): Observable<EventStateResItem> {
     const tikEventId = `${eventTypePrefix}_${eventProps.id}`;
     // определяем, идет событие ли нет, в зависимости от этого
     // получаем его динамический стейт или статический

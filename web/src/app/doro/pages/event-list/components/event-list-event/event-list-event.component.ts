@@ -99,7 +99,7 @@ export class EventListEventComponent implements OnInit, OnDestroy {
             return readyState;
           }),
           startWith(initalState),
-          tap((res: any) => {
+          tap(() => {
             this.cdr.detectChanges()
           }),
           catchError(error => {
