@@ -3,12 +3,13 @@ import { obs$ } from "../../helpers/observable-variable";
 import { Nullable } from "../../helpers/utility.types";
 import { EventProps, Schedule } from "../basic-event/basic-event.types";
 import { ScheduleListResDataItem } from "@contracts/schedule.contracts";
+import { GetEventResDataItem } from "@contracts/event.contract";
 
 @Injectable({
   providedIn: 'root'
 })
 export class AppStateService {
-  public events = obs$<EventProps[]>([]); //GetEventResDataItem
+  public events = obs$<GetEventResDataItem[]>([]); //GetEventResDataItem
   public schedules = obs$<ScheduleListResDataItem[]>([]);
   
   public configHash = obs$<number>(0, true);

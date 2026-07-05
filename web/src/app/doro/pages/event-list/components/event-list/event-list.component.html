@@ -1,29 +1,4 @@
-<!-- <div class="list-wrapper">
-	<ul>
-		<li *ngFor="let event of events">
-			<div>
-				<div class="name">
-					{{ event.event_name }}
-				</div>
-			</div>
-			<div class="action">
-				<i title="play" class="mu mu-play" (click)="playEvent(event.id)"></i>
-		   	  <div gui type="dropdown"
-			   	  [inputs]="{
-			   	  	buttonIcon: 'mu mu-opts-v',
-			   	  	items: menuItems
-			   	  }"
-			   	  [outputs]="{
-					itemSelected: deleteEvent.bind(this, event.id)
-			   	  }"
-		   	  ></div>
-			</div>
-		</li>
-	</ul>	
-</div>
- -->
- 
- <div class="header">
+<div class="header">
  	<div class="scheduleName">
  		<div gui type="dropdown"
 	        [inputs]="{
@@ -40,8 +15,8 @@
  		}
  	</div>
  	<div class="actions">
- 		<span (click)="loadEvents()">current events</span> | 
- 		<span (click)="loadEvents(30)">all events</span> | 
+ 		<!-- <span (click)="loadEvents()">current events</span> | 
+ 		<span (click)="loadEvents(30)">all events</span> |  -->
  		<span (click)="goToCreateEvent()">create event</span>
  	</div>
 </div>

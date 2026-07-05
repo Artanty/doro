@@ -8,6 +8,7 @@ import { EventProps, Schedule, EventViewState, EventStateResItem, EventStateResI
 import { ScheduleService } from "@services/schedule/schedule.service";
 import { EventStates, EventTypePrefix } from "../../../../constants";
 import { AppStateService } from "@services/core/app-state.service";
+import { GetEventResDataItem } from "@contracts/event.contract";
 // {
 //     "id": 921,
 //     "name": "event 1",
@@ -29,7 +30,7 @@ import { AppStateService } from "@services/core/app-state.service";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EventListEventComponent implements OnInit, OnDestroy {
-  @Input() eventProps!: EventProps;
+  @Input() eventProps!: GetEventResDataItem;
   isDeleting$ = new Subject();
   menuItems = [
     { id: 'DELETE', name: 'Удалить' },

@@ -20,21 +20,17 @@
         @if (view.data; as data) {
           @if (data[EVENT_PROPS_KEY]; as eventProps) {
             
-            @if(eventProps.type === eventTypes.TRANSITION) {
-              <app-transition-event
-                [data]="data"
-              ></app-transition-event>
+            <!-- @if(eventProps.type === eventTypes.TRANSITION) {
+              <h1>TRANSITION</h1>
             }
             @else if(eventProps.type === eventTypes.TRANSITION_NEXT) {
-              <app-transition-next
-                [data]="data"
-              ></app-transition-next>
-            }
-            @else {
+              <h1>TRANSITION NEXT</h1>
+            } -->
+            <!-- @else { -->
               <app-base-event
                 [data]="data"
               ></app-base-event>
-            }
+            <!-- } -->
           }
         }
       }

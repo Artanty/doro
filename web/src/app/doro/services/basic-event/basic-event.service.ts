@@ -50,32 +50,6 @@ export class EventService {
       )
   }
 
-//todo delete
-  loadEvents(params?: any): Observable<boolean> {
-    return this._loadEvents(params)
-  }
-
-  private _loadEvents(daysInterval: number = 1): Observable<boolean> {
-    const filters = {
-      interval: daysInterval
-    }
-
-    return this.http.post<GetUserEventsRes>(`${this.doroBaseUrl}/event/get`, { filters })
-      .pipe(
-        tap((res: GetUserEventsRes) => {
-          const data: EventProps[] = res.data;
-          if (!data) throw new Error('wrong response format');
-
-          this._state.events.next(data)
-          dd(this._state.events.getValue())
-        }),
-        catchError((err: any) => {
-          
-          return of(false);
-        }),
-        map(() => true),
-      )
-  }
 
   public createEvent(payload: CreateEventReq): Observable<CreateEventRes> {
     return this._api.createEventApi(payload).pipe(
@@ -248,7 +222,7 @@ export class EventService {
       }))   
   }
 
-  public waitForEventProps(eventId: number): Observable<EventProps> {
+  public waitForEventProps(eventId: number): Observable<GetEventResDataItem> {
     console.log(`Waiting for event ${eventId} to appear...`);
     
     return this._state.events.listen().pipe(

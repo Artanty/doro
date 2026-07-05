@@ -4,9 +4,10 @@ import { Observable, BehaviorSubject, combineLatest, map, tap, take } from "rxjs
 import { filterBasicEvents } from "@helpers/filterBasicEvents";
 import { Nullable } from "@helpers/utility.types";
 import { EventService } from "@services/basic-event/basic-event.service";
-import { EventProps, Schedule } from "@services/basic-event/basic-event.types";
+import { Schedule } from "@services/basic-event/basic-event.types";
 import { AppStateService } from "@services/core/app-state.service";
 import { ScheduleService } from "@services/schedule/schedule.service";
+import { GetEventResDataItem } from "@contracts/event.contract";
 
 @Component({
   selector: 'app-event-list',
@@ -15,7 +16,7 @@ import { ScheduleService } from "@services/schedule/schedule.service";
   styleUrl: './event-list.component.scss'
 })
 export class EventListComponent implements OnInit {
-  public events$: Observable<EventProps[]>;
+  public events$: Observable<GetEventResDataItem[]>;
   public currentSchedule$: Observable<Nullable<Schedule>>;
   scheduleFilter$ = new BehaviorSubject<Nullable<number>>(null);
 
@@ -104,11 +105,5 @@ export class EventListComponent implements OnInit {
       ['doro/create-event'], 
       extras
     );
-  }
-
-  public loadEvents(daysInterval: number = 1): void {
-    this.eventService.loadEvents(daysInterval).pipe(take(1)).subscribe(() => {
-      this._state.currentSchedule.next(null);
-    });
   }
 }

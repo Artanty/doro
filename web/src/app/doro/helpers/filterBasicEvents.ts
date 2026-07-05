@@ -1,7 +1,8 @@
+import { GetEventResDataItem } from "@contracts/event.contract";
 import { EventStates, eventTypes } from "../constants";
 import { EventProps } from "../services/basic-event/basic-event.types";
 
-export const filterBasicEvents = (eventProps: EventProps) => {
+export const filterBasicEvents = (eventProps: GetEventResDataItem) => {
 	// return [eventTypes.WORK, eventTypes.REST].includes(eventProps.type as any)
 	return true;
 };

@@ -7,6 +7,7 @@ import { EventStates } from "../../../../constants";
 import { countPrc } from "@helpers/count-percent.util";
 import { dd } from "../../../../helpers/dd";
 import { EventPropsWithState, EventProps, EVENT_PROPS_KEY, EventStateResItem, EVENT_STATE_KEY } from "@services/basic-event/basic-event.types";
+import { GetEventResDataItem } from "@contracts/event.contract";
 
 @Component({
   selector: 'app-base-event',
@@ -18,7 +19,8 @@ import { EventPropsWithState, EventProps, EVENT_PROPS_KEY, EventStateResItem, EV
 export class BaseEventComponent {
   @Input() public data!: EventPropsWithState;
   
-  public get eventProps(): EventProps {
+  public get eventProps(): GetEventResDataItem {
+    dd(this.data)
     return this.data[EVENT_PROPS_KEY];
   }
   

@@ -1,14 +1,11 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, Injector, DestroyRef } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { Subject, Observable, takeUntil, take, map, combineLatest, switchMap, tap, startWith, of, catchError, BehaviorSubject, concatMap, EMPTY, skip, from } from "rxjs";
-
 import { dd } from "@helpers/dd";
 import { Nullable } from "@helpers/utility.types";
 import { EventService } from "@services/basic-event/basic-event.service";
-
 import { AppStateService } from "@services/core/app-state.service";
 import { ViewState, ViewStatus } from "@services/core/view-state.type";
-import { getEmptyEventProps, getEmptyEventState } from "../transition-next/transition-next.helper";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { EventPropsWithState, EVENT_PROPS_KEY, EVENT_STATE_KEY, EventProps, EventStateResItem, Schedule } from "@services/basic-event/basic-event.types";
 import { eventTypes, EventProgress, EventTypePrefix, INITIAL_VIEW_STATE } from "../../../../constants";

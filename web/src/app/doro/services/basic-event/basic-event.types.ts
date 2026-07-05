@@ -1,3 +1,4 @@
+import { GetEventResDataItem } from "@contracts/event.contract"
 import { EventProgressType, EventStatesType } from "../../constants"
 
 export interface EventStateResItem { // todo: rename to entry
@@ -51,10 +52,10 @@ export const EVENT_PROPS_KEY = 'doroProps' as const;
 export const EVENT_STATE_KEY = 'tikState' as const;
 
 export interface EventPropsWithState {
-	[EVENT_PROPS_KEY]: EventProps,
+	[EVENT_PROPS_KEY]: GetEventResDataItem,
 	[EVENT_STATE_KEY]: EventStateResItem,
-	allScheduleEvents: EventProps[],
-	allScheduleEventsUnfiltered: EventProps[],
+	allScheduleEvents: GetEventResDataItem[],
+	allScheduleEventsUnfiltered: GetEventResDataItem[],
 }
 
 export interface EventWithState { // todo rename

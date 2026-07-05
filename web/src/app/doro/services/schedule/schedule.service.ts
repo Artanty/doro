@@ -80,24 +80,6 @@ export class ScheduleService {
 			)
 	}
 
-	public getNextEventsOfSchedule(scheduleId: number, event: EventProps): EventProps[] {
-
-		const bySchedule = this._getEventsBySchedule(scheduleId);
-		bySchedule.sort((a, b) => {
-			return Number(b.schedule_position) - Number(a.schedule_position)
-		})
-		const filtered = bySchedule
-			.filter(el => Number(el.schedule_position) > Number(event.schedule_position));
-
-		return filtered;
-	}
-
-	private _getEventsBySchedule(scheduleId: number): EventProps[] {
-		return this._state.events.getValue()
-			.filter(filterBasicEvents)
-			.filter(event => event.schedule_id === scheduleId)
-	}
-
 	public getNextPositionInSchedule(scheduleId: number) {
 
 		const filteredBySchedule = this._state.events.getValue().filter(
