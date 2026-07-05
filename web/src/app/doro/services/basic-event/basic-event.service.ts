@@ -166,21 +166,11 @@ export class EventService {
 // 	'PAUSED': 2,
 // 	'COMPLETED': 3
 
-// eventProps:
-// id: number,
-// is_active_event: boolean,
-// schedule_is_playing: boolean,
-// playhead: number,
-// length: number
   public listenEventState(
     eventTypePrefix: string, 
     eventProps: any
   ): Observable<EventStateResItem> {
     const tikEventId = `${eventTypePrefix}_${eventProps.id}`;
-    // определяем, идет событие ли нет, в зависимости от этого
-    // получаем его динамический стейт или статический
-    // dd(eventProps.schedule_is_playing)
-    // dd(eventProps.is_active_event)
     if (eventProps.schedule_is_playing && eventProps.is_active_event) {
       return this.eventBusListener$.pipe(
         filter(filterStreamDataEntries),
@@ -192,8 +182,8 @@ export class EventService {
       );
     } else {
       return of({
-          id: tikEventId, // no need here
-          cur: eventProps.playhead,
+          id: tikEventId,
+          cur: eventProps.is_active_event ? eventProps.schedule_event_playhead : 0,
           len: eventProps.length,
           stt: EventProgress.STOPPED
       })

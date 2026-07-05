@@ -25,8 +25,8 @@ export const createScheduleDb = async (
 	
 	try {
 		const [queryResult] = await connection.execute(
-			'INSERT INTO schedules (name, created_by, created_at, updated_at, active_event_id, is_playing) VALUES (?, ?, ?, ?, ?, ?)',
-			[name, userHandler, getUTCDatetime(), getUTCDatetime(), active_event_id, is_playing]
+			'INSERT INTO schedules (name, created_by, created_at, updated_at, active_event_id, is_playing, event_playhead) VALUES (?, ?, ?, ?, ?, ?, ?)',
+			[name, userHandler, getUTCDatetime(), getUTCDatetime(), active_event_id, is_playing, 0]
 		);
                 
 		res.success = true;

@@ -8,9 +8,10 @@ export async function updateScheduleDb(
         name?: string;
         active_event_id?: number;
         is_playing?: boolean;
+        event_playhead?: number;
     }
 ): Promise<DbActionResult<any>> {
-    const { name, active_event_id, is_playing } = params;
+    const { name, active_event_id, is_playing, event_playhead } = params;
     
     const res: any = {
 		success: false,
@@ -38,6 +39,11 @@ export async function updateScheduleDb(
         if (is_playing !== undefined) {
             setClauses.push('is_playing = ?');
             values.push(is_playing ? 1 : 0);
+        }
+        
+        if (event_playhead !== undefined) {
+            setClauses.push('event_playhead = ?');
+            values.push(event_playhead);
         }
         
         // Always update updated_at
@@ -79,6 +85,7 @@ export async function batchUpdateScheduleDb(
         name?: string;
         active_event_id?: number;
         is_playing?: boolean;
+        event_playhead?: number;
     }>
 ): Promise<DbActionResult<any>> {
     const res: any = {
@@ -97,7 +104,7 @@ export async function batchUpdateScheduleDb(
         
         // Process each update
         for (const update of updates) {
-            const { id, name, active_event_id, is_playing } = update;
+            const { id, name, active_event_id, is_playing, event_playhead } = update;
             
             const setClauses: string[] = [];
             const values: any[] = [];
@@ -115,6 +122,11 @@ export async function batchUpdateScheduleDb(
             if (is_playing !== undefined) {
                 setClauses.push('is_playing = ?');
                 values.push(is_playing ? 1 : 0);
+            }
+            
+            if (event_playhead !== undefined) {
+                setClauses.push('event_playhead = ?');
+                values.push(event_playhead);
             }
             
             // Always update updated_at

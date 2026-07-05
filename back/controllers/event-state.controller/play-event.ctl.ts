@@ -1,19 +1,15 @@
 import createPool from '../../core/db_connection';
-import { EVENT_TIK_ACTION_PROP, eventProgress } from "../../core/constants";
+import { EVENT_TIK_ACTION_PROP } from "../../core/constants";
 import { thisProjectResProp, tikResProp } from "../../utils/getResProp";
 import { ConfigManager } from "../config-manager";
 import { OuterEntry, OuterSyncService } from "../outer-sync.service";
 import { PlayEventReq } from '@contracts/event-state.contract';
-import { getAccessinleScheduleDb, GetAccessibleScheduleEventRes, GetAccessibleScheduleRes } from '../../db-actions/get-accessible-schedule.db';
 import { updateScheduleDb } from '../../db-actions/update-schedule.db';
 import { buildOuterEntityId } from '../../utils/buildOuterEntityId';
-import { EventUpdate, updateEventsDb } from '../../db-actions/update-events.db';
-import { Nullable } from '../../utils/utility.types';
-import { calculatePlayhead } from './get-running-events.helper';
-import { DbActionResult } from '../../types/db-action.types';
 import { getEventByIdDb } from '../../db-actions/get-event-by-id.db';
 import { GetRunningEventsResItem } from '../../db-actions/get-running-events.db';
 import { CtlResult } from '../../types/controller.types';
+import { getUTCDatetime } from '../../utils/get-utc-datetime';
 
 export type PlayEventResult = CtlResult<{success: boolean}>
 
@@ -21,19 +17,15 @@ export const playEventCtl = async (
     userHandler: any, 
     params: PlayEventReq
 ): Promise<PlayEventResult> => {
-    const state = eventProgress.PLAYING; // 1
     const pool = createPool();
     const connection = await pool.getConnection();
     let getEventByIdResult,
         schedule,
-        eventToPlay: GetAccessibleScheduleEventRes,
+        eventToPlay,
         eventCalculatedPlayhead: number = -1,
-        updatedPlayheadResult,
         eventIdToStop,
         tikEventsPayload: OuterEntry[] = [],
         updateScheduleResult,
-        updateEventsPayload: EventUpdate[] = [],
-        updateEventsResult,
         tikResponse
         ;
     try {
@@ -52,7 +44,8 @@ export const playEventCtl = async (
 
         schedule = { 
             is_playing: eventToPlay.schedule_is_playing,
-            active_event_id: eventToPlay.schedule_active_event_id
+            active_event_id: eventToPlay.schedule_active_event_id,
+            event_playhead: eventToPlay.schedule_event_playhead,
         }
 
         if (schedule.is_playing &&
@@ -61,98 +54,58 @@ export const playEventCtl = async (
             throw new Error(`event ${eventToPlay.id} is already playing`);
         }
         
-        eventCalculatedPlayhead = calculatePlayhead(eventToPlay);
+        eventCalculatedPlayhead = eventToPlay.id === schedule.active_event_id
+            ? (schedule.event_playhead ?? 0)
+            : 0;
 
-        if (eventCalculatedPlayhead === eventToPlay.length) {
-            
-            if (eventCalculatedPlayhead !== eventToPlay.playhead) {
-                updatedPlayheadResult = await updateEventsDb(connection, [
-                    { id: eventToPlay.id, playhead: eventCalculatedPlayhead }
-                ]);
+        if (eventCalculatedPlayhead >= eventToPlay.length) {
+            throw new Error(`event ${eventToPlay.id} ended`);
+        }
 
-                const tikEventToDelete: OuterEntry = {
-                    id: buildOuterEntityId('event', params.eventIdToPlay),
-                    [EVENT_TIK_ACTION_PROP]: 'delete',
-                }
-                tikEventsPayload.push(tikEventToDelete)
-                
-                ConfigManager.setConfigHash();
-                const hashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert');
-                tikResponse = await OuterSyncService.updateOuterEntries([...hashPayload, ...tikEventsPayload]);
+        if (schedule.active_event_id && schedule.is_playing) {
+            eventIdToStop = schedule.active_event_id;
+        }
 
-                if (!tikResponse.data.success) {
-                    throw new Error(tikResponse.data.error!);
-                }
-            } else {
-                throw new Error(`event ${eventToPlay.id} ended`);
+        updateScheduleResult = await updateScheduleDb(
+            connection,
+            params.scheduleId,
+            {
+                active_event_id: params.eventIdToPlay,
+                is_playing: true,
+                event_playhead: eventCalculatedPlayhead,
             }
-        } else {
-            if (
-                schedule.active_event_id && 
-                schedule.is_playing
-            ) {
-                eventIdToStop = schedule.active_event_id;
-            }
-            
-            updateScheduleResult = await updateScheduleDb(
-                connection,
-                params.scheduleId,
-                {
-                    active_event_id: params.eventIdToPlay,
-                    is_playing: true,
-                }
-            )
-            
-            if(!updateScheduleResult.success) {
-                throw new Error(updateScheduleResult.error!);
-            }
+        )
 
-            const tikEventToPlay: OuterEntry = {
-                id: buildOuterEntityId('event', params.eventIdToPlay),
-                [EVENT_TIK_ACTION_PROP]: 'upsert',
-                cur: params.playEventPlayhead ?? eventToPlay.playhead,
-                len: eventToPlay.length,
-                stt: 1
-            }
-            tikEventsPayload.push(tikEventToPlay)
-        
-            if(eventIdToStop){
-                const tikEventToStop: OuterEntry = {
-                    id: buildOuterEntityId('event', eventIdToStop),
-                    [EVENT_TIK_ACTION_PROP]: 'delete', // add full callback.
-                }
-                tikEventsPayload.push(tikEventToStop);
-            }
+        if (!updateScheduleResult.success) {
+            throw new Error(updateScheduleResult.error!);
+        }
 
-            ConfigManager.setConfigHash();
-            const hashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert');
-            tikResponse = await OuterSyncService.updateOuterEntries([...hashPayload, ...tikEventsPayload]);
+        await connection.execute(
+            'UPDATE events SET updated_at = ? WHERE id = ?',
+            [getUTCDatetime(), params.eventIdToPlay]
+        );
 
-            if (!tikResponse.data.success) {
-                throw new Error(tikResponse.data.error!);
-            }
+        tikEventsPayload.push({
+            id: buildOuterEntityId('event', params.eventIdToPlay),
+            [EVENT_TIK_ACTION_PROP]: 'upsert',
+            cur: eventCalculatedPlayhead,
+            len: eventToPlay.length,
+            stt: 1,
+        })
 
-            if (eventIdToStop) {
-                // doro__e_928
-                const receivedDeletedTikEvent = tikResponse.data.stat.deletedItems
-                .find(el => el.id ===`doro__e_${eventIdToStop}`);
+        if (eventIdToStop) {
+            tikEventsPayload.push({
+                id: buildOuterEntityId('event', eventIdToStop),
+                [EVENT_TIK_ACTION_PROP]: 'delete',
+            });
+        }
 
-                if (receivedDeletedTikEvent) {
-                    updateEventsPayload.push({ 
-                        id: eventIdToStop, 
-                        playhead: receivedDeletedTikEvent?.cur 
-                    })
-                } else {
-                    /**
-                     * Ситуация, когда @tik неконсистентен с @doro
-                     */
-                    // throw new Error('doro prev running event & tik deleted event id mismatch');
-                }
-            }
-            
-            updateEventsPayload.push({ id: params.eventIdToPlay, playhead: params.playEventPlayhead ?? eventToPlay.playhead });
-            
-            updateEventsResult = await updateEventsDb(connection, updateEventsPayload);
+        ConfigManager.setConfigHash();
+        const hashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert');
+        tikResponse = await OuterSyncService.updateOuterEntries([...hashPayload, ...tikEventsPayload]);
+
+        if (!tikResponse.data.success) {
+            throw new Error(tikResponse.data.error!);
         }
 
         // addHistoryResult = await addEventStateHistory(connection, eventId, state)
@@ -169,10 +122,8 @@ export const playEventCtl = async (
                     schedule,
                     eventToPlay,
                     eventCalculatedPlayhead,
-                    updatedPlayheadResult,
                     eventIdToStop,
                     updateScheduleResult,
-                    updateEventsResult,
                 },
                 [tikResProp()]: {
                     tikEventsPayload,
@@ -197,8 +148,6 @@ export const playEventCtl = async (
                     eventCalculatedPlayhead,
                     eventIdToStop,
                     updateScheduleResult,
-                    updateEventsPayload,
-                    updateEventsResult,
                 },
                 [tikResProp()]: {
                     tikEventsPayload,

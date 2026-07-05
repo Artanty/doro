@@ -48,7 +48,7 @@ export const buildTikPlayingEvents = async (
             const res: EventStateResItem = {
 
                 id: buildOuterEntityId('event', eventProps.id),
-                cur: eventProps.playhead,
+                cur: eventProps.schedule_event_playhead,
                 len: eventProps.length,
                 stt: 1
             }

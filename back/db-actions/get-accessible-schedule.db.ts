@@ -58,7 +58,7 @@ export async function getAccessinleScheduleDb(
                        e.is_rest AS event_is_rest,
                        e.schedule_id AS event_schedule_id,
                        e.schedule_position AS event_schedule_position,
-                       e.playhead AS event_playhead
+                       s.event_playhead AS event_playhead
                 FROM schedules s
                 LEFT JOIN events e ON e.id = ? AND e.schedule_id = s.id
                 WHERE s.id = ?

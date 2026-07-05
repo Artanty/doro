@@ -43,8 +43,8 @@ export const getEventCtl = async (userHandler: string, filters: any) => {
                     dd(correctPlayhead)
                     // обновляем скедьюлы, которые по факту стоп
                     if (
-                        el.playhead !== correctPlayhead &&
-                        el.playhead === el.length &&
+                        el.schedule_event_playhead !== correctPlayhead &&
+                        el.schedule_event_playhead === el.length &&
                         el.is_active_event
                     ) {
                         schedulesToStop.push(el.schedule_id);
@@ -52,8 +52,8 @@ export const getEventCtl = async (userHandler: string, filters: any) => {
                     
                     return {
                         ...el,
-                        playhead: correctPlayhead,
-                        schedule_is_playing: Number(el.length !== correctPlayhead), // todo что-от с этим сделать   
+                        schedule_event_playhead: correctPlayhead,
+                        schedule_is_playing: Number(el.length !== correctPlayhead),
                     }
                 }
                 return el;

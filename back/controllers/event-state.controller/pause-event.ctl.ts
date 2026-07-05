@@ -1,23 +1,15 @@
 import { EVENT_TIK_ACTION_PROP } from '../../core/constants';
 import createPool from '../../core/db_connection';
-import { addEventStateHistory, bulkAddEventStateHistory } from "../../db-actions/add-event-state-history";
-import { getAccessibleEvents, ACCESS_CASE } from "../../db-actions/get-accessible-event";
-import { updateEvent } from '../../db-actions/update-event';
-import { EventUpdate, updateEventsDb } from '../../db-actions/update-events.db';
 import { updateScheduleDb } from '../../db-actions/update-schedule.db';
-
-import { EventStateResItem } from "../../types/event-state.types";
-import { toMinProps, EventPropsDbItem } from "../../types/event.types";
 import { buildOuterEntityId } from '../../utils/buildOuterEntityId';
-import { formatBulkErrors } from "../../utils/format-bulk-errors.utl";
 import { thisProjectResProp, tikResProp } from "../../utils/getResProp";
+import { getUTCDatetime } from '../../utils/get-utc-datetime';
 import { ConfigManager } from "../config-manager";
-import { buildTikEvents } from "../helpers/build-tik-events";
-import { TikRes, OuterSyncService, OuterEntry } from "../outer-sync.service";
+import { OuterSyncService, OuterEntry } from "../outer-sync.service";
 
 /**
- * 1. update schedule: is_playing => false
- * 2. update event: set playhead
+ * 1. delete tik event, get actual playhead
+ * 2. update schedule: is_playing => false, event_playhead => playhead
  */
 export const pauseEventCtl = async (  
     userHandler: any, 
@@ -28,9 +20,9 @@ export const pauseEventCtl = async (
     const connection = await pool.getConnection();
     let tikEventsPayload: OuterEntry[] = [],
         tikResponse,
-        updateEventsPayload: EventUpdate[] = [],
-        updateEventsResult,
-        updateScheduleResult;
+        updateScheduleResult,
+        playhead
+        ;
 
     try {
         await connection.beginTransaction();
@@ -52,31 +44,25 @@ export const pauseEventCtl = async (
         const receivedDeletedTikEvent = tikResponse.data.stat.deletedItems
             .find(el => el.id ===`doro__e_${eventId}`);
 
-        if (receivedDeletedTikEvent) {
-            updateEventsPayload.push({ 
-                id: eventId, 
-                playhead: receivedDeletedTikEvent?.cur 
-            })
-        } else {
-            /**
-             * Ситуация, когда @tik неконсистентен с @doro
-             */
-            // throw new Error('doro prev running event & tik deleted event id mismatch');
-        }
-
-        updateEventsResult = await updateEventsDb(connection, updateEventsPayload);
+        playhead = receivedDeletedTikEvent?.cur ?? 0;
 
         updateScheduleResult = await updateScheduleDb(
             connection,
             scheduleId,
             {
                 is_playing: false,
+                event_playhead: playhead,
             }
         )
         
         if(!updateScheduleResult.success) {
             throw new Error(updateScheduleResult.error!);
         }
+
+        await connection.execute(
+            'UPDATE events SET updated_at = ? WHERE id = ?',
+            [getUTCDatetime(), eventId]
+        );
 
         ConfigManager.setConfigHash();
         const hashPayload2 = OuterSyncService.buildUpdateOuterHashPayload('upsert');
@@ -90,8 +76,7 @@ export const pauseEventCtl = async (
             },
             debug: {
                 [thisProjectResProp()]: {
-                    updateEventsPayload,
-                    updateEventsResult,
+                    playhead,
                     updateScheduleResult
                 },
                 [tikResProp()]: {
@@ -106,12 +91,10 @@ export const pauseEventCtl = async (
         return {
             data: {
                 success: false,
-                updatedEvents: [],
             },
             debug: {
                 [thisProjectResProp()]: {
-                    updateEventsPayload,
-                    updateEventsResult,
+                    playhead,
                     updateScheduleResult
                 },
                 [tikResProp()]: {

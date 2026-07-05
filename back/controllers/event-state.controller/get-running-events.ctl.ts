@@ -35,8 +35,8 @@ export const getRunningEventsCtl = async (userHandler: any) => {
          * удаляем из данных для @tik зкончившиеся ивенты.
          */
         const filteredEvents: GetRunningEventsResItem[] = getRunningEventsResult.result
-            .map(el => ({ ...el, playhead: calculatePlayhead(el) }))
-            .filter(el => el.length !== el.playhead);        
+            .map(el => ({ ...el, schedule_event_playhead: calculatePlayhead(el) }))
+            .filter(el => el.length !== el.schedule_event_playhead);        
 
         eventsWithTikStatus = await buildTikPlayingEvents(filteredEvents);
         

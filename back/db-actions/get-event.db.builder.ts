@@ -24,8 +24,9 @@ export class GetEventsQueryBuilder {
                 s.name AS schedule_name,
                 s.is_playing AS schedule_is_playing,
                 s.active_event_id AS schedule_active_event_id,
-                e.schedule_position,
+                s.event_playhead AS schedule_event_playhead,
                 e.playhead,
+                e.schedule_position,
                 s.created_by AS schedule_owner,
                 CASE 
                     WHEN e.id = s.active_event_id THEN 1 

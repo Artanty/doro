@@ -91,8 +91,8 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
         const scheduleEvents = events.filter((e: any) => e.schedule_id === this.scheduleId);
         if(!scheduleEvents.length) throw new Error(`no events in schedule ${this.scheduleId}`);
         
-        //todo sort events !
-        const currentState = this._calculateCurrentState(schedule, scheduleEvents);
+        const scheduleEventsSorted = [...scheduleEvents].sort((a, b) => a.schedule_position - b.schedule_position);
+        const currentState = this._calculateCurrentState(schedule, scheduleEventsSorted);
         
         return currentState;
       }),
@@ -107,7 +107,7 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
               id: res.result.id,
               is_active_event: res.result.is_active_event,
               schedule_is_playing: res.result.schedule_is_playing,
-              playhead: res.result.playhead,
+              schedule_event_playhead: res.result.schedule_event_playhead,
               length: res.result.length
             }
             return this._eventService.listenEventState(EventTypePrefix.BASIC, listenEventProps)
@@ -121,7 +121,7 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
             return of({
               state: {
                 id: 'tikEventId', // no need here
-                cur: res.result.playhead,
+                cur: res.result.schedule_event_playhead,
                 len: res.result.length,
                 stt: EventProgress.STOPPED
               },
@@ -192,7 +192,7 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
       dd(res)
     })
   }
-
+// todo  проблема - берет первое событие, хотя оно на паузе, а поигрывается второеz
   //todo EventProps -> GetEventResDataItem
   private _calculateCurrentState (
     schedule: any,
@@ -217,7 +217,7 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
       // предполагаем, что ивенты отсортированы по position.
       // удаляем законченные
       const nextEvent = events
-        .filter(e => e.playhead < e.length)[0];
+        .filter(e => e.schedule_event_playhead < e.length)[0];
       
       if (!nextEvent) throw new Error (`Нет доступных ивентов расписания ${schedule.active_event_id}`);
 
@@ -229,7 +229,7 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
     if (!schedule.is_playing && activeEvent) {
 
       // определяем закончился ивент или пауза
-      const isStopped = activeEvent.playhead === activeEvent.length;
+      const isStopped = activeEvent.schedule_event_playhead === activeEvent.length;
       if (isStopped) {
         // ивент остановлен, он дошел до конца,
         // осталось проверить, если следующий ивент для переключения, 
@@ -237,7 +237,7 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
         // предполагаем, что ивенты отсортированы по position.
         // ивенты могли быть вызаны не по порядку, так что удаляем законченные
         const nextEvent = events
-          .filter(e => e.playhead < e.length)
+          .filter(e => e.schedule_event_playhead < e.length)
           .find(e => activeEvent!.schedule_position < e.schedule_position);
 
         if (nextEvent) {

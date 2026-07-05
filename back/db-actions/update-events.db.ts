@@ -7,7 +7,6 @@ export interface EventUpdate {
     is_rest?: boolean;
     schedule_id?: number;
     schedule_position?: number;
-    playhead?: number;
     updated_at?: string;
 }
 
@@ -58,10 +57,6 @@ export async function updateEventsDb(
             if ('schedule_position' in update && update.schedule_position !== undefined) {
                 setClauses.push('schedule_position = ?');
                 values.push(update.schedule_position);
-            }
-            if ('playhead' in update && update.playhead !== undefined) {
-                setClauses.push('playhead = ?');
-                values.push(update.playhead);
             }
 
             // Поле updated_at добавляем всегда, если есть хоть одно другое поле для обновления

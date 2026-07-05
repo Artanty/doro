@@ -28,7 +28,7 @@ export interface GetEventResDataItem {
     "schedule_is_playing": number
     "schedule_active_event_id": number
     "schedule_position": number
-    "playhead": number
+    "schedule_event_playhead": number
     "schedule_owner": string
     "is_active_event": number
 }
