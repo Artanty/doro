@@ -150,7 +150,7 @@ export const playEventCtl = async (
                 }
             }
             
-            updateEventsPayload.push({ id: params.eventIdToPlay, playhead: params.playEventPlayhead ?? 0 });
+            updateEventsPayload.push({ id: params.eventIdToPlay, playhead: params.playEventPlayhead ?? eventToPlay.playhead });
             
             updateEventsResult = await updateEventsDb(connection, updateEventsPayload);
         }
