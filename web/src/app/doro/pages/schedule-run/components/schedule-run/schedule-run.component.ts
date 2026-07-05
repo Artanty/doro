@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, Injector, DestroyRef } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
-import { Subject, Observable, takeUntil, take, map, combineLatest, switchMap, tap, startWith, of, catchError, BehaviorSubject, concatMap, EMPTY } from "rxjs";
+import { Subject, Observable, takeUntil, take, map, combineLatest, switchMap, tap, startWith, of, catchError, BehaviorSubject, concatMap, EMPTY, skip, from } from "rxjs";
 
 import { dd } from "@helpers/dd";
 import { Nullable } from "@helpers/utility.types";
@@ -66,36 +66,40 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
    * ev.playhead === ev.length
    */
   ngOnInit() {
-    this.route.params.subscribe(res => {
+     combineLatest([
+      this._state.schedules.listen(),
+      this._state.events.listen(),
+      this.route.params
+    ])
+     .pipe(
+        takeUntilDestroyed(this.destroyRef),
+     )
+    .subscribe(res => {
+      dd('changes')
       this._initView(res);
-      this.currentSchedule.next(Number(res['scheduleId']))
+      this.currentSchedule.next(Number(res[2]['scheduleId']))
     })
   }
 
-  private _initView (routeParams: any) {
-    combineLatest([
-      this._state.schedules.listen(),
-      this._state.events.listen(),
-      of(routeParams)
-    ])
+  private _initView ([schedules, events, routeParams]: any) {
+    of([schedules, events, routeParams])
     .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        map(([schedules, events, routeParams]) => {
-          
-          this.scheduleId = Number(routeParams['scheduleId']);
-          if (!this.scheduleId) throw new Error('no schedule id');
-          
-          const schedule = schedules.find((s: any) => s.id === this.scheduleId);
-          if (!schedule) throw new Error(`Нет расписания ${this.scheduleId}`);
-          
-          const scheduleEvents = events.filter((e: any) => e.schedule_id === this.scheduleId);
-          if(!scheduleEvents.length) throw new Error(`no events in schedule ${this.scheduleId}`);
-          
-          //todo sort events !
-          const currentState = this._calculateCurrentState(schedule, scheduleEvents);
-
-          return currentState;
-        }),
+      takeUntilDestroyed(this.destroyRef),
+      map(([schedules, events, routeParams]) => {
+        this.scheduleId = Number(routeParams['scheduleId']);
+        if (!this.scheduleId) throw new Error('no schedule id');
+        
+        const schedule = schedules.find((s: any) => s.id === this.scheduleId);
+        if (!schedule) throw new Error(`Нет расписания ${this.scheduleId}`);
+        
+        const scheduleEvents = events.filter((e: any) => e.schedule_id === this.scheduleId);
+        if(!scheduleEvents.length) throw new Error(`no events in schedule ${this.scheduleId}`);
+        
+        //todo sort events !
+        const currentState = this._calculateCurrentState(schedule, scheduleEvents);
+        
+        return currentState;
+      }),
         switchMap((res: ScheduleState) => {
           /**
            * Приоритетный конфиг - doro@
@@ -142,18 +146,46 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
       )
       .subscribe()
   }
-  public goToScheduleRun(data: any) {
+  
+  public goToScheduleRun(data: any): Observable<boolean> {
     const scheduleId = Number(data)
-    this.router.navigate(
+    const promise = this.router.navigate(
       [`doro/schedule-run/${scheduleId}`],
     );
+
+    return from(promise)
   }
 
   public deleteCurrentSchedule () {
-    this._scheduleService.deleteSchedule(this.scheduleId).subscribe(res =>{
-      dd('schedule delete result')
-      dd(res);
-      // todo some reload...
+    this.view$.next(INITIAL_VIEW_STATE)
+    this._scheduleService.deleteSchedule(this.scheduleId)
+    .pipe(
+      takeUntilDestroyed(this.destroyRef),
+      map(res => {
+        if (!res.data.success) {
+          throw new Error(res.error)
+        }
+      }),
+      switchMap(() => {
+        return this._state.configHashSchedules.listen();
+      }),
+      switchMap(() => {
+        return this._state.schedules.listen()
+      }),
+      switchMap((schedules: any[]) => {
+        if (schedules.length) {
+          return this.goToScheduleRun(schedules[0].id)
+        }
+        // trigger not found error:
+        return this.goToScheduleRun(this.scheduleId)
+      }),
+      catchError((err: any) => {
+        this.view$.next({ status: ViewStatus.ERROR, error: err.message })
+        return EMPTY;
+      }),
+    )
+    .subscribe(res =>{
+      dd(res)
     })
   }
 

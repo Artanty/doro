@@ -184,7 +184,6 @@ export class ScheduleService {
 		}
 		return this.http.post<any>(`${this.doroBaseUrl}/schedule/delete`, payload)
 			.pipe(
-				map(res => res.data), 
 				catchError((err: any) => {
 					throw new Error(err.message);
 				}),
