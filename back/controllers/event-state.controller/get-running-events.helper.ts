@@ -52,7 +52,7 @@ export const calculatePlayhead = (event: GetRunningEventsResItem): number => {
     /**
      *  Актуальный плейхэд
      */
-    const lastActionPlayheadSec = event.playhead;// * 1000;
+    const lastActionPlayheadSec = event.playhead;
     const totalPlayed = lastActionPlayheadSec + fromLastActionToNowSec;
     /**
      * Если актуальный плейхэд больше или равен длительности события,

@@ -3,15 +3,21 @@ import { thisProjectResProp } from '../../utils/getResProp';
 import { getEventDb } from '../../db-actions/get-event.db';
 import { GetRunningEventsResItem } from '../../db-actions/get-running-events.db';
 import { calculatePlayhead } from '../event-state.controller/get-running-events.helper';
+import { batchUpdateScheduleDb } from '../../db-actions/update-schedule.db';
+import { dd } from '../../utils/dd';
 
 export const getEventCtl = async (userHandler: string, filters: any) => {
+    dd('getEventCtl')
+    debugger;
     const pool = createPool();
     const connection = await pool.getConnection();
 
 
     let getEventDbResult,
         calculateBulkEventProgressResult,
-        bulkUpsertEventStateResult;
+        // bulkUpsertEventStateResult
+        batchUpdateScheduleResult
+        ;
     try {
         await connection.beginTransaction();
 
@@ -21,7 +27,8 @@ export const getEventCtl = async (userHandler: string, filters: any) => {
         }
         const rows: GetRunningEventsResItem[] = getEventDbResult.result
 
-         const eventsWithPlayhead: GetRunningEventsResItem[] = rows
+        const schedulesToStop: number[] = [];
+        const eventsWithPlayhead: GetRunningEventsResItem[] = rows
             .map(el => {
                 if (el.schedule_is_playing && el.is_active_event) {
                     /**
@@ -30,6 +37,19 @@ export const getEventCtl = async (userHandler: string, filters: any) => {
                      * Поэтому расписание нужно остановить, если реально кончился ивент.
                      */
                     const correctPlayhead = calculatePlayhead(el);
+                    dd('el')
+                    dd(el)
+                    dd('correct playhead')
+                    dd(correctPlayhead)
+                    // обновляем скедьюлы, которые по факту стоп
+                    if (
+                        el.playhead !== correctPlayhead &&
+                        el.playhead === el.length &&
+                        el.is_active_event
+                    ) {
+                        schedulesToStop.push(el.schedule_id);
+                    }
+                    
                     return {
                         ...el,
                         playhead: correctPlayhead,
@@ -38,6 +58,14 @@ export const getEventCtl = async (userHandler: string, filters: any) => {
                 }
                 return el;
             })
+        
+        if(schedulesToStop.length) {
+            batchUpdateScheduleResult = await batchUpdateScheduleDb(
+                connection,
+                schedulesToStop.map(sId => ({ id: sId, is_playing: false }))
+            )
+        }
+        
 
         await connection.commit();
 
@@ -47,7 +75,8 @@ export const getEventCtl = async (userHandler: string, filters: any) => {
                 [thisProjectResProp()]: {
                     getEventDbResult,
                     calculateBulkEventProgressResult,
-                    bulkUpsertEventStateResult,
+                    // bulkUpsertEventStateResult,
+                    batchUpdateScheduleResult,
                 },
             }
         };

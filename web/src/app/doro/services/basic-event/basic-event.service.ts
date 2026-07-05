@@ -94,7 +94,11 @@ export class EventService {
   //     "is_active_event": 1
   // }
 
-  public playEvent(eventId: number, scheduleId: number, playEventPlayhead?: number): Observable<any> {
+  public playEvent(
+    eventId: number, 
+    scheduleId: number, 
+    playEventPlayhead?: number
+  ): Observable<any> {
     const payload: PlayEventReq = {
       scheduleId: scheduleId,
       eventIdToPlay: eventId,

@@ -187,7 +187,10 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
   }
 
   //todo EventProps -> GetEventResDataItem
-  private _calculateCurrentState (schedule: any, events: GetEventResDataItem[] | any[]): ScheduleState { 
+  private _calculateCurrentState (
+    schedule: any,
+    events: GetEventResDataItem[]
+  ): ScheduleState { 
     const res: any = {
       state: null,
       result: null
