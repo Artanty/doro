@@ -25,7 +25,6 @@ export class ScheduleService {
 		private http: HttpClient,
 		private _state: AppStateService,
 	) {
-		this._initSchedules();
 		this.connectEventsProvider();
 	}	
 
@@ -33,32 +32,7 @@ export class ScheduleService {
 		this._state.schedules.setProvider(this._loadSchedulesApi.bind(this))
 	}
 	
-	public getSchedules(): Observable<Schedule[]> {
-        // If data is ready, return it
-        if (this.isReady) {
-            return this.schedules$;
-        }
-        
-        // If currently fetching, return the observable
-        if (this.isFetching) {
-            return this.schedules$;
-        }
-        
-        // First request - trigger refresh
-        this.refreshSchedules();
-        
-        return this.schedules$;
-    }
-
-    public refreshSchedules(): void {
-        this.refreshTrigger.next();
-    }
-
-    public clearCache(): void {
-        this.schedulesSubject.next([]);
-        this.isReady = false;
-        this.isFetching = false;
-    }
+	
 	
 	public getScheduleWithEvents(scheduleId: number): Observable<boolean> {
 		const payload = {
@@ -120,33 +94,6 @@ export class ScheduleService {
 	public createFullSchedule (payload: CreateFullScheduleReq): Observable<CreateScheduleRes> {
 	
 		return this.http.post<CreateScheduleRes>(`${this.doroBaseUrl}/schedule/create-full`, payload)
-	}
-
-	
-
-	private _initSchedules (): void {
-		// Subscribe to refresh triggers
-        this.refreshTrigger.pipe(
-            switchMap(() => {
-                this.isFetching = true;
-                return this.http.post<any>(`${this.doroBaseUrl}/schedule/list`, null).pipe(
-                    map(res => res.data),
-                    finalize(() => {
-                        this.isFetching = false;
-                    })
-                );
-            })
-        ).subscribe({
-            next: (data) => {
-                this.schedulesSubject.next(data);
-                this.isReady = true;
-            },
-            error: (error) => {
-                console.error('Failed to fetch schedules:', error);
-                this.schedulesSubject.next([]);
-                this.isReady = true;
-            }
-        });
 	}
 
 	private _loadSchedulesApi (): Observable<ScheduleListResDataItem[]> {

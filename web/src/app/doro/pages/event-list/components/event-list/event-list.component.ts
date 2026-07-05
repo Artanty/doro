@@ -74,7 +74,7 @@ export class EventListComponent implements OnInit {
     this.currentSchedule$ = this._state.currentSchedule.listen() as Observable<Nullable<Schedule>>;
 
     this.scheduleMenuItems$ = combineLatest([
-      this._scheduleService.getSchedules(),
+      this._state.schedules.listen(),
       this.currentSchedule$  
     ]).pipe(
       map(([

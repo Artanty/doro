@@ -152,7 +152,7 @@ export class DoroModule {
       filter(Boolean),
       tap(() => {
         console.log('SCHEDULES HASH not equal. refresh...');
-        this._scheduleService.refreshSchedules(); // todo make separate hashes from events and schedules?
+        this._state.schedules.refresh();
       })
     )
       .subscribe();

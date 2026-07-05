@@ -8,6 +8,7 @@ import { Schedule } from "../../services/basic-event/basic-event.types";
 import { ScheduleService } from "../../services/schedule/schedule.service";
 import { dd } from "../../helpers/dd";
 import { CreateEventRes } from "@contracts/event.contract";
+import { AppStateService } from "@services/core/app-state.service";
 
 
 @Component({
@@ -49,9 +50,10 @@ export class CreateEventComponent implements OnInit {
   constructor(
     private cdr: ChangeDetectorRef,
     private _eventService: EventService,
-    private _scheduleService: ScheduleService
+    private _scheduleService: ScheduleService,
+    private _state: AppStateService,
   ) {
-    this.schedules$ = this._scheduleService.getSchedules()
+    this.schedules$ = this._state.schedules.listen();
   }
 
   ngOnInit(): void {
