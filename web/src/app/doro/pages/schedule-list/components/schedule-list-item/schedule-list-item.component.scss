@@ -1,0 +1,23 @@
+li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color, #e0e0e0);
+  padding: 8px 0;
+}
+
+.info {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.name {
+  font-weight: 500;
+}
+
+.meta {
+  font-size: 0.85em;
+  opacity: 0.6;
+}

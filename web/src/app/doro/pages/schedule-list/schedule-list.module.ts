@@ -3,6 +3,7 @@ import { NgModule } from "@angular/core";
 import { RouterModule } from "@angular/router";
 import { GuiDirective } from "../../components/_remote/web-component-wrapper/gui.directive";
 import { ScheduleListComponent } from "./schedule-list.component";
+import { ScheduleListItemComponent } from "./components/schedule-list-item/schedule-list-item.component";
 
 export const CHILD_ROUTES = [
 	{
@@ -12,7 +13,8 @@ export const CHILD_ROUTES = [
 ]
 @NgModule({
 	declarations: [
-		ScheduleListComponent
+		ScheduleListComponent,
+		ScheduleListItemComponent
 	],
 	imports: [
 		CommonModule,

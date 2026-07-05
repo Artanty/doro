@@ -1,1 +1,16 @@
-<p>schedule-list works!</p>
+@if (schedules$ | async; as schedules) {
+  <div class="list-wrapper">
+    <ul>
+      @for(schedule of schedules; track schedule.id) {
+        <app-schedule-list-item
+          [schedule]="schedule"
+        >
+        </app-schedule-list-item>
+      } @empty {
+        <li class="noSchedules">
+          <p>No schedules</p>
+        </li>
+      }
+    </ul>
+  </div>
+}
