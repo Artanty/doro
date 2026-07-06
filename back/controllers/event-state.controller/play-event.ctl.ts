@@ -102,7 +102,7 @@ export const playEventCtl = async (
 
         ConfigManager.setConfigHash({ userHandler, hashType: 'events' });
         ConfigManager.setConfigHash({ userHandler, hashType: 'schedules' });
-        const hashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert');
+        const hashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert', { userHandler, hashType: 'events'});
         const schedulesHashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert', { userHandler, hashType: 'schedules'});
         tikResponse = await OuterSyncService.updateOuterEntries([...hashPayload, ...schedulesHashPayload, ...tikEventsPayload]);
 

@@ -18,20 +18,26 @@
       }
       @case(ViewStatus.READY) {
         @if (view.data; as data) {
-          @if (data[EVENT_PROPS_KEY]; as eventProps) {
-            
-            <!-- @if(eventProps.type === eventTypes.TRANSITION) {
-              <h1>TRANSITION</h1>
+          @switch (data[SCHEDULE_STATE_KEY]) {
+            @case ('READY_TO_START') {
+              <h1>Ready to start</h1>
+              <app-base-event [data]="data"></app-base-event>
             }
-            @else if(eventProps.type === eventTypes.TRANSITION_NEXT) {
-              <h1>TRANSITION NEXT</h1>
-            } -->
-            <!-- @else { -->
-              <pre>{{ data | json }}</pre>
-              <app-base-event
-                [data]="data"
-              ></app-base-event>
-            <!-- } -->
+            @case ('TRANSITION') {
+              <h1>TRANSITION</h1>
+              <app-base-event [data]="data"></app-base-event>
+            }
+            @case ('SCHEDULE_ENDED') {
+              <h1>SCHEDULE_ENDED</h1>
+            }
+            @case ('PAUSED') {
+              <h1>PAUSED</h1>
+              <app-base-event [data]="data"></app-base-event>
+            }
+            @case ('PLAYING') {
+              <h1>PLAYING</h1>
+              <app-base-event [data]="data"></app-base-event>
+            }
           }
         }
       }

@@ -1,6 +1,9 @@
 import { GetEventResDataItem } from "@contracts/event.contract"
 import { EventProgressType, EventStatesType } from "../../constants"
 
+export const SCHEDULE_STATE_KEY = 'scheduleState' as const;
+export type ScheduleStateValue = 'READY_TO_START' | 'TRANSITION' | 'SCHEDULE_ENDED' | 'PAUSED' | 'PLAYING';
+
 export interface EventStateResItem { // todo: rename to entry
 	id: string,
 	cur: number,
@@ -54,8 +57,7 @@ export const EVENT_STATE_KEY = 'tikState' as const;
 export interface EventPropsWithState {
 	[EVENT_PROPS_KEY]: GetEventResDataItem,
 	[EVENT_STATE_KEY]: EventStateResItem,
-	allScheduleEvents: GetEventResDataItem[],
-	allScheduleEventsUnfiltered: GetEventResDataItem[],
+	[SCHEDULE_STATE_KEY]: ScheduleStateValue,
 }
 
 export interface EventWithState { // todo rename

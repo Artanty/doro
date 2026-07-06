@@ -6,7 +6,7 @@ import { Subject, takeUntil } from "rxjs";
 import { EventStates } from "../../../../constants";
 import { countPrc } from "@helpers/count-percent.util";
 import { dd } from "../../../../helpers/dd";
-import { EventPropsWithState, EventProps, EVENT_PROPS_KEY, EventStateResItem, EVENT_STATE_KEY } from "@services/basic-event/basic-event.types";
+import { EventPropsWithState, EventProps, EVENT_PROPS_KEY, EventStateResItem, EVENT_STATE_KEY, SCHEDULE_STATE_KEY } from "@services/basic-event/basic-event.types";
 import { GetEventResDataItem } from "@contracts/event.contract";
 import { AppStateService } from "@services/core/app-state.service";
 
@@ -29,6 +29,10 @@ export class BaseEventComponent {
     stateWithPrc.prc = countPrc(stateWithPrc.len!, stateWithPrc.cur);
     
     return stateWithPrc;
+  }
+
+  public get scheduleState(): string {
+    return this.data[SCHEDULE_STATE_KEY];
   }
 
   public EventStates = EventStates;

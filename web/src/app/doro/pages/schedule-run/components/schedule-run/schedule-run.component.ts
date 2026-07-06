@@ -7,7 +7,7 @@ import { EventService } from "@services/basic-event/basic-event.service";
 import { AppStateService } from "@services/core/app-state.service";
 import { ViewState, ViewStatus } from "@services/core/view-state.type";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-import { EventPropsWithState, EVENT_PROPS_KEY, EVENT_STATE_KEY, EventProps, EventStateResItem, Schedule } from "@services/basic-event/basic-event.types";
+import { EventPropsWithState, EVENT_PROPS_KEY, EVENT_STATE_KEY, SCHEDULE_STATE_KEY, EventProps, EventStateResItem, Schedule } from "@services/basic-event/basic-event.types";
 import { eventTypes, EventProgress, EventTypePrefix, INITIAL_VIEW_STATE } from "../../../../constants";
 import { GetEventResDataItem } from "@contracts/event.contract";
 import { ScheduleService } from "@services/schedule/schedule.service";
@@ -29,6 +29,7 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
   view$ = new BehaviorSubject<ViewState<EventPropsWithState>>(INITIAL_VIEW_STATE);
   EVENT_PROPS_KEY = EVENT_PROPS_KEY;
   EVENT_STATE_KEY = EVENT_STATE_KEY;
+  SCHEDULE_STATE_KEY = SCHEDULE_STATE_KEY;
   ViewStatus = ViewStatus;
   eventTypes = eventTypes;
   Number = Number;
@@ -60,7 +61,7 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
    * как понять, что сейчас транзишн:
    * sk.active_event_id !== -1 &&
    * sk.is_playing = false &&
-   * ev.playhead === ev.length
+   * sk_ev.playhead === ev.length
    */
   ngOnInit() {
      combineLatest([
@@ -95,49 +96,43 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
         const scheduleEventsSorted = [...scheduleEvents].sort((a, b) => a.schedule_position - b.schedule_position);
         const currentState = this._calculateCurrentState(schedule, scheduleEventsSorted);
         
-        return currentState;
+        return { currentState };
       }),
-        switchMap((res: ScheduleState) => {
-          /**
-           * Приоритетный конфиг - doro@
-           * Если ничего не проигрывается, то tik@ мы не слушаем
-           * и, значит нужно вывести или транзишн, или конечный экран.
-           */
-          if(res.state === 'PLAYING') {
+        switchMap(({ currentState }: { currentState: ScheduleState }) => {
+          if(currentState.state === 'PLAYING') {
             const listenEventProps = {
-              id: res.result.id,
-              is_active_event: res.result.is_active_event,
-              schedule_is_playing: res.result.schedule_is_playing,
-              schedule_event_playhead: res.result.schedule_event_playhead,
-              length: res.result.length
+              id: currentState.result.id,
+              is_active_event: currentState.result.is_active_event,
+              schedule_is_playing: currentState.result.schedule_is_playing,
+              schedule_event_playhead: currentState.result.schedule_event_playhead,
+              length: currentState.result.length
             }
             return this._eventService.listenEventState(EventTypePrefix.BASIC, listenEventProps)
-              .pipe(map(tikRes => {
-                return {
-                  state: tikRes,
-                  props: res.result
-                }
-              }))
+              .pipe(map(tikRes => ({
+                tikState: tikRes,
+                scheduleState: currentState.state,
+                props: currentState.result,
+              })))
           } else {
             return of({
-              state: {
-                id: 'tikEventId', // no need here
-                cur: res.result.schedule_event_playhead,
-                len: res.result.length,
+              tikState: {
+                id: 'tikEventId',
+                cur: currentState.result?.schedule_event_playhead ?? 0,
+                len: currentState.result?.length ?? 0,
                 stt: EventProgress.STOPPED
               },
-              props: res.result
+              scheduleState: currentState.state,
+              props: currentState.result,
             })
           }
         }),
-        tap((res: { state: EventStateResItem, props: any }) => {
+        tap((res: { tikState: EventStateResItem, scheduleState: any, props: any }) => {
           const result: ViewState<EventPropsWithState> = {
             status: ViewStatus.READY,
             data: {
               [EVENT_PROPS_KEY]: res.props,
-              [EVENT_STATE_KEY]: res.state,
-              allScheduleEvents: [],
-              allScheduleEventsUnfiltered: [],
+              [EVENT_STATE_KEY]: res.tikState,
+              [SCHEDULE_STATE_KEY]: res.scheduleState,
             }
           };
           this.view$.next(result)
@@ -193,8 +188,7 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
       dd(res)
     })
   }
-// todo  проблема - берет первое событие, хотя оно на паузе, а поигрывается второеz
-  //todo EventProps -> GetEventResDataItem
+
   private _calculateCurrentState (
     schedule: any,
     events: GetEventResDataItem[]
@@ -217,8 +211,7 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
     if (schedule.active_event_id === -1) {
       // предполагаем, что ивенты отсортированы по position.
       // удаляем законченные
-      const nextEvent = events
-        .filter(e => e.schedule_event_playhead < e.length)[0];
+      const nextEvent = events[0];
       
       if (!nextEvent) throw new Error (`Нет доступных ивентов расписания ${schedule.active_event_id}`);
 
@@ -228,21 +221,13 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
 
     // определяем, транзишн ли
     if (!schedule.is_playing && activeEvent) {
-
       // определяем закончился ивент или пауза
       const isStopped = activeEvent.schedule_event_playhead === activeEvent.length;
       if (isStopped) {
-        // ивент остановлен, он дошел до конца,
-        // осталось проверить, если следующий ивент для переключения, 
-        // или расписание отыграно полностью.
-        // предполагаем, что ивенты отсортированы по position.
-        // ивенты могли быть вызаны не по порядку, так что удаляем законченные
         const nextEvent = events
-          .filter(e => e.schedule_event_playhead < e.length)
           .find(e => activeEvent!.schedule_position < e.schedule_position);
-
         if (nextEvent) {
-          res.state = 'NEED_TRANSITION';
+          res.state = 'TRANSITION';
           res.result = nextEvent;
         } else {
           res.state = 'SCHEDULE_ENDED';

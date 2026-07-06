@@ -47,7 +47,7 @@
         </button>
       }
       
-      @if (nextEvent) {
+      @if (scheduleState !== 'TRANSITION' && nextEvent) {
         <button gui
           type="button" 
           [inputs]="{

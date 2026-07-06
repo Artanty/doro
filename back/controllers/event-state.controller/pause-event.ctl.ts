@@ -33,9 +33,11 @@ export const pauseEventCtl = async (
         }
         tikEventsPayload.push(tikEventToDelete)
 
-        ConfigManager.setConfigHash();
-        const hashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert');
-        tikResponse = await OuterSyncService.updateOuterEntries([...hashPayload, ...tikEventsPayload]);
+        ConfigManager.setConfigHash({ userHandler, hashType: 'events' });
+        ConfigManager.setConfigHash({ userHandler, hashType: 'schedules' });
+        const hashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert', { userHandler, hashType: 'events'});
+        const schedulesHashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert', { userHandler, hashType: 'schedules'});
+        tikResponse = await OuterSyncService.updateOuterEntries([...hashPayload, ...schedulesHashPayload, ...tikEventsPayload]);
 
         if (!tikResponse.data.success) {
             throw new Error(tikResponse.data.error!);

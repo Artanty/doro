@@ -27,7 +27,11 @@ export const getEventCtl = async (userHandler: string, filters: any) => {
         }
         const rows: GetRunningEventsResItem[] = getEventDbResult.result
 
-        const schedulesToStop: number[] = [];
+        const schedulesToStop: {
+            id: number,
+            event_playhead: number,
+            is_playing: boolean
+        }[] = [];
         const eventsWithPlayhead: GetRunningEventsResItem[] = rows
             .map(el => {
                 if (el.schedule_is_playing && el.is_active_event) {
@@ -44,10 +48,14 @@ export const getEventCtl = async (userHandler: string, filters: any) => {
                     // обновляем скедьюлы, которые по факту стоп
                     if (
                         el.schedule_event_playhead !== correctPlayhead &&
-                        el.schedule_event_playhead === el.length &&
+                        correctPlayhead === el.length &&
                         el.is_active_event
                     ) {
-                        schedulesToStop.push(el.schedule_id);
+                        schedulesToStop.push({
+                            id: el.schedule_id,
+                            event_playhead: correctPlayhead,
+                            is_playing: false
+                        });
                     }
                     
                     return {
@@ -58,11 +66,12 @@ export const getEventCtl = async (userHandler: string, filters: any) => {
                 }
                 return el;
             })
-        
+        dd('schedulesToStop')
+        dd(schedulesToStop)
         if(schedulesToStop.length) {
             batchUpdateScheduleResult = await batchUpdateScheduleDb(
                 connection,
-                schedulesToStop.map(sId => ({ id: sId, is_playing: false }))
+                schedulesToStop
             )
         }
         
