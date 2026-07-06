@@ -1,9 +1,10 @@
 @if (eventState) {
   <app-timer 
- 		[length]="eventState?.len ?? 0"
+    [length]="eventState?.len ?? 0"
     [time]="eventState?.cur ?? 0"
     [eventType]="eventProps.is_rest ? 2 : 1"
     [maxWidth]="400"
+    [scheduleProgress]="scheduleProgress"
   >
   </app-timer>
 

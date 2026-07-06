@@ -38,5 +38,13 @@
         <span>REST</span>
       }
     </div>
+
+    @if (scheduleProgress.length) {
+      <div class="schedule">
+        @for(ev of scheduleProgress; track $index) {
+          <div class="schedule__dot" [class.schedule__dot--active]="ev === 1"></div>
+        }
+      </div>
+    }
   </div>
 </div>

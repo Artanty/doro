@@ -51,3 +51,20 @@
     margin-top: 2px;
   }
 }
+
+.schedule {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+
+  &__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #d0d0d0;
+
+    &--active {
+      background: #333;
+    }
+  }
+}
