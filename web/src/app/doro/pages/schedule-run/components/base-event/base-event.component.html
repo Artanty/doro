@@ -3,9 +3,10 @@
     [length]="eventState?.len ?? 0"
     [time]="eventState?.cur ?? 0"
     [eventType]="eventProps.is_rest ? 2 : 1"
-    [maxWidth]="400"
+    [maxWidth]="300"
     [scheduleEvents]="scheduleEventsForTimer.events"
     [activeEventId]="scheduleEventsForTimer.activeEventId"
+    [strokeWidth]="3"
   >
   </app-timer>
 

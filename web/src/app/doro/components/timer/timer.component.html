@@ -1,14 +1,14 @@
 <div class="timer" [style.max-width.px]="maxWidth">
   <svg class="ring" viewBox="0 0 206 206">
     <circle
-      stroke="#e8e8e8" stroke-width="12" fill="none"
+      stroke="#e8e8e8" [attr.stroke-width]="strokeWidth" fill="none"
       cx="103" cy="103" r="94">
     </circle>
 
     <circle
       class="ring__progress"
       [attr.stroke-dasharray]="getDashArray()"
-      stroke="#333" stroke-width="12" stroke-linecap="round"
+      stroke="#333" [attr.stroke-width]="strokeWidth"
       fill="none" cx="103" cy="103" r="94"
       [attr.transform]="getTransform()">
     </circle>

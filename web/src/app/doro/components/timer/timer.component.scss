@@ -1,3 +1,7 @@
+:host{
+  display: flex;
+  justify-content: center;
+}
 .timer {
   position: relative;
   width: 100%;
@@ -26,14 +30,14 @@
   gap: 0px;
 
   &__icon {
-    font-size: 50px;
+    font-size: 55px;
     color: #fff;
-    margin-bottom: 30px;
+    margin-bottom: 10px;
   }
 
   &__time {
     font-family: 'Inter', 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
-    font-size: 60px;
+    font-size: 63px;
     font-weight: 600;
     letter-spacing: 0.04em;
     color: #1a1a1a;

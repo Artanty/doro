@@ -24,6 +24,7 @@ export class TimerComponent implements OnChanges {
   @Input() scheduleEvents: GetEventResDataItem[] = [];
   @Input() activeEventId: number | null = null;
   @Input() maxWidth: number = 240;
+  @Input() strokeWidth: number = 12;
 
   public percentage: number = 0;
   public timeLeft: number = 0
