@@ -74,6 +74,7 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
     .subscribe(res => {
       this._initView(res);
       this.currentSchedule.next(Number(res[2]['scheduleId']))
+      this.cdr.detectChanges()
     })
   }
 

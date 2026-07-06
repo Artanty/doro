@@ -100,9 +100,11 @@ export const playEventCtl = async (
             });
         }
 
-        ConfigManager.setConfigHash();
+        ConfigManager.setConfigHash({ userHandler, hashType: 'events' });
+        ConfigManager.setConfigHash({ userHandler, hashType: 'schedules' });
         const hashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert');
-        tikResponse = await OuterSyncService.updateOuterEntries([...hashPayload, ...tikEventsPayload]);
+        const schedulesHashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert', { userHandler, hashType: 'schedules'});
+        tikResponse = await OuterSyncService.updateOuterEntries([...hashPayload, ...schedulesHashPayload, ...tikEventsPayload]);
 
         if (!tikResponse.data.success) {
             throw new Error(tikResponse.data.error!);

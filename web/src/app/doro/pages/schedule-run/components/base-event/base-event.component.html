@@ -47,16 +47,18 @@
         </button>
       }
       
-      <button gui
-        type="button" 
-        [inputs]="{
-          icon: 'mu mu-next',
-          color: 'rgb(175 84 84 / 52%)'
-        }"
-        [outputs]="{click: endEvent.bind(this)}"
-      >
-        Следующее
-      </button>
+      @if (nextEvent) {
+        <button gui
+          type="button" 
+          [inputs]="{
+            icon: 'mu mu-next',
+            color: 'rgb(175 84 84 / 52%)'
+          }"
+          [outputs]="{click: endEvent.bind(this)}"
+        >
+          Следующее
+        </button>
+      }
     </div>
   </ng-template>
 }

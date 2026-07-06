@@ -8,6 +8,7 @@ import { countPrc } from "@helpers/count-percent.util";
 import { dd } from "../../../../helpers/dd";
 import { EventPropsWithState, EventProps, EVENT_PROPS_KEY, EventStateResItem, EVENT_STATE_KEY } from "@services/basic-event/basic-event.types";
 import { GetEventResDataItem } from "@contracts/event.contract";
+import { AppStateService } from "@services/core/app-state.service";
 
 @Component({
   selector: 'app-base-event',
@@ -36,6 +37,7 @@ export class BaseEventComponent {
   
   constructor(
     private eventService: EventService,
+    private _state: AppStateService,
   ) {}
   
   ngOnDestroy() {
@@ -57,11 +59,15 @@ export class BaseEventComponent {
       .subscribe()
   }
 
+  get nextEvent(): GetEventResDataItem | undefined {
+    return this._state.events.getValue()
+      .filter(e => e.schedule_id === this.eventProps.schedule_id && e.schedule_position > this.eventProps.schedule_position)
+      .sort((a, b) => a.schedule_position - b.schedule_position)[0];
+  }
+
   endEvent() {
-    this.eventService.finishEventRunHooks(this.eventProps.id)
-      .pipe(
-        takeUntil(this.destroy$),
-      )
-      .subscribe()
+    const next = this.nextEvent;
+    if (!next) return;
+    this.eventService.playEvent(next.id, this.eventProps.schedule_id).subscribe()
   }
 }
