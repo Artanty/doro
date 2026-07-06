@@ -22,6 +22,7 @@ export class TimerComponent implements OnChanges {
   @Input() length: number = 0;
   @Input() eventType: number = 0; // work = 1, rest = 2;
   @Input() scheduleProgress: [number, number] = [2, 4];
+  @Input() maxWidth: number = 240;
   @Output() percentageChange = new EventEmitter<number>();
 
   public percentage: number = 0;
@@ -29,8 +30,8 @@ export class TimerComponent implements OnChanges {
   public eventTypes = eventTypes;
   public scheduleEvents: number[] = [1, 1, 1, 1];
   // Constants
-  private readonly radius = 100;
-  private readonly circumference = 2 * Math.PI * this.radius; // ≈ 628.32
+  private readonly radius = 94;
+  private readonly circumference = 2 * Math.PI * this.radius; // ≈ 590.62
   private readonly center = 103;
 
   ngOnInit(): void {
