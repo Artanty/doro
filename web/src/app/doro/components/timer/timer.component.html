@@ -31,6 +31,19 @@
       }
     </div>
 
+    
+
+    @if (scheduleEvents.length) {
+      <div class="equalizer-wrap">
+        <app-schedule-equalizer
+          [events]="scheduleEvents"
+          [activeEventId]="activeEventId"
+          [containerWidth]="maxWidth * 0.6"
+          [upsideDown]="true"
+        />
+      </div>
+    }
+
     <div class="inner__label">
       @if(eventType === eventTypes.WORK) {
         <span>WORK</span>
@@ -38,13 +51,5 @@
         <span>REST</span>
       }
     </div>
-
-    @if (scheduleProgress.length) {
-      <div class="schedule">
-        @for(ev of scheduleProgress; track $index) {
-          <div class="schedule__dot" [class.schedule__dot--active]="ev === 1"></div>
-        }
-      </div>
-    }
   </div>
 </div>

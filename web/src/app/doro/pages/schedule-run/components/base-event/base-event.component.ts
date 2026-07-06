@@ -35,11 +35,11 @@ export class BaseEventComponent {
     return this.data[SCHEDULE_STATE_KEY];
   }
 
-  public get scheduleProgress(): number[] {
-    return this._state.events.getValue()
-      .filter((e: any) => e.schedule_id === this.eventProps.schedule_id && !e.is_rest)
-      .sort((a: any, b: any) => a.schedule_position - b.schedule_position)
-      .map((e: any) => e.id === this.eventProps.id ? 1 : 0);
+  public get scheduleEventsForTimer(): { events: GetEventResDataItem[]; activeEventId: number } {
+    const events = this._state.events.getValue()
+      .filter((e: any) => e.schedule_id === this.eventProps.schedule_id)
+      .sort((a: any, b: any) => a.schedule_position - b.schedule_position);
+    return { events, activeEventId: this.eventProps.id };
   }
 
   public EventStates = EventStates;

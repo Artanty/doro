@@ -2,12 +2,15 @@ import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges } f
 import { eventTypes } from '../../constants';
 import { countPrc } from '@helpers/count-percent.util';
 import { CommonModule } from "@angular/common";
+import { ScheduleEqualizerComponent } from '../schedule-equalizer/schedule-equalizer.component';
+import { GetEventResDataItem } from '@contracts/event.contract';
 
 @Component({
   selector: 'app-timer',
   standalone: true,
   imports: [
     CommonModule,
+    ScheduleEqualizerComponent,
   ],
   templateUrl: './timer.component.html',
   styleUrl: './timer.component.scss',
@@ -18,7 +21,8 @@ export class TimerComponent implements OnChanges {
   @Input() time: number = 0;
   @Input() length: number = 0;
   @Input() eventType: number = 0; // work = 1, rest = 2;
-  @Input() scheduleProgress: number[] = [];
+  @Input() scheduleEvents: GetEventResDataItem[] = [];
+  @Input() activeEventId: number | null = null;
   @Input() maxWidth: number = 240;
 
   public percentage: number = 0;

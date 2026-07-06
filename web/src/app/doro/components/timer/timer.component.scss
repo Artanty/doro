@@ -23,12 +23,12 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 37px;
+  gap: 0px;
 
   &__icon {
-    font-size: clamp(0.9rem, 4vw, 1.4rem);
+    font-size: 50px;
     color: #fff;
-    margin-bottom: 2px;
+    margin-bottom: 30px;
   }
 
   &__time {
@@ -48,23 +48,12 @@
     letter-spacing: 0.12em;
     color: #fff;
     text-transform: uppercase;
-    margin-top: 2px;
+    margin-top: 30px;
   }
 }
 
-.schedule {
-  display: flex;
-  gap: 4px;
-  margin-top: 8px;
-
-  &__dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #d0d0d0;
-
-    &--active {
-      background: #333;
-    }
-  }
+.equalizer-wrap {
+  width: 60%;
+  margin-top: 4px;
+  margin-bottom:10px;
 }

@@ -1,0 +1,36 @@
+.eq {
+  overflow: hidden;
+  width: 100%;
+}
+
+.eq__track {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  will-change: transform;
+
+  &--down {
+    align-items: flex-start;
+  }
+}
+
+.eq__bar {
+  width: 14px;
+  min-height: 6px;
+  border-radius: 2px 2px 0 0;
+  background: #d0d0d0;
+  transition: height 0.3s ease, background 0.3s ease;
+  flex-shrink: 0;
+
+  &--rest {
+    background: #e8d5b0;
+  }
+
+  &--active {
+    background: #333;
+
+    &.eq__bar--rest {
+      background: #a08060;
+    }
+  }
+}

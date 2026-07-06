@@ -4,7 +4,8 @@
     [time]="eventState?.cur ?? 0"
     [eventType]="eventProps.is_rest ? 2 : 1"
     [maxWidth]="400"
-    [scheduleProgress]="scheduleProgress"
+    [scheduleEvents]="scheduleEventsForTimer.events"
+    [activeEventId]="scheduleEventsForTimer.activeEventId"
   >
   </app-timer>
 
