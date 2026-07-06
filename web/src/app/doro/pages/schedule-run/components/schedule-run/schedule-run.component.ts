@@ -63,7 +63,7 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
    * sk.is_playing = false &&
    * sk_ev.playhead === ev.length
    */
-  ngOnInit() {
+   ngOnInit() {
      combineLatest([
       this._state.schedules.listen(),
       this._state.events.listen(),
@@ -71,18 +71,17 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
     ])
      .pipe(
         takeUntilDestroyed(this.destroyRef),
+        switchMap(res => {
+          this.currentSchedule.next(Number(res[2]['scheduleId']))
+          return this._initView$(res);
+        }),
      )
-    .subscribe(res => {
-      this._initView(res);
-      this.currentSchedule.next(Number(res[2]['scheduleId']))
-      this.cdr.detectChanges()
-    })
+    .subscribe()
   }
 
-  private _initView ([schedules, events, routeParams]: any) {
-    of([schedules, events, routeParams])
+  private _initView$ ([schedules, events, routeParams]: any) {
+    return of([schedules, events, routeParams])
     .pipe(
-      takeUntilDestroyed(this.destroyRef),
       map(([schedules, events, routeParams]) => {
         this.scheduleId = Number(routeParams['scheduleId']);
         if (!this.scheduleId) throw new Error('no schedule id');
@@ -144,7 +143,6 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
           return EMPTY;
         }),
       )
-      .subscribe()
   }
   
   public goToScheduleRun(data: any): Observable<boolean> {
