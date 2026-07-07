@@ -40,7 +40,7 @@ export type TEventType = typeof eventTypes[keyof typeof eventTypes];
 
 export const eventColors: Record<number, string> = {
   [eventTypes.WORK]: '#20089a',
-  [eventTypes.REST]: '#acd710',
+  [eventTypes.REST]: '#8fb112c4',
   [eventTypes.TRANSITION]: '#ff9500',
   [eventTypes.TRANSITION_NEXT]: '#ffcc00',
 };

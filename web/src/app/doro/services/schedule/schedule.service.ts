@@ -85,7 +85,7 @@ export class ScheduleService {
 	public createSchedule (): Observable<CreateScheduleRes> {
 		const now = new Date();
 		const payload = {
-			name: now.toTimeString().slice(0, 5),
+			name: now.toLocaleString("en-US", { hour12: false }),
 		}
 	
 		return this.http.post<CreateScheduleRes>(`${this.doroBaseUrl}/schedule/create`, payload)

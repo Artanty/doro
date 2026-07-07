@@ -22,7 +22,7 @@ export const createFullScheduleCtl = async (
     const pool = createPool();
     const connection = await pool.getConnection();
     const now = new Date();
-    const scheduleName = now.toTimeString().slice(0, 5);
+    const scheduleName = now.toLocaleString("en-US", { hour12: false });
     const active_event_id = -1;
     const is_playing = false;
 

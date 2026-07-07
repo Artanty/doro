@@ -42,7 +42,7 @@ export class CreateScheduleComponent implements OnInit {
 		this._scheduleService.createFullSchedule(this.scheduleConfig)
 		.subscribe((res: CreateScheduleRes) => {
 			this.isLoadingFull = false;
-			this.createdFullResult = '/doro/event-list/' + res.data.scheduleId;
+			this.createdFullResult = '/doro/schedule-run/' + res.data.scheduleId;
 			this.cdr.detectChanges()
 		})
 	}
@@ -51,7 +51,7 @@ export class CreateScheduleComponent implements OnInit {
 		this.isLoadingEmpty = true;
 		this._scheduleService.createSchedule().subscribe((res: CreateScheduleRes) => {
 			this.isLoadingEmpty = false;
-			this.createdEmptyResult = '/doro/event-list/' + res.data.scheduleId;
+			this.createdEmptyResult = '/doro/schedule-run/' + res.data.scheduleId;
 			this.cdr.detectChanges()
 		})
 	}

@@ -44,7 +44,7 @@ export class ScheduleEqualizerComponent implements OnChanges {
     if (ev.id === this.activeEventId) {
       return base;
     }
-    return this.hexToRgba(base, 0.2);
+    return this.hexToRgba(base, 0.5);
   }
 
   private hexToRgba(hex: string, alpha: number): string {
