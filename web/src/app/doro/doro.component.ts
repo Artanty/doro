@@ -1,7 +1,7 @@
 import { trigger, transition, style, animate } from "@angular/animations";
-import { Component, ChangeDetectionStrategy, OnInit, Inject, ChangeDetectorRef, Optional } from "@angular/core";
+import { Component, ChangeDetectionStrategy, OnInit, Inject, ChangeDetectorRef, Optional, DestroyRef } from "@angular/core";
 import { Router } from "@angular/router";
-import { Observable, filter } from "rxjs";
+import { Observable, filter, map, tap } from "rxjs";
 import { EVENT_BUS_LISTENER, BusEvent, HOST_NAME } from "typlib";
 import { dd } from "./helpers/dd";
 import { filterStreamDataEntries } from "./helpers/filterStreamDataEntries";
@@ -10,6 +10,9 @@ import { EventService } from "./services/basic-event/basic-event.service";
 import { AppStateService } from "./services/core/app-state.service";
 import { SettingsService } from "./services/settings/settings.service";
 import { TransitionEventService } from "./services/transition-event/transition-event.service";
+import { mapBusEventToConfigHashTikEntry } from "@helpers/getConfigHashFromBusEvent";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import { ApiService } from "@services/common-api/common-api.service";
 
 @Component({
   selector: 'app-doro',   
@@ -33,6 +36,7 @@ import { TransitionEventService } from "./services/transition-event/transition-e
   ],
 })
 export class DoroComponent implements OnInit { 
+  public isError = false;
   constructor(
     @Inject(ChangeDetectorRef) private cdr: ChangeDetectorRef,
     // private injector: Injector,
@@ -45,8 +49,9 @@ export class DoroComponent implements OnInit {
     private readonly _nextEventService: TransitionEventService,
     private _state: AppStateService,
     private _settings: SettingsService,
+    private destroyRef: DestroyRef,
+    private _apiService: ApiService,
     @Optional() @Inject(HOST_NAME) private hostName?: string,
-
   ) {}
 
   ngOnInit(): void {
@@ -67,6 +72,7 @@ export class DoroComponent implements OnInit {
    * */
   listenEvents() {
     this.eventBusListener$.pipe(
+      takeUntilDestroyed(this.destroyRef),
       filter(filterStreamDataEntries),
     ).subscribe(res => {
       if (this._settings.isSheevaMode() === false) {
@@ -82,7 +88,27 @@ export class DoroComponent implements OnInit {
           dd(foundActiveBasicEvent)
         }
       }
-    })
+    });
+
+    // listen tik errors
+    this.eventBusListener$.pipe(
+      takeUntilDestroyed(this.destroyRef),
+      filter(filterStreamDataEntries),
+      map(busEvent => mapBusEventToConfigHashTikEntry(busEvent, 'tikErrors')),
+      filter(Boolean),
+      tap(() => {
+        this.isError = true;
+      })
+    )
+      .subscribe();
+  }
+
+  requestError() {
+    this._apiService.getTikLogsApi()
+    .pipe(
+      takeUntilDestroyed(this.destroyRef),
+    )
+    .subscribe()
   }
 }
 

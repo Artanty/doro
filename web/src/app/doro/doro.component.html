@@ -36,4 +36,7 @@
     </div>
   </div>
 </ng-container> -->
+<div class="errorContainer" *ngIf="isError">
+<span (click)="requestError()">get tik error</span>
+</div>
 <router-outlet></router-outlet>

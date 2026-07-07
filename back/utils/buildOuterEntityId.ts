@@ -11,3 +11,4 @@ export const buildOuterEntityId = (type: EntryType = 'event', id: string | numbe
 
 	return `${entityPrefix}_${id}`;
 }
+

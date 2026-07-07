@@ -33,6 +33,11 @@ export class ApiService {
 		return this.http.post<CreateEventRes>(apiUrl, payload);
 	}
 
-	
+	public getTikLogsApi(payload = {}): Observable<any> {
+		// const apiUrl = `${process.env['DORO_BACK_URL']}/event/create`;
+		const apiUrl = 'http://localhost:3202/logs';
+		
+		return this.http.post<any>(apiUrl, payload);
+	}	
 
 }
