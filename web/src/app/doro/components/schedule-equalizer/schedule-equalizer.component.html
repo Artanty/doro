@@ -1,10 +1,12 @@
 <div class="eq">
-  <div class="eq__track" [class.eq__track--down]="upsideDown" [style.width.px]="trackWidth" [style.transform]="'translateX(' + offsetX + 'px)'">
+  <div class="eq__track" 
+    [class.eq__track--down]="upsideDown" 
+    [style.width.px]="trackWidth" 
+    [style.transform]="'translateX(' + offsetX + 'px)'">
     @for(ev of events; track ev.id) {
       <div class="eq__bar"
         [style.height.px]="getBarHeight(ev.length)"
-        [class.eq__bar--active]="ev.id === activeEventId"
-        [class.eq__bar--rest]="ev.is_rest"
+        [style.background]="getBarColor(ev)"
       ></div>
     }
   </div>

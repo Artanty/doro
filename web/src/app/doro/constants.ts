@@ -38,6 +38,13 @@ export const eventTypes = {
 
 export type TEventType = typeof eventTypes[keyof typeof eventTypes];
 
+export const eventColors: Record<number, string> = {
+  [eventTypes.WORK]: '#20089a',
+  [eventTypes.REST]: '#acd710',
+  [eventTypes.TRANSITION]: '#ff9500',
+  [eventTypes.TRANSITION_NEXT]: '#ffcc00',
+};
+
 export const BASE_SCHEDULE_ID = 1;
 
 export const INITIAL_VIEW_STATE: any = {

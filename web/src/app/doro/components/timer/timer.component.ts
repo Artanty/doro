@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { eventTypes } from '../../constants';
+import { eventColors, eventTypes } from '../../constants';
 import { countPrc } from '@helpers/count-percent.util';
 import { CommonModule } from "@angular/common";
 import { ScheduleEqualizerComponent } from '../schedule-equalizer/schedule-equalizer.component';
@@ -30,14 +30,12 @@ export class TimerComponent implements OnChanges {
   public timeLeft: number = 0
   public eventTypes = eventTypes;
 
-  get strokeColor(): string {
-    return this.eventType === this.eventTypes.REST ? '#02ff56' : '#6344f9';
+  get baseColor(): string {
+    return eventColors[this.eventType] || eventColors[eventTypes.WORK];
   }
 
   get shadowFilter(): string {
-    return this.eventType === this.eventTypes.REST
-      ? 'drop-shadow(0 0 6px rgb(16, 255, 64))'
-      : 'drop-shadow(0 0 6px rgb(106, 65, 255))';
+    return `drop-shadow(0 0 6px ${this.baseColor})`;
   }
   // Constants
   private readonly radius = 94;

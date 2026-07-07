@@ -3,6 +3,7 @@ import {
 } from '@angular/core';
 import { GetEventResDataItem } from '@contracts/event.contract';
 import { CommonModule } from '@angular/common';
+import { eventColors, eventTypes } from '../../constants';
 
 const BAR_WIDTH = 14;
 const BAR_GAP = 3;
@@ -36,6 +37,19 @@ export class ScheduleEqualizerComponent implements OnChanges {
   getBarHeight(length: number): number {
     if (!this.maxLength) return 10;
     return 8 + (length / this.maxLength) * 28;
+  }
+
+  getBarColor(ev: GetEventResDataItem): string {
+    const base = ev.is_rest ? eventColors[eventTypes.REST] : eventColors[eventTypes.WORK];
+    if (ev.id === this.activeEventId) {
+      return base;
+    }
+    return this.hexToRgba(base, 0.2);
+  }
+
+  private hexToRgba(hex: string, alpha: number): string {
+    const v = parseInt(hex.slice(1), 16);
+    return `rgba(${(v >> 16) & 0xff}, ${(v >> 8) & 0xff}, ${v & 0xff}, ${alpha})`;
   }
 
   private calcOffset() {

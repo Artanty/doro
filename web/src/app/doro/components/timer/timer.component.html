@@ -1,5 +1,7 @@
 <div class="timer" [style.max-width.px]="maxWidth">
   <svg class="ring" viewBox="0 0 206 206">
+    <circle class="ring__bg" cx="103" cy="103" r="88"></circle>
+
     <circle
       stroke="#e8e8e8" [attr.stroke-width]="strokeWidth" fill="none"
       cx="103" cy="103" r="94">
@@ -8,7 +10,7 @@
     <circle
       class="ring__progress"
       [attr.stroke-dasharray]="getDashArray()"
-      [style.stroke]="strokeColor"
+      [style.stroke]="baseColor"
       [style.filter]="shadowFilter"
       [attr.stroke-width]="strokeWidth"
       fill="none" cx="103" cy="103" r="94"
@@ -17,7 +19,7 @@
   </svg>
 
   <div class="inner">
-    <div class="inner__icon">
+    <div class="inner__icon" [style.color]="baseColor">
       @if(Number(eventType) === Number(eventTypes.WORK)) {
         <i class="mu mu-show"></i>
       } @else {
@@ -46,7 +48,7 @@
       </div>
     }
 
-    <div class="inner__label">
+    <div class="inner__label" [style.color]="baseColor">
       @if(eventType === eventTypes.WORK) {
         <span>WORK</span>
       } @else {
