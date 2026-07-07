@@ -29,6 +29,16 @@ export class TimerComponent implements OnChanges {
   public percentage: number = 0;
   public timeLeft: number = 0
   public eventTypes = eventTypes;
+
+  get strokeColor(): string {
+    return this.eventType === this.eventTypes.REST ? '#02ff56' : '#6344f9';
+  }
+
+  get shadowFilter(): string {
+    return this.eventType === this.eventTypes.REST
+      ? 'drop-shadow(0 0 6px rgb(16, 255, 64))'
+      : 'drop-shadow(0 0 6px rgb(106, 65, 255))';
+  }
   // Constants
   private readonly radius = 94;
   private readonly circumference = 2 * Math.PI * this.radius; // ≈ 590.62
