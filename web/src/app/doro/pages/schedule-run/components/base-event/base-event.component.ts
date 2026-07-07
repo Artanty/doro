@@ -59,9 +59,9 @@ export class BaseEventComponent {
 
   playEvent(isGuiEvent = true): void {
     this.eventService.playEvent(
-      this.eventProps.id, 
+      this.eventProps.id,
       this.eventProps.schedule_id
-    ).subscribe()
+    ).pipe(takeUntil(this.destroy$)).subscribe()
   }
 
   pauseEvent() {
@@ -79,6 +79,7 @@ export class BaseEventComponent {
   endEvent() {
     const next = this.nextEvent;
     if (!next) return;
-    this.eventService.playEvent(next.id, this.eventProps.schedule_id).subscribe()
+    this.eventService.playEvent(next.id, this.eventProps.schedule_id)
+      .pipe(takeUntil(this.destroy$)).subscribe()
   }
 }

@@ -35,7 +35,7 @@
               <app-base-event [data]="data"></app-base-event>
             }
             @case ('PLAYING') {
-              <h1>PLAYING</h1>
+              <h1>PLAYING {{data.doroProps.id}}</h1>
               <app-base-event [data]="data"></app-base-event>
             }
           }

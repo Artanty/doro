@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, Injector, DestroyRef } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
-import { Subject, Observable, takeUntil, take, map, combineLatest, switchMap, tap, startWith, of, catchError, BehaviorSubject, concatMap, EMPTY, skip, from } from "rxjs";
+import { Observable, take, map, combineLatest, switchMap, tap, startWith, of, catchError, BehaviorSubject, EMPTY, from } from "rxjs";
 import { dd } from "@helpers/dd";
 import { Nullable } from "@helpers/utility.types";
 import { EventService } from "@services/basic-event/basic-event.service";
@@ -23,9 +23,8 @@ export interface ScheduleState {
   templateUrl: './schedule-run.component.html',
   styleUrl: './schedule-run.component.scss'
 })
-export class ScheduleRunComponent implements OnInit, OnDestroy {
+export class ScheduleRunComponent implements OnInit{
   public scheduleMenuItems$: Observable<Schedule[]>
-  private destroy$ = new Subject<void>();
   view$ = new BehaviorSubject<ViewState<EventPropsWithState>>(INITIAL_VIEW_STATE);
   EVENT_PROPS_KEY = EVENT_PROPS_KEY;
   EVENT_STATE_KEY = EVENT_STATE_KEY;
@@ -107,7 +106,9 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
               length: currentState.result.length
             }
             return this._eventService.listenEventState(EventTypePrefix.BASIC, listenEventProps)
-              .pipe(map(tikRes => ({
+              .pipe(
+                takeUntilDestroyed(this.destroyRef),
+                map(tikRes => ({
                 tikState: tikRes,
                 scheduleState: currentState.state,
                 props: currentState.result,
@@ -242,10 +243,5 @@ export class ScheduleRunComponent implements OnInit, OnDestroy {
     }
 
     return res;  
-  }
-
-  ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 }
