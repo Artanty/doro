@@ -12,6 +12,8 @@ import { getEventStateHooksByState } from "../db-actions/get-event-state-hooks";
 import { EventStateHookController } from "./event-state-hook.controller";
 import { buildOuterEntityId, EntryType } from "../utils/buildOuterEntityId";
 import { TikUpdateEntriesRes } from "../types/outer-sync.types";
+import { getEventByIdDb } from "../db-actions/get-event-by-id.db";
+import { updateScheduleDb } from "../db-actions/update-schedule.db";
 
 export interface TikResStat {
 	added: string[],
@@ -185,71 +187,66 @@ export class OuterSyncService {
 
 	/**
 	 * todo: check required api key
-	 * 
+	 * OLD:
 	 * 1) изменить стейт ивента на "закончено"
 	 * 2) добавить в историю стейта "закончено"
 	 * 3) глянуть, что в хуке на "закончить"
 	 * 4) (как правило) создать ивент с префиксом (t) - transition
 	 * 5) отправить его в ответе для upsert в tik@
 	 * 6) обновить хэш
-	 *
-	 * nextEvent - тоже является событием, у которого есть длительность.
 	 * 
-	 * особытие типа 3 НЕ может иметь стейт ПАУЗА (2) или СТОП (0), создается сразу с play(1)
-	 * особытие типа 3 НЕ сохраняется в таблице event state history?
-	 * для простых расписаний не актуально. для проектных - норм, что после недели движ возобновляется.
-	 * по умолчанию 24 часа. 
-	 * когда мы загружаемся после падения всех серверов
-	 * смотрим что есть событие с типом 3 в текущем расписании и оно не является законченным.
-	 * 
+	 * CURR: 
+	 * 1) обновить is_playing schedul'а
+	 * 2) сформировать обновление schedule hash для tik@back
 	 * */
 	public static async updateEventStateByOuterApp(
+		userHandler: string,
 		eventId: number,
 		state: any,
 	) {
 		const pool = createPool();
 		const connection = await pool.getConnection();
-		let upsertStateResult,
-			addEventStateHistoryResult,
-			getEventStateHooksResult,
-			runEventStateHooksResult;
+		let
+			getEventByIdResult,
+			updateScheduleResult,
+			tikEventsPayload: OuterEntry[] = []
+			;
 		let outerEntries = [];
 		try {
 			await connection.beginTransaction();
 			
-			upsertStateResult = await upsertEventState(connection, eventId, state)
+			getEventByIdResult = await getEventByIdDb(
+				connection,
+				userHandler,
+				eventId
+			);
+			if(!getEventByIdResult.success) {
+				throw new Error(getEventByIdResult.error!);
+			}
+
+			updateScheduleResult = await updateScheduleDb(
+				connection,
+				getEventByIdResult.result[0].schedule_id,
+				{
+					is_playing: false,
+					event_playhead: getEventByIdResult.result[0].length,
+				}
+			)
+	
+			if (!updateScheduleResult.success) {
+				throw new Error(updateScheduleResult.error!);
+			}
 			
-			const is_playing = state !== 0;
-			const playhead = -1;
-
-			if (upsertStateResult.isStateUpdated) {
-				addEventStateHistoryResult = await addEventStateHistory(connection, eventId, is_playing, playhead)    
-			}
-			await connection.commit();
-			connection.release();
-			await connection.beginTransaction();
-			getEventStateHooksResult = await getEventStateHooksByState(connection, eventId, state);
+			ConfigManager.setConfigHash({ userHandler, hashType: 'schedules' });
+			const schedulesHashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert', { userHandler, hashType: 'schedules'});
 			
-			if (getEventStateHooksResult.success) {
-				runEventStateHooksResult = await EventStateHookController.runHooks(connection, getEventStateHooksResult.hooks)
-			}
-
-			await connection.commit();
-
-			if (runEventStateHooksResult.success) {
-				outerEntries = runEventStateHooksResult.result
-			}
-
-			await ConfigManager.setConfigHash();
-			const hashPayload = this.buildUpdateOuterHashPayload('upsert');
-
 			return {
 				success: true,
-				result: [...outerEntries, ...hashPayload], 
+				result: schedulesHashPayload,
 				debug: {
 					[thisProjectResProp()]: {
-						upsertStateResult,
-						addEventStateHistoryResult,
+						getEventByIdResult,
+						updateScheduleResult
 					},
 				}
 			};
@@ -261,8 +258,8 @@ export class OuterSyncService {
 				error,
 				debug: {
 					[thisProjectResProp()]: {
-						upsertStateResult,
-						addEventStateHistoryResult
+						getEventByIdResult,
+						updateScheduleResult
 					}
 				}
 			};
@@ -271,8 +268,4 @@ export class OuterSyncService {
 		}
 	}
 
-	// public static entryAdapter(outerPayload: any): { eventId: number, state: number } {
-	// 	const { eventId, state } = outerPayload;
-	// 	return { eventId, state }
-	// }
 }
