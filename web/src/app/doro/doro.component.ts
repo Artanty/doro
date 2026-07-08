@@ -13,7 +13,7 @@ import { TransitionEventService } from "./services/transition-event/transition-e
 import { mapBusEventToConfigHashTikEntry } from "@helpers/getConfigHashFromBusEvent";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { ApiService } from "@services/common-api/common-api.service";
-import { LogEntry } from "./components/log-viewer/log-viewer.component";
+import { ResponseLogEntry } from "./components/log-viewer/log-viewer.component";
 
 @Component({
   selector: 'app-doro',   
@@ -38,10 +38,10 @@ import { LogEntry } from "./components/log-viewer/log-viewer.component";
 })
 export class DoroComponent implements OnInit { 
   public isError = false;
-  public logs: LogEntry[] = [];
+  public logs: ResponseLogEntry[] = [];
   public currentLogIndex = 0;
 
-  get logData(): LogEntry | null {
+  get logData(): ResponseLogEntry | null {
     return this.logs[this.currentLogIndex] ?? null;
   }
   constructor(

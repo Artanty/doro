@@ -15,6 +15,15 @@
     </div>
 
     <div class="log-viewer__field">
+      <span class="log-viewer__label">Request</span>
+      @if (parsedRequest; as req) {
+        <pre class="log-viewer__json">{{ req | json }}</pre>
+      } @else {
+        <pre class="log-viewer__json">{{ log.requestBody }}</pre>
+      }
+    </div>
+
+    <div class="log-viewer__field">
       <span class="log-viewer__label">Response</span>
       @if (parsedResponse; as resp) {
         <pre class="log-viewer__json">{{ resp | json }}</pre>
