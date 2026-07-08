@@ -35,7 +35,7 @@ export const bulkUpsertEventState = async (
 		return result;
 	}
 	try {
-		// Get all current states from events table
+		// Get all current states from events table - TODO!!!!!!!!!!!!
 		const eventIds = eventStates.map(es => es.eventId);
 		const placeholders = eventIds.map(() => '?').join(',');
 		

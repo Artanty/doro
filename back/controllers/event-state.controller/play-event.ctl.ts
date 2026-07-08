@@ -19,7 +19,8 @@ export const playEventCtl = async (
 ): Promise<PlayEventResult> => {
     const pool = createPool();
     const connection = await pool.getConnection();
-    let getEventByIdResult,
+    let 
+        getEventByIdResult,
         schedule,
         eventToPlay,
         eventCalculatedPlayhead: number = -1,

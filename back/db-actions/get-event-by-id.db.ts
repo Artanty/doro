@@ -24,7 +24,7 @@ export const getEventByIdDb = async (
         const [rows] = await queryBuilder
         .eventId(eventId)
         .execute(connection);
-
+        
         return {
             success: true,
             result: rows,
