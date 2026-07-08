@@ -6,6 +6,8 @@ import { BehaviorSubject, Observable, filter, map, switchMap, tap } from 'rxjs';
 import { EVENT_BUS_LISTENER, BusEvent, EVENT_BUS, EVENT_BUS_PUSHER } from 'typlib';
 import { GuiDirective } from './components/_remote/web-component-wrapper/gui.directive';
 import { DoroComponent } from './doro.component';
+import { ModalComponent } from './components/modal/modal.component';
+import { LogViewerComponent } from './components/log-viewer/log-viewer.component';
 import { AccessLevelService } from './services/access-level.service';
 import { EventService } from './services/basic-event/basic-event.service';
 import { ApiService } from './services/common-api/common-api.service';
@@ -62,17 +64,16 @@ export const CHILD_ROUTES = [
 ]
 
 @NgModule({
-  declarations: [
-    DoroComponent,
-  ],
+  declarations: [DoroComponent],
   imports: [
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
     RouterModule.forChild(CHILD_ROUTES),
-    GuiDirective
+    GuiDirective,
+    ModalComponent,
+    LogViewerComponent
   ],
-  exports: [DoroComponent],
   providers: [
     {
       provide: EVENT_BUS_LISTENER,

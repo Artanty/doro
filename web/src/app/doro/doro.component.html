@@ -36,7 +36,16 @@
     </div>
   </div>
 </ng-container> -->
+<app-modal *ngIf="logs.length" title="Error Log" (close)="closeLogModal()">
+  <div modalHeader class="modal__nav">
+    <button class="modal__arrow" (click)="prevLog()" [class.modal__arrow--disabled]="currentLogIndex === 0">←</button>
+    <span class="modal__counter">{{ currentLogIndex + 1 }} / {{ logs.length }}</span>
+    <button class="modal__arrow" (click)="nextLog()" [class.modal__arrow--disabled]="currentLogIndex === logs.length - 1">→</button>
+  </div>
+  <app-log-viewer [log]="logData!" />
+</app-modal>
+
 <div class="errorContainer" *ngIf="isError">
-<span (click)="requestError()">get tik error</span>
+  <span (click)="requestError()">get tik error</span>
 </div>
 <router-outlet></router-outlet>

@@ -1,0 +1,111 @@
+.log-viewer {
+  background: #1e1e2e;
+  border: 1px solid #313244;
+  border-radius: 8px;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 13px;
+  color: #cdd6f4;
+  overflow: hidden;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: #181825;
+    border-bottom: 1px solid #313244;
+  }
+
+  &__method {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    &--get { background: #89b4fa22; color: #89b4fa; }
+    &--post { background: #a6e3a122; color: #a6e3a1; }
+    &--put { background: #fab38722; color: #fab387; }
+    &--patch { background: #fab38722; color: #fab387; }
+    &--delete { background: #f38ba822; color: #f38ba8; }
+  }
+
+  &__status {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 12px;
+
+    &.status--success { background: #a6e3a133; color: #a6e3a1; }
+    &.status--redirect { background: #fab38733; color: #fab387; }
+    &.status--client-error { background: #f38ba833; color: #f38ba8; }
+    &.status--server-error { background: #f38ba833; color: #f38ba8; }
+  }
+
+  &__url {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #6c7086;
+    font-size: 12px;
+  }
+
+  &__body {
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+  }
+
+  &__label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #6c7086;
+  }
+
+  &__time-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  &__value {
+    color: #bac2de;
+  }
+
+  &__local {
+    color: #6c7086;
+    font-size: 12px;
+
+    &::before {
+      content: '→';
+      margin-right: 6px;
+      color: #45475a;
+    }
+  }
+
+  &__json {
+    margin: 0;
+    background: #11111b;
+    border: 1px solid #313244;
+    border-radius: 6px;
+    padding: 10px 12px;
+    overflow-x: auto;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #a6adc8;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+}

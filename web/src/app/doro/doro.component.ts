@@ -13,6 +13,7 @@ import { TransitionEventService } from "./services/transition-event/transition-e
 import { mapBusEventToConfigHashTikEntry } from "@helpers/getConfigHashFromBusEvent";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { ApiService } from "@services/common-api/common-api.service";
+import { LogEntry } from "./components/log-viewer/log-viewer.component";
 
 @Component({
   selector: 'app-doro',   
@@ -37,6 +38,12 @@ import { ApiService } from "@services/common-api/common-api.service";
 })
 export class DoroComponent implements OnInit { 
   public isError = false;
+  public logs: LogEntry[] = [];
+  public currentLogIndex = 0;
+
+  get logData(): LogEntry | null {
+    return this.logs[this.currentLogIndex] ?? null;
+  }
   constructor(
     @Inject(ChangeDetectorRef) private cdr: ChangeDetectorRef,
     // private injector: Injector,
@@ -98,6 +105,7 @@ export class DoroComponent implements OnInit {
       filter(Boolean),
       tap(() => {
         this.isError = true;
+        this.cdr.markForCheck();
       })
     )
       .subscribe();
@@ -105,10 +113,36 @@ export class DoroComponent implements OnInit {
 
   requestError() {
     this._apiService.getTikLogsApi()
-    .pipe(
-      takeUntilDestroyed(this.destroyRef),
-    )
-    .subscribe()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res: any) => {
+          this.logs = Array.isArray(res) ? res : (res.logs || [res]);
+          this.currentLogIndex = 0;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.logs = [];
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  prevLog() {
+    if (this.currentLogIndex > 0) {
+      this.currentLogIndex--;
+      this.cdr.markForCheck();
+    }
+  }
+
+  nextLog() {
+    if (this.currentLogIndex < this.logs.length - 1) {
+      this.currentLogIndex++;
+      this.cdr.markForCheck();
+    }
+  }
+
+  closeLogModal() {
+    this.logs = [];
   }
 }
 

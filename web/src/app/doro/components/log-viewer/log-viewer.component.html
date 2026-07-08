@@ -1,0 +1,33 @@
+<div class="log-viewer">
+  <div class="log-viewer__header">
+    <span class="log-viewer__method" [class]="'log-viewer__method--' + log.method.toLowerCase()">{{ log.method }}</span>
+    <span class="log-viewer__status" [class]="'log-viewer__status ' + statusClass">{{ log.status }}</span>
+    <span class="log-viewer__url">{{ log.url }}</span>
+  </div>
+
+  <div class="log-viewer__body">
+    <div class="log-viewer__field">
+      <span class="log-viewer__label">Timestamp</span>
+      <div class="log-viewer__time-row">
+        <span class="log-viewer__value">{{ log.timestamp }}</span>
+        <span class="log-viewer__local">{{ log.timestamp | date:'medium' }}</span>
+      </div>
+    </div>
+
+    <div class="log-viewer__field">
+      <span class="log-viewer__label">Response</span>
+      @if (parsedResponse; as resp) {
+        <pre class="log-viewer__json">{{ resp | json }}</pre>
+      } @else {
+        <pre class="log-viewer__json">{{ log.response }}</pre>
+      }
+    </div>
+
+    @if (log.customData) {
+      <div class="log-viewer__field">
+        <span class="log-viewer__label">Custom Data</span>
+        <pre class="log-viewer__json">{{ log.customData }}</pre>
+      </div>
+    }
+  </div>
+</div>
