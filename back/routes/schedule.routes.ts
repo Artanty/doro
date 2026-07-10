@@ -26,7 +26,10 @@ router.post('/create', async (req, res) => {
     const active_event_id = 0;
     const is_playing = false;
     const user = getUserFromRequest(req);
-    const result = await ScheduleController.createSchedule(user, name, active_event_id, is_playing);
+    const result = await ScheduleController.createSchedule(
+      user, name, active_event_id, is_playing,
+      req.headers
+      );
     res.json(result);
   } catch (error) {
     handleError(res as unknown as Response, error) 
@@ -39,7 +42,11 @@ router.post('/create-full', async (req, res) => {
     assertCreateFullSchedule(req.body)
 
     const user = getUserFromRequest(req);
-    const result = await ScheduleController.createFullSchedule(user, req.body);
+    const result = await ScheduleController.createFullSchedule(
+      user, 
+      req.body,
+      req.headers
+    );
     res.json(result);
   } catch (error) {
     handleError(res as unknown as Response, error) 
@@ -63,7 +70,10 @@ router.post('/delete', async (req, res) => {
     assertDeleteSchedule(req.body)
     
     const user = getUserFromRequest(req);
-    const result = await ScheduleController.deleteSchedule(user, req.body.scheduleId)
+    const result = await ScheduleController.deleteSchedule(
+      user, req.body.scheduleId,
+      req.headers
+    )
     res.json(result);
   } catch (error) {
     handleError(res as unknown as Response, error) 

@@ -19,7 +19,11 @@ router.post('/play', async (req, res) => {
     assertPlayEvent(req.body);
     const user = getUserFromRequest(req);
     
-    const result = await EventStateController.playEvent(user, req.body);
+    const result = await EventStateController.playEvent(
+      user, 
+      req.body, 
+      req.headers
+    );
     res.json(result);
   } catch (error) {
     handleError(res as unknown as Response, error) 
@@ -33,6 +37,7 @@ router.post('/set-event-state', async (req, res) => {
     const result = await EventStateController.updateEventState(
       user, 
       eventStates,
+      req.headers
     );
     res.status(201).json(result);
   } catch (error: unknown) {
@@ -44,7 +49,10 @@ router.post('/stop', async (req, res,) => {
   try {
     const user = getUserFromRequest(req);
     const { eventId, state } = req.body;
-    const result = await EventStateController.stopEventRunHooks(user, eventId, state);
+    const result = await EventStateController.stopEventRunHooks(
+      user, eventId, state,
+      req.headers
+    );
     res.json(result);
   } catch (error) {
     handleError(res as unknown as Response, error) 
@@ -57,7 +65,12 @@ router.post('/pause', async (req, res,) => {
     
     const user = getUserFromRequest(req);
     const { eventId, scheduleId } = props;
-    const result = await EventStateController.pauseEvent(user, eventId, scheduleId);
+    const result = await EventStateController.pauseEvent(
+      user, 
+      eventId, 
+      scheduleId,
+      req.headers
+    );
     res.json(result);
   } catch (error) {
     handleError(res as unknown as Response, error) 
@@ -67,7 +80,8 @@ router.post('/pause', async (req, res,) => {
 router.post('/delete-finished-transitions', async (req, res) => {
   try {
     const { eventType, eventStateId } = req.body;
-    const result = await EventStateController.deleteFinishedEvents(eventType, eventStateId);
+    const result = await EventStateController.deleteFinishedEvents(
+      eventType, eventStateId);
     res.json(result);
   } catch (error) {
     handleError(res as unknown as Response, error) 

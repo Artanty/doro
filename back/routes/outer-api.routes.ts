@@ -22,9 +22,9 @@ router.post('/get-event-state', [validateUserAccessToken], async (req, res) => {
   }
 });
 
-router.post('/set-event-state', [validateUserAccessToken], async (req, res) => {
+router.post('/set-event-state', async (req, res) => {
   try {
-    const user = getUserFromRequest(req);
+    const user = req['X-User-Handler'] || req['x-user-handler'];
     const { eventId: stringEventId, state } = req.body;
     const eventId = Number(stringEventId);
 

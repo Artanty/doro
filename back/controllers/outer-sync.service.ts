@@ -68,7 +68,10 @@ export class OuterSyncService {
 	 * Предполагается, что new event не требует запроса в БД для вычисления своего состояния.
 	 * */
 	public static buildOuterEvent(
-		id: string | number, length: number, state: number, currentSeconds: number,
+		id: string | number, 
+		length: number, 
+		state: number, 
+		currentSeconds: number,
 		entryType: EntryType
 	): EventStateResItem {
 		return {
@@ -110,7 +113,9 @@ export class OuterSyncService {
 
 	// sending initial state
 	// should be after login in future
-	public static async updateOuterConfigHash(): Promise<TikRes> {
+	public static async updateOuterConfigHash(
+		reqHeaders: Record<string, string | string[] | undefined>
+	): Promise<TikRes> {
 		const userHandler = '74aa6454c1fcabffea7ff172:324c9c440c841889632429b574a39942';
    
 		const outerHash1 = {
@@ -130,8 +135,6 @@ export class OuterSyncService {
 				{
 					poolId: 'current_user_id',
 					data: payload,
-					projectId: 'doro@web',
-
 					// requesterProject,
 					// requesterApiKey: apiKeyHeader,
 					// requesterUrl
@@ -139,7 +142,9 @@ export class OuterSyncService {
 				{
 					timeout: 10000,  // Таймаут 10 секунд на каждый запрос
 					headers: {
-						'Content-Type': 'application/json'
+						'Content-Type': 'application/json',
+						'authorization': reqHeaders?.['authorization'],
+						'x-web-host-url': reqHeaders?.['x-web-host-url'],
 					}
 				}
 				// ,
@@ -160,20 +165,24 @@ export class OuterSyncService {
 	}
 
 	// todo: add api key.
-	public static async updateOuterEntries(payload: OuterEntry[]): Promise<TikUpdateEntriesRes> {
+	public static async updateOuterEntries(
+		payload: OuterEntry[],
+		reqHeaders: Record<string, string | string[] | undefined>
+	): Promise<TikUpdateEntriesRes> {
 		let tikResponse;
 		try {
 			// todo rename 'updateEventsState' -> updateEntries
 			tikResponse = await axios.post(`${process.env['TIK_BACK_URL']}/updateEventsState`,
 				{
-					poolId: 'current_user_id',
 					data: payload,
 					projectId: 'doro@web',
 				},
 				{
-					timeout: 10000,  // Таймаут 10 секунд на каждый запрос
+					timeout: 10000,
 					headers: {
-						'Content-Type': 'application/json'
+						'Content-Type': 'application/json',
+						'authorization': reqHeaders?.['authorization'],
+						'x-web-host-url': reqHeaders?.['x-web-host-url'],
 					}
 				}
 			);

@@ -16,7 +16,8 @@ export const createScheduleCtl = async (
 
     name: string,
     active_event_id: number,
-	is_playing: boolean
+	is_playing: boolean,
+    reqHeaders: Record<string, string | string[] | undefined>,
 ): Promise<any> => {
     const pool = createPool();
     const connection = await pool.getConnection();
@@ -51,7 +52,10 @@ export const createScheduleCtl = async (
 		const schedulesHashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert', { userHandler, hashType: 'schedules'});
 		tikEventsPayload.push(...schedulesHashPayload);
 
-        tikResponse = await OuterSyncService.updateOuterEntries(tikEventsPayload);
+        tikResponse = await OuterSyncService.updateOuterEntries(
+            tikEventsPayload,
+            reqHeaders
+        );
         if (!tikResponse.data.success) {
             throw new Error(tikResponse.data.error!);
         }

@@ -13,6 +13,7 @@ import { TikRes, OuterSyncService } from "../outer-sync.service";
 export const updateEventStateCtl = async (  
     userHandler: any, 
     eventStates: UpsertEventStateItem[],
+    reqHeaders,
 ): Promise<any> => {
     
     const pool = createPool();
@@ -51,7 +52,10 @@ export const updateEventStateCtl = async (
         const hashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert');
         const eventsPayload = OuterSyncService.addOuterActionInEvents(updatedEventsWithStatus, 'update');
         tikEntriesPayload = [...hashPayload, ...eventsPayload]
-        tikResponse = await OuterSyncService.updateOuterEntries(tikEntriesPayload);
+        tikResponse = await OuterSyncService.updateOuterEntries(
+            tikEntriesPayload,
+            reqHeaders
+        );
             
         return {
             data: {

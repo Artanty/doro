@@ -19,10 +19,10 @@ type CreateEventCtlResult = CtlResult<Nullable<{ id: number, is_playing: boolean
 
 export const createStoppedEvent = async (
 	userHandler: any,
-	props: CreateEventCtlProps
+	props: CreateEventCtlProps,
+	reqHeaders,
 ): Promise<CreateStoppedEventResult> => {
 	const { 
-			
 			name, length, playhead, is_rest, 
 			schedule_id,
 			hooks, 
@@ -69,7 +69,10 @@ export const createStoppedEvent = async (
 			const entitiesToUpdate: any[] = [];
 			const hashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert');
 			entitiesToUpdate.push(...hashPayload)
-			await OuterSyncService.updateOuterEntries(entitiesToUpdate);
+			await OuterSyncService.updateOuterEntries(
+				entitiesToUpdate,
+				reqHeaders
+			);
 		}
 		
 		await connection.commit();
@@ -108,13 +111,18 @@ export const createStoppedEvent = async (
 
 export const createEventCtl = async (
 	userHandler: any,
-	props: CreateEventCtlProps
+	props: CreateEventCtlProps,
+	reqHeaders: Record<string, string | string[] | undefined>,
 ): Promise<CreateEventCtlResult> => {
 	let
 		createStoppedEventResult: CreateStoppedEventResult,
 		playEventResult: PlayEventResult;
 
-	createStoppedEventResult = await createStoppedEvent(userHandler, props);
+	createStoppedEventResult = await createStoppedEvent(
+		userHandler, 
+		props,
+		reqHeaders
+	);
 	
 	if (!createStoppedEventResult.error && props.is_playing) {	
 		const playEventProps: PlayEventReq = {
@@ -122,7 +130,11 @@ export const createEventCtl = async (
 			eventIdToPlay: createStoppedEventResult.data!.id,
 			playEventPlayhead: props.playhead
 		}
-		playEventResult = await playEventCtl(userHandler, playEventProps)
+		playEventResult = await playEventCtl(
+			userHandler, 
+			playEventProps,
+			reqHeaders 
+		)
 	}
 
 	return {

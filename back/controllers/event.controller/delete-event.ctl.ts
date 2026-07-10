@@ -35,7 +35,8 @@ export type DeleteEventResult = CtlResult<{success: boolean, deletedSchedule?: n
 
 export const deleteEventCtl = async (
 	eventId: number, 
-	userHandler: string
+	userHandler: string,
+	reqHeaders: Record<string, string | string[] | undefined>,
 ): Promise<DeleteEventResult>  => {
 	const pool = createPool();
 	const connection = await pool.getConnection();
@@ -98,7 +99,10 @@ export const deleteEventCtl = async (
 		const schedulesHashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert', { userHandler, hashType: 'schedules'});
 		tikEventsPayload.push(...eventsHashPayload, ...schedulesHashPayload);
 
-		tikResponse = await OuterSyncService.updateOuterEntries(tikEventsPayload);
+		tikResponse = await OuterSyncService.updateOuterEntries(
+			tikEventsPayload,
+			reqHeaders 
+		);
 		
 		if (!tikResponse.data.success) {
             throw new Error(tikResponse.data.error!);

@@ -15,7 +15,8 @@ export type PlayEventResult = CtlResult<{success: boolean}>
 
 export const playEventCtl = async (
     userHandler: any, 
-    params: PlayEventReq
+    params: PlayEventReq,
+    reqHeaders: Record<string, string | string[] | undefined>,
 ): Promise<PlayEventResult> => {
     const pool = createPool();
     const connection = await pool.getConnection();
@@ -105,7 +106,10 @@ export const playEventCtl = async (
         ConfigManager.setConfigHash({ userHandler, hashType: 'schedules' });
         const hashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert', { userHandler, hashType: 'events'});
         const schedulesHashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert', { userHandler, hashType: 'schedules'});
-        tikResponse = await OuterSyncService.updateOuterEntries([...hashPayload, ...schedulesHashPayload, ...tikEventsPayload]);
+        tikResponse = await OuterSyncService.updateOuterEntries(
+            [...hashPayload, ...schedulesHashPayload, ...tikEventsPayload],
+            reqHeaders
+        );
 
         if (!tikResponse.data.success) {
             throw new Error(tikResponse.data.error!);

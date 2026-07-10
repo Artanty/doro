@@ -11,6 +11,7 @@ export const stopEventRunHooksCtl = async (
 	user: any, // todo: USE IT
 	eventId: number,
 	state: any,
+	reqHeaders: Record<string, string | string[] | undefined>,
 ) => {
 	const pool = createPool();
 	const connection = await pool.getConnection();
@@ -46,7 +47,10 @@ export const stopEventRunHooksCtl = async (
 		await ConfigManager.setConfigHash();
 		const hashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert');
 
-		tikResponse = await OuterSyncService.updateOuterEntries([...hashPayload, ...outerEntries]);
+		tikResponse = await OuterSyncService.updateOuterEntries(
+			[...hashPayload, ...outerEntries],
+			reqHeaders,
+		);
 
 		return {
 			success: true,

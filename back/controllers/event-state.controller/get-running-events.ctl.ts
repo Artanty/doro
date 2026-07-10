@@ -39,17 +39,21 @@ export const getRunningEventsCtl = async (userHandler: any) => {
             .filter(el => el.length !== el.schedule_event_playhead);        
 
         eventsWithTikStatus = await buildTikPlayingEvents(filteredEvents);
-        
-        
+                
         eventsWithTikAction = OuterSyncService.addOuterActionInEvents(eventsWithTikStatus, 'upsert');
 
-        const configHashEntry = { 
-            id: buildOuterEntityId('configHash', 1), // 1 - id
-            cur: ConfigManager.configHash,
-            [EVENT_TIK_ACTION_PROP]: 'upsert',
-        };
+        const outerHash1 = {
+			id: buildOuterEntityId('configHash', 1),
+			cur: ConfigManager.getConfigHash({ userHandler, hashType: 'events' }),
+		};
+		const outerHash2 = {
+			id: buildOuterEntityId('configHash', 2),
+			cur: ConfigManager.getConfigHash({ userHandler, hashType: 'schedules' }),
+		};
 
-        const productEntriesForTik: any[] = [...eventsWithTikAction, configHashEntry];
+		const hashsPayload = OuterSyncService.addOuterActionInEvents([outerHash1, outerHash2], 'upsert');
+
+        const productEntriesForTik: any[] = [...eventsWithTikAction, ...hashsPayload];
         
         return {
             data: productEntriesForTik,

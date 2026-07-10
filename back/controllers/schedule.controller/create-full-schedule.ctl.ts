@@ -17,7 +17,8 @@ import { createEventsSequenceDb } from '../../db-actions/create-events-sequence.
 export const createFullScheduleCtl = async (
     userHandler: string,
     
-    config: CreateFullScheduleReq
+    config: CreateFullScheduleReq,
+    reqHeaders: Record<string, string | string[] | undefined>,
 ): Promise<any> => {
     const pool = createPool();
     const connection = await pool.getConnection();
@@ -75,7 +76,10 @@ export const createFullScheduleCtl = async (
 		const schedulesHashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert', { userHandler, hashType: 'schedules'});
 		tikEventsPayload.push(...eventsHashPayload, ...schedulesHashPayload);
 
-		tikResponse = await OuterSyncService.updateOuterEntries(tikEventsPayload);
+		tikResponse = await OuterSyncService.updateOuterEntries(
+            tikEventsPayload,
+            reqHeaders
+        );
 
         if (!tikResponse.data.success) {
             throw new Error(tikResponse.data.error!);

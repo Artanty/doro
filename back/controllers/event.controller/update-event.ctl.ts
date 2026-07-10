@@ -18,7 +18,8 @@ export const updateEventCtl = async (
 		schedule_position?: number | null,
 		base_access_id?: number
 	},
-	userHandler: string
+	userHandler: string,
+	reqHeaders: Record<string, string | string[] | undefined>,
 ) => {
 	const pool = createPool();
 	const connection = await pool.getConnection();
@@ -40,7 +41,10 @@ export const updateEventCtl = async (
 			ConfigManager.setConfigHash(); 
 			const hashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert');
 			dd(hashPayload)
-			updateOuterEntriesResult = await OuterSyncService.updateOuterEntries(hashPayload);
+			updateOuterEntriesResult = await OuterSyncService.updateOuterEntries(
+				hashPayload,
+				reqHeaders 
+			);
 		}
 
 		return {

@@ -7,7 +7,7 @@ import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import checkDBConnection from './core/db_check_connection'
 import { validateUserAccessToken } from './middlewares/validateUserAccessToken'
-import eventStateRoutes from './routes/eventStateRoutes'
+import eventStateRoutes from './routes/event-state.routes'
 
 import { validateApiKey } from './middlewares/validateApiKey'
 import { dd } from './utils/dd'
@@ -54,6 +54,6 @@ app.listen(PORT, () => {
 
   // todo дождаться, пока tik@ сам сюда стукнется?
   // при первом запросе - хэши создадутся.
-  OuterSyncService.updateOuterConfigHash(); 
+  // OuterSyncService.updateOuterConfigHash(); 
 });
 

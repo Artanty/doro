@@ -15,6 +15,7 @@ export const pauseEventCtl = async (
     userHandler: any, 
     eventId: number,
     scheduleId: number,
+    reqHeaders: Record<string, string | string[] | undefined>,
 ): Promise<any> => {
     const pool = createPool();
     const connection = await pool.getConnection();
@@ -37,7 +38,10 @@ export const pauseEventCtl = async (
         ConfigManager.setConfigHash({ userHandler, hashType: 'schedules' });
         const hashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert', { userHandler, hashType: 'events'});
         const schedulesHashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert', { userHandler, hashType: 'schedules'});
-        tikResponse = await OuterSyncService.updateOuterEntries([...hashPayload, ...schedulesHashPayload, ...tikEventsPayload]);
+        tikResponse = await OuterSyncService.updateOuterEntries(
+            [...hashPayload, ...schedulesHashPayload, ...tikEventsPayload],
+            reqHeaders
+        );
 
         if (!tikResponse.data.success) {
             throw new Error(tikResponse.data.error!);
@@ -68,7 +72,10 @@ export const pauseEventCtl = async (
 
         ConfigManager.setConfigHash();
         const hashPayload2 = OuterSyncService.buildUpdateOuterHashPayload('upsert');
-        tikResponse = await OuterSyncService.updateOuterEntries(hashPayload2);
+        tikResponse = await OuterSyncService.updateOuterEntries(
+            hashPayload2,
+            reqHeaders
+        );
 
         await connection.commit();
         

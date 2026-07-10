@@ -13,7 +13,11 @@ router.post('/create', async (req, res) => {
     assertCreateEvent(req.body);
 
     const user = getUserFromRequest(req);
-    const result = await EventController.createEvent(user, req.body);
+    const result = await EventController.createEvent(
+      user, 
+      req.body, 
+      req.headers
+    );
     res.status(201).json(result);
   } catch (error: unknown) {
     res.status(500).json({ error: (error as any)?.message ? (error as any).message : error });
@@ -36,7 +40,8 @@ router.post('/update', async (req, res) => {
     const { id, ...rest } = req.body;
     const user = getUserFromRequest(req);
     const result = await EventController.updateEvent(
-      id, rest, user
+      id, rest, user,
+      req.headers
     );
 
     res.json(result);
@@ -50,7 +55,8 @@ router.post('/delete', async (req, res) => {
     const { id } = req.body;
     const user = getUserFromRequest(req);
     const result = await EventController.deleteEvent(
-      id, user
+      id, user,
+      req.headers
     );
 
     res.json(result);
