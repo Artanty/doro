@@ -29,7 +29,7 @@ router.post('/set-event-state', async (req, res) => {
     const assertSetEventState = typia.createAssert<SetEventStatePayload>();
     assertSetEventState(req.body)
     
-    const user = req['X-User-Handler'] || req['x-user-handler'];
+    const user = (req.headers['X-User-Handler'] || req.headers['x-user-handler']) as string;
     const { eventId: stringEventId, state } = req.body;
     const eventId = Number(stringEventId);
 
