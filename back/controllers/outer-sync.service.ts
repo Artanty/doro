@@ -237,13 +237,15 @@ export class OuterSyncService {
 			if (!updateScheduleResult.success) {
 				throw new Error(updateScheduleResult.error!);
 			}
-			
+						
+			ConfigManager.setConfigHash({ userHandler, hashType: 'events' });
 			ConfigManager.setConfigHash({ userHandler, hashType: 'schedules' });
+			const hashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert', { userHandler, hashType: 'events'});
 			const schedulesHashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert', { userHandler, hashType: 'schedules'});
-			
+
 			return {
 				success: true,
-				result: schedulesHashPayload,
+				result: [...hashPayload, ...schedulesHashPayload],
 				debug: {
 					[thisProjectResProp()]: {
 						getEventByIdResult,
