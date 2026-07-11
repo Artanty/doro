@@ -20,23 +20,23 @@
         @if (view.data; as data) {
           @switch (data[SCHEDULE_STATE_KEY]) {
             @case ('READY_TO_START') {
-              <h1>Ready to start</h1>
-              <app-base-event [data]="data"></app-base-event>
-            }
-            @case ('TRANSITION') {
-              <h1>TRANSITION</h1>
-              <app-base-event [data]="data"></app-base-event>
-            }
-            @case ('SCHEDULE_ENDED') {
-              <h1>SCHEDULE_ENDED</h1>
-            }
-            @case ('PAUSED') {
-              <h1>PAUSED</h1>
+              <h1>Ready to start {{data.doroProps.id}}</h1>
               <app-base-event [data]="data"></app-base-event>
             }
             @case ('PLAYING') {
               <h1>PLAYING {{data.doroProps.id}}</h1>
               <app-base-event [data]="data"></app-base-event>
+            }
+            @case ('PAUSED') {
+              <h1>PAUSED {{data.doroProps.id}}</h1>
+              <app-base-event [data]="data"></app-base-event>
+            }
+            @case ('TRANSITION') {
+              <h1>TRANSITION {{data.doroProps.id}}</h1>
+              <app-base-event [data]="data"></app-base-event>
+            }
+            @case ('SCHEDULE_ENDED') {
+              <h1>SCHEDULE_ENDED</h1>
             }
           }
         }

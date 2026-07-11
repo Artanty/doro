@@ -208,14 +208,12 @@ export class ScheduleRunComponent implements OnInit{
     // нет активного ивента, т е скедьюл еще не стартовал
     // или активный ивент был удалён, поэтому
     if (schedule.active_event_id === -1) {
-      // предполагаем, что ивенты отсортированы по position.
-      // удаляем законченные
       const nextEvent = events[0];
       
       if (!nextEvent) throw new Error (`Нет доступных ивентов расписания ${schedule.active_event_id}`);
 
       res.state = 'READY_TO_START'
-      res.result = nextEvent
+      res.result = { ...nextEvent, schedule_event_playhead: 0 };
     }
 
     // определяем, транзишн ли
@@ -227,7 +225,9 @@ export class ScheduleRunComponent implements OnInit{
           .find(e => activeEvent!.schedule_position < e.schedule_position);
         if (nextEvent) {
           res.state = 'TRANSITION';
-          res.result = nextEvent;
+          dd(res)
+          dd(nextEvent)
+          res.result = { ...nextEvent, schedule_event_playhead: 0 };
         } else {
           res.state = 'SCHEDULE_ENDED';
         }
