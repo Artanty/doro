@@ -195,16 +195,7 @@ export class OuterSyncService {
 	}
 
 	/**
-	 * todo: check required api key
-	 * OLD:
-	 * 1) изменить стейт ивента на "закончено"
-	 * 2) добавить в историю стейта "закончено"
-	 * 3) глянуть, что в хуке на "закончить"
-	 * 4) (как правило) создать ивент с префиксом (t) - transition
-	 * 5) отправить его в ответе для upsert в tik@
-	 * 6) обновить хэш
-	 * 
-	 * CURR: 
+	 * 1) проверяем access + достаем schedule_id
 	 * 1) обновить is_playing schedul'а
 	 * 2) сформировать обновление schedule hash для tik@back
 	 * */
@@ -213,6 +204,7 @@ export class OuterSyncService {
 		eventId: number,
 		state: any,
 	) {
+		const isPlaying = state !== 3;
 		const pool = createPool();
 		const connection = await pool.getConnection();
 		let
@@ -237,7 +229,7 @@ export class OuterSyncService {
 				connection,
 				getEventByIdResult.result[0].schedule_id,
 				{
-					is_playing: false,
+					is_playing: isPlaying,
 					event_playhead: getEventByIdResult.result[0].length,
 				}
 			)

@@ -6,7 +6,10 @@ import { calculatePlayhead } from '../event-state.controller/get-running-events.
 import { batchUpdateScheduleDb } from '../../db-actions/update-schedule.db';
 import { dd } from '../../utils/dd';
 
-export const getEventCtl = async (userHandler: string, filters: any) => {
+export const getEventCtl = async (
+    userHandler: string,
+    filters: any
+) => {
     dd('getEventCtl')
     debugger;
     const pool = createPool();
@@ -66,12 +69,12 @@ export const getEventCtl = async (userHandler: string, filters: any) => {
                 }
                 return el;
             })
-        dd('schedulesToStop')
-        dd(schedulesToStop)
+        
         if(schedulesToStop.length) {
             batchUpdateScheduleResult = await batchUpdateScheduleDb(
                 connection,
-                schedulesToStop
+                schedulesToStop,
+                userHandler
             )
         }
         

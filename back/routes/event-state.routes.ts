@@ -3,8 +3,8 @@ import { EventController } from '../controllers/event.controller';
 import { handleError } from '../utils/handleError'
 import { getUserFromRequest } from '../utils/getUserFromRequest';
 import { dd } from '../utils/dd';
-import { UpsertEventStateItem } from '../db-actions/upsert-event-state';
 import { EventStateController } from '../controllers/event-state.controller';
+import { BatchUpdateScheduleItem } from '../db-actions/update-schedule.db';
 import typia from 'typia';
 import { PauseEventReq, PlayEventReq } from '@contracts/event-state.contract';
 
@@ -30,13 +30,14 @@ router.post('/play', async (req, res) => {
   }
 });
 
+/// DANGER! ReQUIRED SCHDEULE IDS!
 router.post('/set-event-state', async (req, res) => {
   try {
-    const eventStates: UpsertEventStateItem[] = req.body.eventStates;
+    const scheduleUpdates: BatchUpdateScheduleItem[] = req.body.scheduleUpdates;
     const user = getUserFromRequest(req);
     const result = await EventStateController.updateEventState(
       user, 
-      eventStates,
+      scheduleUpdates,
       req.headers
     );
     res.status(201).json(result);

@@ -1,71 +1,71 @@
 import createPool from '../../core/db_connection';
-import { bulkAddEventStateHistory } from "../../db-actions/add-event-state-history";
-import { getAccessibleEvents, ACCESS_CASE } from "../../db-actions/get-accessible-event";
-import { UpsertEventStateItem, bulkUpsertEventState } from '../../db-actions/upsert-event-state';
+import { batchUpdateScheduleDb, BatchUpdateScheduleItem } from '../../db-actions/update-schedule.db';
 import { EventStateResItem } from "../../types/event-state.types";
-import { toMinProps, EventPropsDbItem } from "../../types/event.types";
-import { formatBulkErrors } from "../../utils/format-bulk-errors.utl";
 import { thisProjectResProp, tikResProp } from "../../utils/getResProp";
 import { ConfigManager } from "../config-manager";
 import { buildTikEvents } from "../helpers/build-tik-events";
 import { TikRes, OuterSyncService } from "../outer-sync.service";
 
-export const updateEventStateCtl = async (  
-    userHandler: any, 
-    eventStates: UpsertEventStateItem[],
+export const updateEventStateCtl = async (
+    userHandler: any,
+    scheduleUpdates: BatchUpdateScheduleItem[],
     reqHeaders,
 ): Promise<any> => {
-    
+
     const pool = createPool();
     const connection = await pool.getConnection();
-    let getAccessibleEventResult,
-        upsertStateResult,
-        addEventStateHistoryResult,
+    let 
+        updateSchedulesResult,
         tikEntriesPayload,
         tikResponse!: TikRes;
     try {
         await connection.beginTransaction();
 
-        const idsToCheck = eventStates.map(e => e.eventId)
-        getAccessibleEventResult = await getAccessibleEvents(connection, idsToCheck, userHandler, ACCESS_CASE.UPDATE);
-        if (!getAccessibleEventResult.success) {
-            throw new Error(formatBulkErrors(getAccessibleEventResult));
+        updateSchedulesResult = await batchUpdateScheduleDb(connection, scheduleUpdates, userHandler);
+        if (!updateSchedulesResult.success) {
+            throw new Error(updateSchedulesResult.error || 'Batch update failed');
         }
 
-        //upsertStateResult = await bulkUpsertEventState(connection, eventStates) // todo add false return if no updated
-            
-        if (!upsertStateResult.success) {
-            throw new Error('state is not updated');
+        const { updatedIds } = updateSchedulesResult.result;
+
+        let updatedEventsWithStatus: EventStateResItem[] = [];
+        if (updatedIds.length > 0) {
+            const placeholders = updatedIds.map(() => '?').join(',');
+            const [schedules] = await connection.execute(
+                `SELECT active_event_id FROM schedules WHERE id IN (${placeholders})`,
+                updatedIds
+            );
+            const eventIds = (schedules as any[])
+                .map(s => s.active_event_id)
+                .filter(id => id && id > 0);
+
+            if (eventIds.length > 0) {
+                const eventsProps = eventIds.map(id => ({ id, length: 0, event_type: 0 }));
+                updatedEventsWithStatus = await buildTikEvents(connection, eventsProps);
+            }
         }
-            
-        //addEventStateHistoryResult = await bulkAddEventStateHistory(connection, eventStates)
-        
-        const eventsArr = Array.from(getAccessibleEventResult.results.values());
-        const minProps = eventsArr.map(e => toMinProps(e as EventPropsDbItem));
-        // const eventProps: EventPropsDbItem = getAccessibleEventResult.results.get(eventId);
-            
-        // const minProps = toMinProps(eventProps);
-        const updatedEventsWithStatus: EventStateResItem[] = await buildTikEvents(connection, minProps);
+
         await connection.commit();
-
-        ConfigManager.setConfigHash();
-        const hashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert');
+        
+        ConfigManager.setConfigHash({ userHandler, hashType: 'events' });
+        ConfigManager.setConfigHash({ userHandler, hashType: 'schedules' });
+        const hashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert', { userHandler, hashType: 'events'});
+        const schedulesHashPayload = OuterSyncService.buildUpdateOuterHashPayload('upsert', { userHandler, hashType: 'schedules'});
+        // need to be refreshed cause event's state is part of event in web.
         const eventsPayload = OuterSyncService.addOuterActionInEvents(updatedEventsWithStatus, 'update');
-        tikEntriesPayload = [...hashPayload, ...eventsPayload]
         tikResponse = await OuterSyncService.updateOuterEntries(
-            tikEntriesPayload,
+            [...hashPayload, ...schedulesHashPayload, ...eventsPayload],
             reqHeaders
         );
-            
+
         return {
             data: {
                 success: true,
+                totalUpdated: updateSchedulesResult.result?.totalUpdated || 0,
             },
             debug: {
                 [thisProjectResProp()]: {
-                    getAccessibleEventResult,
-                    upsertStateResult,
-                    addEventStateHistoryResult,
+                    updateSchedulesResult,
                 },
                 [tikResProp()]: {
                     request: tikEntriesPayload,
@@ -79,13 +79,11 @@ export const updateEventStateCtl = async (
         return {
             data: {
                 success: false,
-                updatedEvents: [],
+                updatedSchedules: [],
             },
             debug: {
                 [thisProjectResProp()]: {
-                    getAccessibleEventResult,
-                    upsertStateResult,
-                    addEventStateHistoryResult,
+                    updateSchedulesResult,
                 },
                 [tikResProp()]: {
                     request: tikEntriesPayload,

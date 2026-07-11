@@ -77,22 +77,35 @@ export async function updateScheduleDb(
     }
 }
 
-// New batch update function
+export interface BatchUpdateScheduleItem {
+    id: number;
+    name?: string;
+    active_event_id?: number;
+    is_playing?: boolean;
+    event_playhead?: number;
+}
+
+export interface BatchUpdateScheduleResult {
+    totalRequested: number;
+    totalUpdated: number;
+    updatedIds: number[];
+    notFoundIds: number[];
+}
+
+/**
+ * Batch update schedules owned by userHandler — single statement.
+ * Only updates rows WHERE id IN (...) AND created_by = ?.
+ */
 export async function batchUpdateScheduleDb(
     connection: any,
-    updates: Array<{
-        id: number;
-        name?: string;
-        active_event_id?: number;
-        is_playing?: boolean;
-        event_playhead?: number;
-    }>
-): Promise<DbActionResult<any>> {
+    updates: BatchUpdateScheduleItem[],
+    userHandler: string
+): Promise<DbActionResult<BatchUpdateScheduleResult>> {
     const res: any = {
         success: false,
         result: null,
         error: null
-    }
+    };
 
     try {
         if (!updates || updates.length === 0) {
@@ -100,70 +113,52 @@ export async function batchUpdateScheduleDb(
         }
 
         const currentTime = getUTCDatetime();
-        const results: any[] = [];
-        
-        // Process each update
-        for (const update of updates) {
-            const { id, name, active_event_id, is_playing, event_playhead } = update;
-            
-            const setClauses: string[] = [];
-            const values: any[] = [];
-            
-            if (name !== undefined) {
-                setClauses.push('name = ?');
-                values.push(name);
+        const ids = updates.map(u => u.id);
+        const placeholders = ids.map(() => '?').join(',');
+
+        const setClauses: string[] = ['updated_at = ?'];
+        const caseValues: any[] = [];
+
+        const fields = ['name', 'active_event_id', 'is_playing', 'event_playhead'] as const;
+
+        for (const field of fields) {
+            const matching = updates.filter(u => u[field] !== undefined);
+            if (matching.length === 0) continue;
+
+            if (field === 'is_playing') {
+                const cases = matching.map(u => `WHEN ? THEN ?`).join(' ');
+                const vals = matching.flatMap(u => [u.id, u[field] ? 1 : 0]);
+                setClauses.push(`${field} = CASE id ${cases} END`);
+                caseValues.push(...vals);
+            } else {
+                const cases = matching.map(u => `WHEN ? THEN ?`).join(' ');
+                const vals = matching.map(u => [u.id, u[field]]);
+                setClauses.push(`${field} = CASE id ${cases} END`);
+                caseValues.push(...vals.flat());
             }
-            
-            if (active_event_id !== undefined) {
-                setClauses.push('active_event_id = ?');
-                values.push(active_event_id);
-            }
-            
-            if (is_playing !== undefined) {
-                setClauses.push('is_playing = ?');
-                values.push(is_playing ? 1 : 0);
-            }
-            
-            if (event_playhead !== undefined) {
-                setClauses.push('event_playhead = ?');
-                values.push(event_playhead);
-            }
-            
-            // Always update updated_at
-            setClauses.push('updated_at = ?');
-            values.push(currentTime);
-            
-            // Add scheduleId for WHERE clause
-            values.push(id);
-            
-            // Build query
-            const query = `
-                UPDATE schedules 
-                SET ${setClauses.join(', ')}
-                WHERE id = ?
-            `;
-            
-            const [result] = await connection.execute(query, values);
-            
-            results.push({
-                id,
-                success: result.affectedRows > 0,
-                affectedRows: result.affectedRows
-            });
         }
-        
-        // Check if all updates succeeded
-        const allSuccess = results.every(r => r.success);
-        const totalAffected = results.reduce((sum, r) => sum + r.affectedRows, 0);
-        
-        res.success = allSuccess;
+
+        const query = `
+            UPDATE schedules
+            SET ${setClauses.join(', ')}
+            WHERE id IN (${placeholders})
+              AND created_by = ?
+        `;
+
+        const [result] = await connection.execute(
+            query,
+            [...caseValues, currentTime, ...ids, userHandler]
+        );
+
+        const updatedCount = result.affectedRows;
+        const notFoundIds = ids.length - updatedCount;
+
+        res.success = true;
         res.result = {
-            results,
-            totalAffected,
-            totalUpdates: updates.length,
-            message: allSuccess 
-                ? `All ${updates.length} schedules updated successfully` 
-                : `Some updates failed (${results.filter(r => !r.success).length} failed)`
+            totalRequested: ids.length,
+            totalUpdated: updatedCount,
+            updatedIds: ids.slice(0, updatedCount),
+            notFoundIds: ids.slice(updatedCount),
         };
 
     } catch (error: any) {

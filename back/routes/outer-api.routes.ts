@@ -5,6 +5,8 @@ import { dd } from '../utils/dd';
 import { getUserFromRequest } from '../utils/getUserFromRequest';
 import { handleError } from '../utils/handleError';
 import { EventStateController } from '../controllers/event-state.controller';
+import typia from 'typia';
+import { SetEventStatePayload } from '@contracts/outer-api.contract';
 
 const router = express.Router();
 
@@ -24,6 +26,9 @@ router.post('/get-event-state', [validateUserAccessToken], async (req, res) => {
 
 router.post('/set-event-state', async (req, res) => {
   try {
+    const assertSetEventState = typia.createAssert<SetEventStatePayload>();
+    assertSetEventState(req.body)
+    
     const user = req['X-User-Handler'] || req['x-user-handler'];
     const { eventId: stringEventId, state } = req.body;
     const eventId = Number(stringEventId);
